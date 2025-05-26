@@ -8,43 +8,50 @@ import {
   HiEnvelope,
 } from 'react-icons/hi2';
 
-// nav data
+// Update paths to use hash links
 export const navData = [
-  { name: 'home', path: '/', icon: <HiHome /> },
-  { name: 'about', path: '/about', icon: <HiUser /> },
-  { name: 'services', path: '/services', icon: <HiRectangleGroup /> },
-  { name: 'work', path: '/work', icon: <HiViewColumns /> },
+  { name: 'home', path: '#home', icon: <HiHome /> }, // Assuming you'll add an id="home" to the top of your index page
+  { name: 'about', path: '#about', icon: <HiUser /> },
+  { name: 'services', path: '#services', icon: <HiRectangleGroup /> },
+  { name: 'work', path: '#work', icon: <HiViewColumns /> },
   {
     name: 'testimonials',
-    path: '/testimonials',
+    path: '#testimonials',
     icon: <HiChatBubbleBottomCenterText />,
   },
   {
     name: 'contact',
-    path: '/contact',
+    path: '#contact', // Assuming you'll add an id="contact" to the contact section
     icon: <HiEnvelope />,
   },
 ];
-
-// next link
-import Link from 'next/link';
-
-// next router
-import { useRouter } from 'next/router';
-
-
 const Nav = () => {
-  const router = useRouter();
-  const pathname = router.pathname;
 
   return (
     <nav className="flex flex-col items-center xl:justify-center gap-y-4 fixed h-max bottom-0 mt-auto xl:right-[2%] z-50 top-0 w-full xl:w-16 xl:max-w-md xl:h-screen">
       {/* inner */}
       <div className="flex w-full xl:flex-col items-center justify-between xl:justify-center gap-y-10 px-4 md:px-40 xl:px-0 h-[80px] xl:h-max py-8 bg-white/10 backdrop-blur-sm text-3xl xl:text-xl xl:rounded-full">
         {navData.map((link, index) => {
-          return (
-            <Link className={`${link.path === pathname && 'text-accent'} relative flex items-center group hover:text-accent`} 
+ return (
+            <a className={`relative flex items-center group hover:text-accent`} 
             href={link.path}
+            onClick={(event) => {
+              console.log('Link clicked!');
+              event.preventDefault();
+              const targetId = link.path.substring(1); // Remove the '#'
+              console.log('Target ID:', targetId);
+              const targetElement = document.querySelector('#' + targetId);
+              if (targetElement) {
+                console.log('Target element found:', targetElement);
+                console.log('Attempting to scroll to:', targetElement);
+                window.scrollTo({
+                  top: targetElement.getBoundingClientRect().top + window.pageYOffset,
+                  behavior: 'smooth',
+                });
+              } else {
+                console.log('Target element not found for ID:', targetId);
+              }
+            }}
             key={index}
             >
               {/* tooltip */}
@@ -60,7 +67,7 @@ const Nav = () => {
               </div>
               {/* icon */}
               <div>{link.icon}</div>
-            </Link>
+            </a>
           );
         })}
       </div>

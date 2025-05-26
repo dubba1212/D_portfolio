@@ -48,20 +48,6 @@ const Moon = () => {
           </Sphere>
         </Canvas>
         {/* Image component */}
-        <motion.div
-          variants={fadeIn("up", 0.6)}
-          initial="hidden"
-          animate="show"
-          exit="hidden"
-          style={{ position: "absolute", top: 220, left: 370 }}
-        >
-          <Image
-            src="/pngimg.com - astronaut_PNG29.png"
-            width={383}
-            height={300}
-            alt=""
-          />
-        </motion.div>
       </div>
     </div>
   );
