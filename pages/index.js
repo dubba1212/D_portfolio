@@ -34,90 +34,10 @@ import {
 //framer motion
 import { motion } from "framer-motion";
 
-//variantscl
+//variants
 import {fadeIn} from '../variants';
 
-//counter
-import CountUp from 'react-countup';
-
-//  data
-const aboutData = [
-  {
-    title: 'skills',
-    info: [
-      {
-        title: 'Web Development',
-        icons: [
-          <FaHtml5 key="html5" />,
-          <FaCss3 key="css3" />,
-          <FaJs key="js" />,
-          <FaReact key="react" />,
-          <SiNextdotjs key="nextjs" />,
-          <SiFramer key="framer" />,
-          <FaWordpress key="wordpress" />,
-        ],
-      },
-      {
-        title: 'UI/UX Design',
-        icons: [<FaFigma key="figma" />, <SiAdobexd key="adobexd" />, <SiAdobephotoshop key="photoshop" />],
-      },
-    ],
-  },
-  {
-    title: 'awards',
-    info: [
-      {
-        title: 'Webby Awards - Honoree',
-        stage: '2011 - 2012',
-      },
-      {
-        title: 'Adobe Design Achievement Awards - Finalist',
-        stage: '2009 - 2010',
-      },
-    ],
-  },
-  {
-    title: 'experience',
-    info: [
-      {
-        title: 'UX/UI Designer - XYZ Company',
-        stage: '2012 - 2023',
-      },
-      {
-        title: 'Web Developer - ABC Agency',
-        stage: '2010 - 2012',
-      },
-      {
-        title: 'Intern - DEF Corporation',
-        stage: '2008 - 2010',
-      },
-    ],
-  },
-  {
-    title: 'credentials',
-    info: [
-      {
-        title: 'Web Development - ABC University, LA, CA',
-        stage: '2011',
-      },
-      {
-        title: 'Computer Science Diploma - AV Technical Institute',
-        stage: '2009',
-      },
-      {
-        title: 'Certified Graphic Designer - ABC Institute, Los Angeles, CA',
-        stage: '2006',
-      },
-    ],
-  },
-  {
-    title: 'contact',
-    info: [], // No info needed for contact section data structure
-  },
-];
-
 const Home = () => {
-  const [index, setIndex] = React.useState(0);
 
   return (
     <div className='bg-primary/60 h-full'>
@@ -156,104 +76,108 @@ const Home = () => {
       </div>
 
       {/* About Section */}
-      <div id="about" className='py-32 text-center xl:text-left'>
-        <Circles />
-        {/* avatar img */}
-        <div className='container mx-auto h-full flex flex-col items-center xl:flex-row gap-x-6'>
-          {/* text */}
-          <div className='flex-1 flex flex-col justify-center'>
-            <motion.h2
-              variants={fadeIn('right', 0.2)}
-              initial='hidden'
-              animate='show'
-              exit='hidden'
-              className='h2'>
-              About Me
-            </motion.h2>
-            <motion.p
-              variants={fadeIn('right', 0.4)}
-              initial='hidden'
-              animate='show'
-              exit='hidden'
-              className='max-w-[500px] mx-auto xl:mx-0 mb-6 xl:mb-12 px-2 xl:px-0'>
-              Write here
-            </motion.p>
-
-            {/* counters */}
-            <motion.div
-              variants={fadeIn('right', 0.6)}
-              initial='hidden'
-              animate='show'
-              exit='hidden'
-              className='hidden md:flex md:max-w-xl xl:max-w-none mx-auto xl:mx-0 mb-8'>
-              <div className='flex flex-1 xl:gap-x-6'>
-                {/* experience*/}
-                <div className='relative flex-1 after:w-[1px] after:h-full
-              after:bg-white/10 after:absolute after:top-0 after:right-0'>
-                  <div className='text-2xl xl:text-4xl font-extrabold text-accent mb-2'>
-                    <CountUp start={0} end={10} duration={5} />+
-                  </div>
-                </div>
-                <div className='text-xs uppercase tracking-[1px] leading-[1.4] max-w-[100px]'>
-                  Years
-                </div>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Info */}
-          <motion.div
-            variants={fadeIn('left', 0.4)}
+      <div id="about" className='py-32'>
+        <div className='container mx-auto px-4'>
+          <motion.h2
+            variants={fadeIn('up', 0.2)}
             initial='hidden'
             animate='show'
             exit='hidden'
-            className='flex flex-col w-full xl:max-w-[48%] h-[480px]'>
-            <div className='flex gap-x-4 xl:gap-x-8 mx-auto xl:mx-0 mb-4'>
-              {aboutData.map((item, itemIndex) => {
-                return (
-                  <div
-                    key={itemIndex}
-                    className={`${index === itemIndex && 'text-accent after:w-[100%] after:bg-accent after:translate-all after:duration-300'}
-                cursor-pointer capitalize xl:text-lg relative after:w-8 after:h-[2px]
-                after:bg-white after:absolute after:-bottom-1 after:left-0`}
-                    onClick={() => setIndex(itemIndex)}
-                  >
-                    {item.title}
+            className='h2 text-center mb-20'>
+            About Me
+          </motion.h2>
+
+          <div className='max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16'>
+            {/* Experience Section */}
+            <motion.div
+              variants={fadeIn('up', 0.3)}
+              initial='hidden'
+              animate='show'
+              exit='hidden'
+              className='space-y-6'>
+              <div className='text-6xl xl:text-7xl font-bold text-accent'>
+                10+
+              </div>
+              <div className='text-2xl xl:text-3xl font-semibold text-white'>
+                Years Experience
+              </div>
+              <p className='text-white/70 text-lg leading-relaxed max-w-md'>
+                Building scalable web applications, user-focused interfaces, and production-ready digital systems.
+              </p>
+            </motion.div>
+
+            {/* Skills Section */}
+            <motion.div
+              variants={fadeIn('up', 0.4)}
+              initial='hidden'
+              animate='show'
+              exit='hidden'
+              className='space-y-8'>
+
+              {/* Web Development */}
+              <div className='space-y-4'>
+                <h3 className='text-xl font-semibold text-white'>Web Development</h3>
+                <div className='grid grid-cols-2 gap-4'>
+                  <div className='flex items-center gap-3 text-white/80'>
+                    <FaHtml5 className='text-2xl text-accent' />
+                    <span>HTML5</span>
                   </div>
-                );
-              })}
-            </div>
-            <div className='py-2 xl:py-6 flex flex-col gap-y-2
-          xl:gap-y-4 items-center xl:items-start'>
-              {aboutData[index].info.map((item, itemIndex) => {
-                return (
-                  <div key={itemIndex} className='flex-1 flex flex-col md:flex-row max-w-max
-                gap-x-2 items-center text-white/60'>
-                    {/* title */}
-                    <div className='font-light mb-2 md:mb-0'>{item.title}</div>
-                    <div className='hidden md:flex'></div>
-                    <div>{item.stage}</div>
-                    {/* icons */}
-                    <div className='flex gap-x-4'>
-                      {item.icons?.map((icon, itemIndex) => {
-                        return <div key={itemIndex} className='text-2xl text-white'>{icon}</div>;
-                      })}
-                    </div>
+                  <div className='flex items-center gap-3 text-white/80'>
+                    <FaCss3 className='text-2xl text-accent' />
+                    <span>CSS3</span>
                   </div>
-                );
-              })}
-            </div>
-          </motion.div>
+                  <div className='flex items-center gap-3 text-white/80'>
+                    <FaJs className='text-2xl text-accent' />
+                    <span>JavaScript</span>
+                  </div>
+                  <div className='flex items-center gap-3 text-white/80'>
+                    <FaReact className='text-2xl text-accent' />
+                    <span>React</span>
+                  </div>
+                  <div className='flex items-center gap-3 text-white/80'>
+                    <SiNextdotjs className='text-2xl text-accent' />
+                    <span>Next.js</span>
+                  </div>
+                  <div className='flex items-center gap-3 text-white/80'>
+                    <SiFramer className='text-2xl text-accent' />
+                    <span>Framer</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* UI/UX Design */}
+              <div className='space-y-4'>
+                <h3 className='text-xl font-semibold text-white'>UI/UX Design</h3>
+                <div className='grid grid-cols-2 gap-4'>
+                  <div className='flex items-center gap-3 text-white/80'>
+                    <FaFigma className='text-2xl text-accent' />
+                    <span>Figma</span>
+                  </div>
+                  <div className='flex items-center gap-3 text-white/80'>
+                    <SiAdobexd className='text-2xl text-accent' />
+                    <span>Adobe XD</span>
+                  </div>
+                  <div className='flex items-center gap-3 text-white/80'>
+                    <SiAdobephotoshop className='text-2xl text-accent' />
+                    <span>Photoshop</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Tools & Platforms */}
+              <div className='space-y-4'>
+                <h3 className='text-xl font-semibold text-white'>Tools & Platforms</h3>
+                <div className='grid grid-cols-2 gap-4'>
+                  <div className='flex items-center gap-3 text-white/80'>
+                    <FaWordpress className='text-2xl text-accent' />
+                    <span>WordPress</span>
+                  </div>
+                </div>
+              </div>
+
+            </motion.div>
+          </div>
         </div>
-        {/* avatar img */}
-        <motion.div
-          variants={fadeIn('right', 0.2)}
-          initial='hidden'
-          animate='show'
-          exit='hidden'
-          className='hidden xl:flex absolute bottom-0 -left-[370px]'>
-          <Avatar />
-        </motion.div>
       </div>
 
 

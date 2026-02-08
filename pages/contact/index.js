@@ -1,6 +1,6 @@
-import Contact from '../components/Contact';
+import ContactComponent from '../../components/Contact';
 
 const Contact = () => {
-  return <Contact />;
+  return <ContactComponent />;
 };
 export default Contact;
