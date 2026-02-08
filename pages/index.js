@@ -6,7 +6,6 @@ import ParticlesContainer from "../components/ParticlesContainer";
 import ProjectsBtn from "../components/ProjectsBtn";
 
 // components
-import ServiceSlider from '../components/ServiceSlider';
 import WorkSlider from '../components/WorkSlider';
 import TestimonialSlider from '../components/TestimonialSlider';
 import Circles from '../components/Circles';
@@ -181,38 +180,129 @@ const Home = () => {
       </div>
 
 
-      {/* Services Section */}
-      <div id="services" className='py-36 flex items-center'>
+      {/* Skills & Expertise Section */}
+      <div id="expertise" className='py-32'>
         <Circles />
-        <div className="container mx-auto">
-          <div className='flex flex-col xl:flex-row gap-x-8'>
-            {/* text */}
-            <div className='text-center flex xl:w-[30vw] flex-col lg:text-left mb-4 xl:mb-0'>
-              <motion.h2
-                variants={fadeIn('up', 0.2)}
-                initial="hidden"
-                animate="show"
-                exit="hidden"
-                className='h2 xl:mt-8'>
-                My services <span className='text-accent'>for you</span>
-              </motion.h2>
-              <motion.p
-                variants={fadeIn('up', 0.4)}
-                initial="hidden"
-                animate="show"
-                exit="hidden"
-                className='mb-4 max-w-[400px] mx-auto lg:mx-0'>
-                Write something here
-              </motion.p>
-            </div>
+        <div className='container mx-auto px-4'>
+          <motion.div
+            variants={fadeIn('up', 0.2)}
+            initial='hidden'
+            animate='show'
+            exit='hidden'
+            className='text-center mb-20'>
+            <h2 className='h2 mb-6'>Core Expertise</h2>
+            <p className='text-white/70 text-lg max-w-2xl mx-auto'>
+              Technologies and skills I use to build modern digital experiences.
+            </p>
+          </motion.div>
+
+          <div className='max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8'>
+            {/* Web Development Card */}
             <motion.div
-              variants={fadeIn('down', 0.6)}
-              initial="hidden"
-              animate="show"
-              exit="hidden"
-              className='w-full xl:max-w-[65%]'>
-              {/* slider */}
-              <ServiceSlider />
+              variants={fadeIn('up', 0.3)}
+              initial='hidden'
+              animate='show'
+              exit='hidden'
+              className='group relative'>
+              <div className='relative h-80 rounded-xl overflow-hidden
+                bg-gradient-to-br from-black via-gray-900 to-black
+                border border-accent/30 p-8 flex flex-col items-center justify-center
+                transform transition-all duration-500 ease-out
+                hover:border-accent/60 hover:shadow-[0_0_30px_rgba(255,69,0,0.3)]
+                hover:scale-105 hover:-translate-y-2 cursor-pointer'>
+
+                <div className='absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-transparent
+                  opacity-0 group-hover:opacity-100 transition-opacity duration-500'></div>
+
+                <div className='relative z-10 text-center space-y-4'>
+                  <div className='text-6xl transform transition-all duration-500
+                    group-hover:scale-110 group-hover:drop-shadow-[0_0_20px_rgba(255,69,0,0.6)]'>
+                    💻
+                  </div>
+                  <h3 className='text-2xl font-bold text-white'>Web Development</h3>
+                  <p className='text-white/60 text-sm'>React, Next.js, JavaScript, TypeScript</p>
+
+                  <div className='pt-6 border-t border-accent/20'>
+                    <div className='text-accent text-sm font-semibold
+                      opacity-0 group-hover:opacity-100 transition-opacity duration-300'>
+                      {/* Placeholder for future link */}
+                      → Explore Projects
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* UI/UX Design Card */}
+            <motion.div
+              variants={fadeIn('up', 0.4)}
+              initial='hidden'
+              animate='show'
+              exit='hidden'
+              className='group relative'>
+              <div className='relative h-80 rounded-xl overflow-hidden
+                bg-gradient-to-br from-black via-gray-900 to-black
+                border border-accent/30 p-8 flex flex-col items-center justify-center
+                transform transition-all duration-500 ease-out
+                hover:border-accent/60 hover:shadow-[0_0_30px_rgba(255,69,0,0.3)]
+                hover:scale-105 hover:-translate-y-2 cursor-pointer'>
+
+                <div className='absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-transparent
+                  opacity-0 group-hover:opacity-100 transition-opacity duration-500'></div>
+
+                <div className='relative z-10 text-center space-y-4'>
+                  <div className='text-6xl transform transition-all duration-500
+                    group-hover:scale-110 group-hover:drop-shadow-[0_0_20px_rgba(255,69,0,0.6)]'>
+                    🎨
+                  </div>
+                  <h3 className='text-2xl font-bold text-white'>UI/UX Design</h3>
+                  <p className='text-white/60 text-sm'>Figma, User Research, Prototyping</p>
+
+                  <div className='pt-6 border-t border-accent/20'>
+                    <div className='text-accent text-sm font-semibold
+                      opacity-0 group-hover:opacity-100 transition-opacity duration-300'>
+                      {/* Placeholder for future link */}
+                      → View Portfolio
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Website Engineering Card */}
+            <motion.div
+              variants={fadeIn('up', 0.5)}
+              initial='hidden'
+              animate='show'
+              exit='hidden'
+              className='group relative'>
+              <div className='relative h-80 rounded-xl overflow-hidden
+                bg-gradient-to-br from-black via-gray-900 to-black
+                border border-accent/30 p-8 flex flex-col items-center justify-center
+                transform transition-all duration-500 ease-out
+                hover:border-accent/60 hover:shadow-[0_0_30px_rgba(255,69,0,0.3)]
+                hover:scale-105 hover:-translate-y-2 cursor-pointer'>
+
+                <div className='absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-transparent
+                  opacity-0 group-hover:opacity-100 transition-opacity duration-500'></div>
+
+                <div className='relative z-10 text-center space-y-4'>
+                  <div className='text-6xl transform transition-all duration-500
+                    group-hover:scale-110 group-hover:drop-shadow-[0_0_20px_rgba(255,69,0,0.6)]'>
+                    ⚙️
+                  </div>
+                  <h3 className='text-2xl font-bold text-white'>Website Engineering</h3>
+                  <p className='text-white/60 text-sm'>Performance, Optimization, Architecture</p>
+
+                  <div className='pt-6 border-t border-accent/20'>
+                    <div className='text-accent text-sm font-semibold
+                      opacity-0 group-hover:opacity-100 transition-opacity duration-300'>
+                      {/* Placeholder for future link */}
+                      → Learn More
+                    </div>
+                  </div>
+                </div>
+              </div>
             </motion.div>
           </div>
         </div>
