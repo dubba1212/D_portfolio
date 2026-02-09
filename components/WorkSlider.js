@@ -78,15 +78,17 @@ const WorkSlider = () => {
             <div className='grid grid-cols-2 grid-rows-2 gap-4 cursor-pointer'>
               {slide.images.map((image, index) => { // Changed 'slide' to 'item' and 'slide.image' to 'item.image'
                 return (
-                  <div className='relative rounded-lg overflow-hidden flex items-center justify-center group' key={index}>
-                    <div className='flex items-center justify-center relative overflow-hidden group'>
+                  <div className='relative rounded-lg overflow-hidden flex items-center justify-center group cursor-pointer
+                    shadow-lg hover:shadow-[0_0_25px_rgba(255,69,0,0.3)] transition-all duration-500' key={index}>
+                    <div className='flex items-center justify-center relative overflow-hidden group w-full h-full'>
                       {/* image */}
                       <Image
                       src={image.path}
                       width={500}
                       height={500}
-                      alt=''
+                      alt={image.title}
                       priority={true}
+                      className='group-hover:scale-110 transition-transform duration-700'
                       />
                       {/* overlay  gradient*/ }
                       <div className='absolute inset-0 bg-gradient-to-l from-transparent via-[#e838cc] to-[#4a22bd]

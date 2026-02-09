@@ -6,6 +6,10 @@ html {
   scroll-behavior: smooth;
 }
 
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
 .translate-z-0 {
   transform: translateZ(0px);
 }
@@ -53,5 +57,23 @@ html {
   }
   .textarea {
     @apply w-full h-[180px] p-6 capitalize rounded-lg resize-none;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply backdrop-blur-md bg-white/10;
+  }
+
+  .glow-accent {
+    @apply shadow-[0_0_20px_rgba(255,69,0,0.4)];
+  }
+
+  .smooth-transition {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .card-hover {
+    @apply hover:shadow-[0_0_30px_rgba(255,69,0,0.3)] hover:scale-105 hover:-translate-y-2 smooth-transition;
   }
 }
