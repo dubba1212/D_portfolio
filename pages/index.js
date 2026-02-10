@@ -6,6 +6,7 @@ import ParticlesContainer from "../components/ParticlesContainer";
 import ProjectsBtn from "../components/ProjectsBtn";
 import FloatingSkills from "../components/FloatingSkills";
 import SectionIndicators from "../components/SectionIndicators";
+import DecorativeElements from "../components/DecorativeElements";
 
 // components
 import WorkSlider from '../components/WorkSlider';
@@ -52,8 +53,8 @@ const Home = () => {
             animate='show'
             exit='hidden'
             className='h1 text-5xl md:text-6xl lg:text-7xl font-black mb-6 leading-tight'>
-            Transforming Ideas <br/> Into{''}
-            <span className='text-accent block mt-2'>Digital Reality</span>
+            Turning Ideas into <br/>
+            <span className='text-accent'>Scalable Software</span>
           </motion.h1>
 
           <motion.p
@@ -61,25 +62,16 @@ const Home = () => {
             initial='hidden'
             animate='show'
             exit='hidden'
-            className='text-xl md:text-2xl text-white/90 mx-auto xl:mx-0 mb-12 font-light max-w-2xl'>
-            Dubba Srikanth
+            className='text-lg md:text-xl text-white/80 mx-auto xl:mx-0 mb-12 font-light max-w-2xl'>
+            Software Developer • <span className='text-accent font-semibold'>AI Enthusiast</span> • Problem Solver
           </motion.p>
 
           <motion.div
             variants={fadeIn('down', 0.4)}
             initial='hidden'
             animate='show'
-            exit='hidden'
-            className='flex flex-col sm:flex-row gap-4'>
+            exit='hidden'>
             <ProjectsBtn/>
-            <motion.a
-              href="#work"
-              whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(255,69,0,0.4)' }}
-              whileTap={{ scale: 0.95 }}
-              className='px-8 py-3 rounded-lg border-2 border-accent text-accent font-semibold
-                hover:bg-accent/10 transition-all duration-300 inline-block text-center'>
-              View Work
-            </motion.a>
           </motion.div>
         </div>
 
@@ -100,8 +92,9 @@ const Home = () => {
       </div>
 
       {/* About Section */}
-      <div id="about" className='py-24 md:py-36 relative'>
-        <div className='container mx-auto px-4'>
+      <div id="about" className='py-24 md:py-36 relative overflow-hidden'>
+        <DecorativeElements position="about" />
+        <div className='container mx-auto px-4 relative z-10'>
           <motion.div
             variants={fadeIn('up', 0.2)}
             initial='hidden'
@@ -209,7 +202,8 @@ const Home = () => {
       {/* Skills & Expertise Section */}
       <div id="expertise" className='py-24 md:py-36 relative overflow-hidden'>
         <Circles />
-        <div className='container mx-auto px-4'>
+        <DecorativeElements position="default" />
+        <div className='container mx-auto px-4 relative z-10'>
           <motion.div
             variants={fadeIn('up', 0.2)}
             initial='hidden'
@@ -379,8 +373,9 @@ const Home = () => {
       </div>
 
       {/* Testimonials Section */}
-      <div id="testimonials" className='py-24 md:py-36 text-center relative'>
-        <div className='container mx-auto h-full flex flex-col justify-center px-4'>
+      <div id="testimonials" className='py-24 md:py-36 text-center relative overflow-hidden'>
+        <DecorativeElements position="testimonials" />
+        <div className='container mx-auto h-full flex flex-col justify-center px-4 relative z-10'>
           <motion.div
             variants={fadeIn('up', 0.2)}
             initial='hidden'
@@ -406,12 +401,13 @@ const Home = () => {
       {/* Contact Section */}
       <motion.div
         id="contact"
-        className='py-24 md:py-36 text-center mx-auto relative'
+        className='py-24 md:py-36 text-center mx-auto relative overflow-hidden'
         variants={fadeIn('up', 0.6)}
         initial='hidden'
         animate='show'
         exit='hidden'>
-        <div className='container mx-auto h-full flex flex-col justify-center px-4'>
+        <DecorativeElements position="contact" />
+        <div className='container mx-auto h-full flex flex-col justify-center px-4 relative z-10'>
           <motion.div
             variants={fadeIn('up', 0.2)}
             initial='hidden'

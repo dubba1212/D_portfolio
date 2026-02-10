@@ -9,19 +9,14 @@ import { HiArrowRight } from 'react-icons/hi2';
 const ProjectsBtn = () => {
   return (
     <div className='mx-auto xl:mx-0'>
-      <Link href={'#work'} className='relative w-[185px] h-[185px] flex
-      justify-center items-center bg-circleStar bg-cover bg-center bg-no-repeat group
-      hover:drop-shadow-[0_0_20px_rgba(255,69,0,0.4)] transition-all duration-300'>
-        <Image
-        src={'/rounded-text.png'}
-        width={141}
-        height={148}
-        alt=''
-        className='animate-spin-slow w-full h-full max-w-[141px] max-h-[148px]
-        group-hover:drop-shadow-[0_0_15px_rgba(255,69,0,0.5)] transition-all duration-300'
-        />
-        <HiArrowRight className='absolute text-4xl group-hover:translate-x-2
-        group-hover:drop-shadow-[0_0_10px_rgba(255,69,0,0.6)] transition-all duration-300'/>
+      <Link href={'#work'} className='relative inline-flex items-center justify-center
+      px-8 py-4 md:px-10 md:py-5 rounded-lg
+      bg-accent hover:bg-[#ff4500] text-white font-bold text-lg md:text-xl
+      transition-all duration-300 ease-out
+      hover:shadow-[0_0_25px_rgba(255,69,0,0.6)]
+      group gap-2'>
+        My Projects
+        <HiArrowRight className='text-2xl group-hover:translate-x-1 transition-transform duration-300'/>
       </Link>
     </div>
   );

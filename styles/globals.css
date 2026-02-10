@@ -4,10 +4,33 @@
 
 html {
   scroll-behavior: smooth;
+  /* Hide scrollbar for Chrome, Safari, Edge */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar {
+  display: none;
+}
+
+body {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+body::-webkit-scrollbar {
+  display: none;
 }
 
 * {
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Prevent horizontal overflow */
+html,
+body {
+  overflow-x: hidden;
+  width: 100%;
 }
 
 .translate-z-0 {
