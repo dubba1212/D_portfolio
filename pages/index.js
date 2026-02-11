@@ -7,7 +7,6 @@ import ProjectsBtn from "../components/ProjectsBtn";
 import FloatingSkills from "../components/FloatingSkills";
 import SectionIndicators from "../components/SectionIndicators";
 import DecorativeElements from "../components/DecorativeElements";
-import SectionDecor from "../components/SectionDecor";
 
 // components
 import WorkSlider from '../components/WorkSlider';
@@ -46,8 +45,7 @@ const Home = () => {
     <div className='bg-primary/60 h-full'>
       <SectionIndicators />
 
-      <div id="home" className='relative w-full min-h-screen flex items-center bg-gradient-to-r from-primary/10 via-black/30 to-black/10 overflow-hidden'>
-        <SectionDecor />
+      <div id="home" className='relative w-full min-h-screen flex items-center bg-gradient-to-r from-primary/10 via-black/30 to-black/10'>
         <div className='text-center flex flex-col justify-center xl:pt-20 xl:text-left h-full container mx-auto z-10'>
           <motion.h1
             variants={fadeIn('down', 0.2)}
@@ -95,7 +93,7 @@ const Home = () => {
 
       {/* About Section */}
       <div id="about" className='py-24 md:py-36 relative overflow-hidden'>
-        <SectionDecor />
+        <DecorativeElements position="about" />
         <div className='container mx-auto px-4 relative z-10'>
           <motion.div
             variants={fadeIn('up', 0.2)}
@@ -204,7 +202,7 @@ const Home = () => {
       {/* Skills & Expertise Section */}
       <div id="expertise" className='py-24 md:py-36 relative overflow-hidden'>
         <Circles />
-        <SectionDecor />
+        <DecorativeElements position="default" />
         <div className='container mx-auto px-4 relative z-10'>
           <motion.div
             variants={fadeIn('up', 0.2)}
@@ -333,10 +331,9 @@ const Home = () => {
       </div>
 
       {/* Work Section */}
-      <div id="work" className='py-24 md:py-36 flex items-center relative overflow-hidden'>
+      <div id="work" className='py-24 md:py-36 flex items-center relative'>
         <Circles />
-        <SectionDecor />
-        <div className="container mx-auto px-4 relative z-10">
+        <div className="container mx-auto px-4">
           <motion.div
             variants={fadeIn('up', 0.2)}
             initial="hidden"
@@ -377,7 +374,7 @@ const Home = () => {
 
       {/* Testimonials Section */}
       <div id="testimonials" className='py-24 md:py-36 text-center relative overflow-hidden'>
-        <SectionDecor />
+        <DecorativeElements position="testimonials" />
         <div className='container mx-auto h-full flex flex-col justify-center px-4 relative z-10'>
           <motion.div
             variants={fadeIn('up', 0.2)}
@@ -409,7 +406,7 @@ const Home = () => {
         initial='hidden'
         animate='show'
         exit='hidden'>
-        <SectionDecor />
+        <DecorativeElements position="contact" />
         <div className='container mx-auto h-full flex flex-col justify-center px-4 relative z-10'>
           <motion.div
             variants={fadeIn('up', 0.2)}
