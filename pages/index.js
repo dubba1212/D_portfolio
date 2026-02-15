@@ -9,7 +9,7 @@ import SectionIndicators from "../components/SectionIndicators";
 import DecorativeElements from "../components/DecorativeElements";
 
 // components
-import WorkSlider from '../components/WorkSlider';
+import ProjectsCarousel from '../components/ProjectsCarousel';
 import TestimonialSlider from '../components/TestimonialSlider';
 import Avatar from '../components/Avatar';
 import SectionCornerDecor from "../components/SectionCornerDecor";
@@ -306,33 +306,22 @@ const Home = () => {
             initial="hidden"
             animate="show"
             exit="hidden"
-            className='text-center mb-20'>
+            className='text-center mb-16'>
             <h2 className='h2 text-5xl md:text-6xl font-black mb-6'>
               My Work <span className='text-accent'>Portfolio</span>
             </h2>
             <div className='w-24 h-1 bg-gradient-to-r from-transparent via-accent to-transparent mx-auto'></div>
           </motion.div>
 
-          <div className='flex flex-col xl:flex-row gap-x-8'>
-            <div className='text-center flex xl:w-[30vw] flex-col lg:text-left mb-8 xl:mb-0'>
-              <motion.p
-                variants={fadeIn('up', 0.4)}
-                initial="hidden"
-                animate="show"
-                exit="hidden"
-                className='mb-4 max-w-[400px] mx-auto lg:mx-0 text-white/70 text-lg leading-relaxed'>
-                Discover the projects and solutions I&#39;ve built for startups and enterprises.
-              </motion.p>
-            </div>
-            <motion.div
-              variants={fadeIn('down', 0.6)}
-              initial="hidden"
-              animate="show"
-              exit="hidden"
-              className='w-full xl:max-w-[65%]'>
-              <WorkSlider />
-            </motion.div>
-          </div>
+          <motion.div
+            variants={fadeIn('up', 0.4)}
+            initial="hidden"
+            animate="show"
+            exit="hidden"
+            className='w-full'
+          >
+            <ProjectsCarousel />
+          </motion.div>
         </div>
       </div>
 
