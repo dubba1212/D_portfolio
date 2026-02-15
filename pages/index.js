@@ -11,9 +11,8 @@ import DecorativeElements from "../components/DecorativeElements";
 // components
 import WorkSlider from '../components/WorkSlider';
 import TestimonialSlider from '../components/TestimonialSlider';
-import Circles from '../components/Circles';
-import Bulb from '../components/Bulb';
 import Avatar from '../components/Avatar';
+import SectionCornerDecor from "../components/SectionCornerDecor";
 
 import Contact from '../components/Contact';
 // icons
@@ -45,7 +44,9 @@ const Home = () => {
     <div className='bg-primary/60 h-full'>
       <SectionIndicators />
 
-      <div id="home" className='relative w-full min-h-screen flex items-center bg-gradient-to-r from-primary/10 via-black/30 to-black/10'>
+      {/* Home Section */}
+      <div id="home" className='relative w-full min-h-screen flex items-center bg-gradient-to-r from-primary/10 via-black/30 to-black/10 overflow-hidden'>
+        <SectionCornerDecor />
         <div className='text-center flex flex-col justify-center xl:pt-20 xl:text-left h-full container mx-auto z-10'>
           <motion.h1
             variants={fadeIn('down', 0.2)}
@@ -93,6 +94,7 @@ const Home = () => {
 
       {/* About Section */}
       <div id="about" className='py-24 md:py-36 relative overflow-hidden'>
+        <SectionCornerDecor />
         <DecorativeElements position="about" />
         <div className='container mx-auto px-4 relative z-10'>
           <motion.div
@@ -198,10 +200,9 @@ const Home = () => {
         </div>
       </div>
 
-
-      {/* Skills & Expertise Section */}
+      {/* Expertise Section */}
       <div id="expertise" className='py-24 md:py-36 relative overflow-hidden'>
-        <Circles />
+        <SectionCornerDecor />
         <DecorativeElements position="default" />
         <div className='container mx-auto px-4 relative z-10'>
           <motion.div
@@ -218,7 +219,6 @@ const Home = () => {
           </motion.div>
 
           <div className='max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8'>
-            {/* Web Development Card */}
             <motion.div
               variants={fadeIn('up', 0.3)}
               initial='hidden'
@@ -231,10 +231,8 @@ const Home = () => {
                 transform transition-all duration-500 ease-out
                 hover:border-accent/60 hover:shadow-[0_0_30px_rgba(255,69,0,0.3)]
                 hover:scale-105 hover:-translate-y-2 cursor-pointer'>
-
                 <div className='absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-transparent
                   opacity-0 group-hover:opacity-100 transition-opacity duration-500'></div>
-
                 <div className='relative z-10 text-center space-y-4'>
                   <div className='text-6xl transform transition-all duration-500
                     group-hover:scale-110 group-hover:drop-shadow-[0_0_20px_rgba(255,69,0,0.6)]'>
@@ -242,19 +240,10 @@ const Home = () => {
                   </div>
                   <h3 className='text-2xl font-bold text-white'>Web Development</h3>
                   <p className='text-white/60 text-sm'>React, Next.js, JavaScript, TypeScript</p>
-
-                  <div className='pt-6 border-t border-accent/20'>
-                    <div className='text-accent text-sm font-semibold
-                      opacity-0 group-hover:opacity-100 transition-opacity duration-300'>
-                      {/* Placeholder for future link */}
-                      → Explore Projects
-                    </div>
-                  </div>
                 </div>
               </div>
             </motion.div>
 
-            {/* UI/UX Design Card */}
             <motion.div
               variants={fadeIn('up', 0.4)}
               initial='hidden'
@@ -267,10 +256,8 @@ const Home = () => {
                 transform transition-all duration-500 ease-out
                 hover:border-accent/60 hover:shadow-[0_0_30px_rgba(255,69,0,0.3)]
                 hover:scale-105 hover:-translate-y-2 cursor-pointer'>
-
                 <div className='absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-transparent
                   opacity-0 group-hover:opacity-100 transition-opacity duration-500'></div>
-
                 <div className='relative z-10 text-center space-y-4'>
                   <div className='text-6xl transform transition-all duration-500
                     group-hover:scale-110 group-hover:drop-shadow-[0_0_20px_rgba(255,69,0,0.6)]'>
@@ -278,19 +265,10 @@ const Home = () => {
                   </div>
                   <h3 className='text-2xl font-bold text-white'>UI/UX Design</h3>
                   <p className='text-white/60 text-sm'>Figma, User Research, Prototyping</p>
-
-                  <div className='pt-6 border-t border-accent/20'>
-                    <div className='text-accent text-sm font-semibold
-                      opacity-0 group-hover:opacity-100 transition-opacity duration-300'>
-                      {/* Placeholder for future link */}
-                      → View Portfolio
-                    </div>
-                  </div>
                 </div>
               </div>
             </motion.div>
 
-            {/* Website Engineering Card */}
             <motion.div
               variants={fadeIn('up', 0.5)}
               initial='hidden'
@@ -303,10 +281,8 @@ const Home = () => {
                 transform transition-all duration-500 ease-out
                 hover:border-accent/60 hover:shadow-[0_0_30px_rgba(255,69,0,0.3)]
                 hover:scale-105 hover:-translate-y-2 cursor-pointer'>
-
                 <div className='absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-transparent
                   opacity-0 group-hover:opacity-100 transition-opacity duration-500'></div>
-
                 <div className='relative z-10 text-center space-y-4'>
                   <div className='text-6xl transform transition-all duration-500
                     group-hover:scale-110 group-hover:drop-shadow-[0_0_20px_rgba(255,69,0,0.6)]'>
@@ -314,25 +290,16 @@ const Home = () => {
                   </div>
                   <h3 className='text-2xl font-bold text-white'>Website Engineering</h3>
                   <p className='text-white/60 text-sm'>Performance, Optimization, Architecture</p>
-
-                  <div className='pt-6 border-t border-accent/20'>
-                    <div className='text-accent text-sm font-semibold
-                      opacity-0 group-hover:opacity-100 transition-opacity duration-300'>
-                      {/* Placeholder for future link */}
-                      → Learn More
-                    </div>
-                  </div>
                 </div>
               </div>
             </motion.div>
           </div>
         </div>
-        <Bulb />
       </div>
 
       {/* Work Section */}
-      <div id="work" className='py-24 md:py-36 flex items-center relative'>
-        <Circles />
+      <div id="work" className='py-24 md:py-36 flex items-center relative overflow-hidden'>
+        <SectionCornerDecor />
         <div className="container mx-auto px-4">
           <motion.div
             variants={fadeIn('up', 0.2)}
@@ -347,7 +314,6 @@ const Home = () => {
           </motion.div>
 
           <div className='flex flex-col xl:flex-row gap-x-8'>
-            {/* text */}
             <div className='text-center flex xl:w-[30vw] flex-col lg:text-left mb-8 xl:mb-0'>
               <motion.p
                 variants={fadeIn('up', 0.4)}
@@ -364,16 +330,15 @@ const Home = () => {
               animate="show"
               exit="hidden"
               className='w-full xl:max-w-[65%]'>
-              {/* slider */}
               <WorkSlider />
             </motion.div>
           </div>
         </div>
-        <Bulb />
       </div>
 
       {/* Testimonials Section */}
       <div id="testimonials" className='py-24 md:py-36 text-center relative overflow-hidden'>
+        <SectionCornerDecor />
         <DecorativeElements position="testimonials" />
         <div className='container mx-auto h-full flex flex-col justify-center px-4 relative z-10'>
           <motion.div
@@ -406,6 +371,7 @@ const Home = () => {
         initial='hidden'
         animate='show'
         exit='hidden'>
+        <SectionCornerDecor />
         <DecorativeElements position="contact" />
         <div className='container mx-auto h-full flex flex-col justify-center px-4 relative z-10'>
           <motion.div
