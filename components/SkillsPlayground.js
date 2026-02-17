@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { skillsData, pipelineFlow } from '../data/skillsPlaygroundData';
-import SkillDetailPanel from './SkillDetailPanel';
+import SkillSpotlightModal from './SkillSpotlightModal';
 import { fadeIn } from '../variants';
 
 const SkillsPlayground = () => {
@@ -93,8 +93,8 @@ const SkillsPlayground = () => {
         Click any stage to explore technical proof & linked projects
       </motion.p>
 
-      {/* Detail Panel */}
-      <SkillDetailPanel 
+      {/* Spotlight Modal */}
+      <SkillSpotlightModal 
         skill={selectedSkill} 
         isOpen={isPanelOpen} 
         onClose={() => setIsPanelOpen(false)}

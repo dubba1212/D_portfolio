@@ -1,0 +1,49 @@
+Update my “Skills Playground” UI behavior.
+
+CURRENT ISSUE:
+- Clicking a skill opens a right-side panel/drawer.
+- I want a unique overlay that doesn’t force users to look to the side.
+- My close arrow button currently does NOT close the panel.
+
+TARGET UI:
+- Replace the right-side drawer with a centered “glass spotlight” modal overlay.
+- The rest of the page (skills pipeline + portfolio) must remain visible behind it.
+- The modal must be semi-transparent (glass effect) but fully readable.
+- The modal must be easy to close and must close properly.
+
+CLOSE BEHAVIOR (must implement all):
+1) Clicking the back arrow inside modal closes.
+2) Clicking the X button closes.
+3) Pressing ESC closes.
+4) Clicking outside the modal (on backdrop) closes.
+5) When modal is open, prevent background scroll (lock body scroll) but keep page visible.
+
+DESIGN REQUIREMENTS:
+- Dark purple theme + red accent (#f13024)
+- Glassmorphism:
+  - background: rgba(20, 18, 35, 0.55) or similar
+  - border: 1px solid rgba(255,255,255,0.10)
+  - backdrop-blur
+- Add a smooth enter/exit animation (Framer Motion):
+  - backdrop fade in/out
+  - modal scales in slightly + fades in (spring or ease)
+- Make text readable:
+  - use stronger contrast for headings
+  - use slightly brighter white for body
+- On mobile:
+  - use bottom-sheet style modal (full width, rounded top corners)
+  - same close methods (X, arrow, outside click, ESC if supported)
+
+IMPLEMENTATION NOTES:
+- Identify where the current skill detail panel is implemented (SkillDetailPanel or similar).
+- Replace it with a modal overlay component (SkillSpotlightModal).
+- The arrow button MUST call onClose (setSelectedSkill(null) or setOpen(false)).
+- Ensure pointer-events and z-index allow clicking close buttons.
+- Keep the portfolio section visible behind the modal.
+
+DELIVERABLE:
+- Implement the new modal overlay.
+- Confirm arrow close works.
+- List files changed.
+
+Start by scanning components used in SkillsPlayground (SkillDetailPanel/SkillsPlayground files) and refactor accordingly.
