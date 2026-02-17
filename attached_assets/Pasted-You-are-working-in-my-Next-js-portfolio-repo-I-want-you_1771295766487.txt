@@ -1,0 +1,113 @@
+You are working in my Next.js portfolio repo. I want you to implement a premium, interactive “Skills Playground” section (replace my current “Core Expertise” cards) that showcases my Software Engineer / Full-Stack / AI skills with proof + project linkage.
+
+========================
+GOALS (must match)
+========================
+1) Replace the current “Core Expertise” section with an interactive “Skills Playground”.
+2) Showcase these skills (minimum):
+   - Docker
+   - Kubernetes
+   - React
+   - Postgres
+   - Node.js
+   - Git
+   - AWS
+3) The section must feel premium (engineered, not template):
+   - subtle glow, hover micro-interactions, smooth easing
+   - scroll-based entrance animation (fade/slide)
+   - consistent spacing and typography hierarchy
+4) Make the skills interactive:
+   - click a skill to open details (right-side panel on desktop, bottom sheet/modal on mobile)
+   - show proof metrics from my resume (uptime, release speed, performance, data scale)
+   - show “Projects using this skill” chips that filter/highlight my Projects carousel (Work/Portfolio section)
+5) Keep site single-page scroll + anchors working. Don’t break smooth scrolling.
+
+========================
+RESUME PROOF CONTENT (use these lines verbatim or tightly paraphrased)
+========================
+Use these proof points per skill, derived from my resume: :contentReference[oaicite:0]{index=0}
+
+- Kubernetes: “Maintained 99.8% uptime for enterprise retail microservices serving 1,000+ daily users.”
+- Docker + CI/CD: “Reduced release cycles from 2 hours to 15 minutes with Jenkins + Docker, zero-downtime deployments.”
+- React: “Built full-stack features with React + TypeScript; improved component performance + state management.”
+- Postgres: “Improved backend performance 40% via PostgreSQL query optimization; also 2.5s → 1.0s (60%) via tuning/indexing.”
+- Node.js: “Built pipelines handling ~2TB/month enabling real-time analytics dashboards.”
+- AWS: “Reduced deployment time by 60% and achieved 99.9% uptime with load balancing + autoscaling (CloudMart).”
+- Git (process): “Delivered 15+ production features; improved delivery velocity by 30% via Agile + code reviews.”
+
+Also highlight AI projects:
+- “AI Appointment Scheduler using ChatGPT API + Google Calendar/Docs via GCP APIs.”
+- “CloudMart AI recommendations using OpenAI GPT + AWS Bedrock.”
+
+========================
+PLAYGROUND DESIGN (choose this default implementation)
+========================
+Implement the “Pipeline Playground” as the signature interaction:
+Git → Docker → CI/CD → Kubernetes → AWS → Postgres → Node.js → React (or React before Node.js if layout demands)
+
+Interaction requirements:
+- Each stage is a clickable chip/node with icon + label.
+- On hover: glow + slight scale + smooth transition.
+- On click: open detail panel with:
+  - Title + short “What I do”
+  - Proof metric (badge)
+  - 2-3 bullets of real responsibilities
+  - “Projects using this” chips (clicking filters my Projects carousel)
+- Add subtle animated “flow” along the pipeline (small moving dots/line), tasteful and performant.
+
+Mobile:
+- Pipeline becomes vertical or wraps into 2 rows.
+- Detail panel becomes bottom sheet/modal.
+
+========================
+PROJECT LINKING (very important)
+========================
+Create a clean mapping from skills → projects.
+At minimum support these projects:
+- Walmart Microservices / Retail Platform
+- Version Full-stack Modernization
+- E-commerce (Django + React)
+- AI Appointment Scheduler
+- CloudMart (AI + AWS Bedrock)
+
+When a user clicks a skill, the “Projects using this” chips should:
+- Scroll to the Work/Portfolio section (anchor)
+- Apply filter to show only matching projects in the Projects carousel
+- If my carousel is currently not filterable, update it so it can filter by tags/skills.
+- Include a “Clear filter” control.
+
+========================
+FILES / IMPLEMENTATION
+========================
+1) Create a new component: components/SkillsPlayground.js
+2) Create a data file: data/skillsPlaygroundData.js containing:
+   - skills array (id, label, icon, proofBadge, description, bullets, tags, linkedProjects)
+   - projects array (id, title, description, image, tags, links)
+3) Create a reusable UI component for detail panel:
+   - components/SkillDetailPanel.js (desktop side panel + mobile bottom sheet behavior)
+4) Update the page to replace the old Core Expertise section:
+   - Find where “Core Expertise” is rendered and replace it with <SkillsPlayground />
+5) Integrate filtering with Projects carousel:
+   - Update Work/Portfolio carousel component so it accepts a “selectedSkill” filter or “selectedTags”
+   - Cards should show overlay: title + short description + tech chips (already requested earlier)
+6) Styling:
+   - Use Tailwind classes consistent with existing theme (dark purple + red accent #f13024)
+   - Add premium micro-interactions (glow/shadow/scale)
+   - Add scroll entrance animations via Framer Motion
+7) Performance + overflow:
+   - No horizontal overflow / no bottom scrollbar
+   - Keep smooth scrolling and anchors working
+   - Ensure pointer-events none for decorative layers if used
+
+========================
+DELIVERABLE
+========================
+- Implement the full Skills Playground + detail panel + project filtering integration.
+- After implementing, list:
+  - files created/modified
+  - where to update project images/links
+  - how to add a new skill or project entry
+- Do NOT remove existing sections; only replace Core Expertise with this new section.
+- Ensure everything works on desktop + mobile.
+
+Start now by scanning the repo for the existing Core Expertise section and current Projects carousel implementation. Then implement the new components and wire the filter state from SkillsPlayground → Projects section (via props, context, or top-level state).

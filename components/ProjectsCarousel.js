@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/pagination";
@@ -6,56 +7,53 @@ import Image from 'next/image';
 import { Pagination, Navigation, Keyboard } from "swiper";
 import { BsArrowRight, BsGithub } from 'react-icons/bs';
 import { FiExternalLink } from 'react-icons/fi';
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 export const projectsData = [
   {
-    title: 'Space Portfolio',
-    description: 'Modern developer portfolio with space theme and animations.',
+    title: 'Walmart Microservices',
+    description: 'Enterprise retail microservices platform serving 1,000+ daily users.',
     path: '/thumb1.jpg',
-    tech: ['Next.js', 'Tailwind', 'Framer'],
+    tech: ['Kubernetes', 'Docker', 'Jenkins', 'Go'],
     live: '#',
     github: '#',
+    skills: ['Kubernetes', 'Docker', 'Git']
   },
   {
-    title: 'AI Chat Dashboard',
-    description: 'Real-time AI interaction interface with data visualization.',
+    title: 'CloudMart AI',
+    description: 'AI-driven retail recommendations using OpenAI and AWS Bedrock.',
     path: '/thumb2.jpg',
-    tech: ['React', 'OpenAI', 'D3.js'],
+    tech: ['AWS', 'Bedrock', 'OpenAI', 'Next.js'],
     live: '#',
     github: '#',
+    skills: ['AWS', 'AI Integration', 'React']
   },
   {
     title: 'E-commerce Engine',
-    description: 'Headless commerce solution for enterprise brands.',
+    description: 'Full-stack modernization for multi-brand retail platform.',
     path: '/thumb3.jpg',
-    tech: ['Next.js', 'Stripe', 'Sanity'],
+    tech: ['Node.js', 'Postgres', 'React', 'TypeScript'],
     live: '#',
     github: '#',
+    skills: ['Node.js', 'Postgres', 'React', 'Docker']
   },
   {
-    title: 'Crypto Tracker',
-    description: 'Live cryptocurrency market monitoring with alerts.',
+    title: 'Version Modernization',
+    description: 'Full-stack enterprise modernization with 30% delivery improvement.',
     path: '/thumb4.jpg',
-    tech: ['React', 'Web3', 'Chart.js'],
+    tech: ['React', 'Git', 'Agile', 'Postgres'],
     live: '#',
     github: '#',
+    skills: ['Git', 'React', 'Postgres']
   },
   {
-    title: 'Cloud Architect',
-    description: 'Platform for managing distributed cloud infrastructure.',
+    title: 'AI Appointment Scheduler',
+    description: 'LLM-powered scheduling system using ChatGPT and Google APIs.',
     path: '/thumb1.jpg',
-    tech: ['TypeScript', 'AWS', 'Docker'],
+    tech: ['OpenAI', 'GCP', 'Node.js', 'React'],
     live: '#',
     github: '#',
-  },
-  {
-    title: 'Social Connect',
-    description: 'Privacy-focused social networking platform.',
-    path: '/thumb2.jpg',
-    tech: ['React', 'Firebase', 'Recoil'],
-    live: '#',
-    github: '#',
+    skills: ['AI Integration', 'Node.js', 'React']
   },
 ];
 
@@ -66,10 +64,53 @@ const chunk = (arr, size) =>
   );
 
 const ProjectsCarousel = () => {
-  const slides = chunk(projectsData, 4);
+  const [filter, setFilter] = useState(null);
+
+  useEffect(() => {
+    const handleFilter = (e) => {
+      // Mapping project names to skill labels for filtering
+      const skillMap = {
+        'Walmart Microservices': 'Kubernetes',
+        'CloudMart': 'AWS',
+        'E-commerce': 'Node.js',
+        'AI Appointment Scheduler': 'AI Integration',
+        'Version Full-stack Modernization': 'Git'
+      };
+      
+      const skillName = skillMap[e.detail] || e.detail;
+      setFilter(skillName);
+    };
+
+    window.addEventListener('filterProjects', handleFilter);
+    return () => window.removeEventListener('filterProjects', handleFilter);
+  }, []);
+
+  const filteredProjects = filter 
+    ? projectsData.filter(p => p.skills.includes(filter) || p.title.includes(filter))
+    : projectsData;
+
+  const slides = chunk(filteredProjects, 4);
 
   return (
     <div className="w-full relative px-4 md:px-12">
+      <AnimatePresence mode="wait">
+        {filter && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="flex items-center justify-center gap-4 mb-8"
+          >
+            <span className="text-white/60">Filtering by: <span className="text-accent font-bold">{filter}</span></span>
+            <button 
+              onClick={() => setFilter(null)}
+              className="text-xs bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full text-white transition-colors"
+            >
+              Clear Filter
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <Swiper
         spaceBetween={20}
         pagination={{

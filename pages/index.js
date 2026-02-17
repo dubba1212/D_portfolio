@@ -13,6 +13,7 @@ import ProjectsCarousel from '../components/ProjectsCarousel';
 import TestimonialSlider from '../components/TestimonialSlider';
 import Avatar from '../components/Avatar';
 import SectionCornerDecor from "../components/SectionCornerDecor";
+import SkillsPlayground from "../components/SkillsPlayground";
 
 import Contact from '../components/Contact';
 // icons
@@ -200,7 +201,7 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Expertise Section */}
+      {/* Skills Playground Section (formerly Expertise) */}
       <div id="expertise" className='py-24 md:py-36 relative overflow-hidden'>
         <SectionCornerDecor />
         <DecorativeElements position="default" />
@@ -210,90 +211,15 @@ const Home = () => {
             initial='hidden'
             animate='show'
             exit='hidden'
-            className='text-center mb-24'>
-            <h2 className='h2 text-5xl md:text-6xl font-black mb-6'>Core Expertise</h2>
+            className='text-center mb-16'>
+            <h2 className='h2 text-5xl md:text-6xl font-black mb-6'>Skills <span className='text-accent'>Playground</span></h2>
             <div className='w-24 h-1 bg-gradient-to-r from-transparent via-accent to-transparent mx-auto mb-8'></div>
             <p className='text-white/70 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed'>
-              Technologies and skills I use to build modern digital experiences.
+              Technical pipeline and production-grade expertise.
             </p>
           </motion.div>
 
-          <div className='max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8'>
-            <motion.div
-              variants={fadeIn('up', 0.3)}
-              initial='hidden'
-              animate='show'
-              exit='hidden'
-              className='group relative'>
-              <div className='relative h-80 rounded-xl overflow-hidden
-                bg-gradient-to-br from-black via-gray-900 to-black
-                border border-accent/30 p-8 flex flex-col items-center justify-center
-                transform transition-all duration-500 ease-out
-                hover:border-accent/60 hover:shadow-[0_0_30px_rgba(255,69,0,0.3)]
-                hover:scale-105 hover:-translate-y-2 cursor-pointer'>
-                <div className='absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-transparent
-                  opacity-0 group-hover:opacity-100 transition-opacity duration-500'></div>
-                <div className='relative z-10 text-center space-y-4'>
-                  <div className='text-6xl transform transition-all duration-500
-                    group-hover:scale-110 group-hover:drop-shadow-[0_0_20px_rgba(255,69,0,0.6)]'>
-                    💻
-                  </div>
-                  <h3 className='text-2xl font-bold text-white'>Web Development</h3>
-                  <p className='text-white/60 text-sm'>React, Next.js, JavaScript, TypeScript</p>
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div
-              variants={fadeIn('up', 0.4)}
-              initial='hidden'
-              animate='show'
-              exit='hidden'
-              className='group relative'>
-              <div className='relative h-80 rounded-xl overflow-hidden
-                bg-gradient-to-br from-black via-gray-900 to-black
-                border border-accent/30 p-8 flex flex-col items-center justify-center
-                transform transition-all duration-500 ease-out
-                hover:border-accent/60 hover:shadow-[0_0_30px_rgba(255,69,0,0.3)]
-                hover:scale-105 hover:-translate-y-2 cursor-pointer'>
-                <div className='absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-transparent
-                  opacity-0 group-hover:opacity-100 transition-opacity duration-500'></div>
-                <div className='relative z-10 text-center space-y-4'>
-                  <div className='text-6xl transform transition-all duration-500
-                    group-hover:scale-110 group-hover:drop-shadow-[0_0_20px_rgba(255,69,0,0.6)]'>
-                    🎨
-                  </div>
-                  <h3 className='text-2xl font-bold text-white'>UI/UX Design</h3>
-                  <p className='text-white/60 text-sm'>Figma, User Research, Prototyping</p>
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div
-              variants={fadeIn('up', 0.5)}
-              initial='hidden'
-              animate='show'
-              exit='hidden'
-              className='group relative'>
-              <div className='relative h-80 rounded-xl overflow-hidden
-                bg-gradient-to-br from-black via-gray-900 to-black
-                border border-accent/30 p-8 flex flex-col items-center justify-center
-                transform transition-all duration-500 ease-out
-                hover:border-accent/60 hover:shadow-[0_0_30px_rgba(255,69,0,0.3)]
-                hover:scale-105 hover:-translate-y-2 cursor-pointer'>
-                <div className='absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-transparent
-                  opacity-0 group-hover:opacity-100 transition-opacity duration-500'></div>
-                <div className='relative z-10 text-center space-y-4'>
-                  <div className='text-6xl transform transition-all duration-500
-                    group-hover:scale-110 group-hover:drop-shadow-[0_0_20px_rgba(255,69,0,0.6)]'>
-                    ⚙️
-                  </div>
-                  <h3 className='text-2xl font-bold text-white'>Website Engineering</h3>
-                  <p className='text-white/60 text-sm'>Performance, Optimization, Architecture</p>
-                </div>
-              </div>
-            </motion.div>
-          </div>
+          <SkillsPlayground />
         </div>
       </div>
 
