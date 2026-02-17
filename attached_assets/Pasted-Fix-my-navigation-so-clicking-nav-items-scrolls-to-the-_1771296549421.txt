@@ -1,0 +1,52 @@
+Fix my navigation so clicking nav items scrolls to the correct section (single-page portfolio).
+
+CURRENT BUG:
+- Navbar clicks do nothing / don’t scroll to sections.
+
+GOALS:
+- Keep a single page layout (sections stacked vertically).
+- Clicking nav item must smoothly scroll to the section (Home/About/Skills/Work/Testimonials/Contact).
+- Must work on desktop + mobile.
+- Must work even when a modal is open (modal should close first, then scroll).
+- Do NOT break existing animations.
+
+TASKS:
+1) Inspect current navbar implementation:
+   - Find the component for navbar / side navigation.
+   - Identify link targets used (e.g., "/about" vs "#about").
+   - If it uses Next <Link>, ensure it supports hash anchors properly.
+
+2) Ensure each section has a correct id:
+   - <section id="home">, <section id="about">, <section id="skills">, <section id="work">, <section id="testimonials">, <section id="contact">
+   - Confirm these ids match the nav targets EXACTLY.
+
+3) Implement reliable smooth scroll behavior:
+   - When clicking a nav item, prevent default link behavior.
+   - Use document.getElementById(targetId)?.scrollIntoView({ behavior: "smooth", block: "start" }).
+   - Update URL hash using history.pushState(null, "", `#${targetId}`) without reloading.
+
+4) Fix clickability issues:
+   - Ensure navbar buttons/links have proper z-index and pointer-events.
+   - Ensure any overlay/particles/decor layers use pointer-events: none.
+   - If a full-screen overlay exists, confirm it is not blocking clicks when it shouldn’t.
+
+5) Fix nested scroll container issues:
+   - Search for CSS like ".page { overflow-y: scroll }" or body/html scroll locks.
+   - Ensure the page scroll container is the window (html/body), not a nested div.
+   - Remove/adjust overflow-y on wrappers if it prevents anchor scrolling.
+   - Keep overflow-x hidden to prevent horizontal scrollbars.
+
+6) If using Next.js Link:
+   - For section scroll, use <a href="#about"> with onClick handler.
+   - Or use next/router and router.push("#about", undefined, { shallow: true }) + scrollIntoView.
+   - Ensure it doesn’t navigate to a non-existent route.
+
+7) When a skill modal/panel is open:
+   - On nav click, close the modal first (setSelectedSkill(null)), then scroll after a short requestAnimationFrame (or setTimeout 0).
+
+DELIVERABLE:
+- Nav items smoothly scroll to correct sections.
+- Add a small helper function: scrollToSection(id).
+- List files changed.
+
+Start by locating the navbar component and checking its href targets. Then implement the scroll helper and wire it to each nav item click.
