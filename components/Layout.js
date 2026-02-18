@@ -10,15 +10,17 @@ const sora = Sora({
 // Components
 import Nav from '../components/Nav';
 import Header from '../components/Header';
-import TopLeftImg from '../components/TopLeftImg';
+import GlobalBackground from '../components/GlobalBackground';
 
 const Layout = ({ children }) => {
   return (
-    <div className={`page bg-site text-white bg-cover bg-no-repeat ${sora.variable} font-sora relative`}>
-      <TopLeftImg />
+    <div className={`page bg-primary text-white ${sora.variable} font-sora relative overflow-x-hidden min-h-screen`}>
+      <GlobalBackground />
       <Nav />
       <Header />
-      {children}
+      <main className="relative z-10">
+        {children}
+      </main>
     </div>
   );
 };

@@ -1,0 +1,58 @@
+My navigation scroll is working now, but ONLY the Home section has the correct background/theme. All other sections (About/Skills/Work/Contact etc.) lose the background and look blank/flat.
+
+GOAL:
+Apply the SAME global background, gradient theme, and decorative elements (bulb/circles / particles / lines if used) across ALL sections of my single-page portfolio, not just Home.
+
+WHAT TO DO:
+1) Find where the Home background is being applied.
+   - Search for background classes, gradient divs, overlays, particles components, or decorative elements that exist only in the Home component.
+   - Typical signs: bg-gradient, absolute background layers, Particles, background images, etc.
+
+2) Create ONE global wrapper that applies theme to the entire page:
+   - Wrap the entire page content (ALL sections) in a single layout container that includes:
+     a) Background gradient / base color (same as Home)
+     b) Any subtle animated background (particles/lines) if currently in Home
+     c) Global decorative corner assets if used (bulb.png + circles.png) OR keep them section-based, but ensure the base background is global
+
+   Example structure (conceptual):
+   <div className="relative min-h-screen bg-[same-as-home] overflow-x-hidden">
+     <GlobalBackgroundLayers />  // gradients + particles (pointer-events-none)
+     <main className="relative z-10">
+       {Home}
+       {About}
+       {Skills}
+       {Work}
+       {Testimonials}
+       {Contact}
+     </main>
+   </div>
+
+3) Ensure ALL sections have consistent section styling:
+   - Each section should have:
+     - className="relative overflow-hidden py-16 sm:py-20"
+     - inner container width: max-w / container padding consistent
+   - Ensure text colors are consistent (text-white/white/gray levels) and readable on the dark background.
+
+4) Fix z-index and pointer events:
+   - Background layers must be behind content:
+     - pointer-events: none
+     - z-index lower than content
+   - Navbar/side nav must remain clickable:
+     - ensure nav has higher z-index than backgrounds
+   - Any new overlays must not block scrolling/clicking.
+
+5) If each section currently has its own background color that overrides the global theme:
+   - Remove section background overrides (like bg-white, bg-gray, etc.) unless intentionally needed.
+   - Keep only transparent section backgrounds so the global background shows through.
+
+6) Confirm after changes:
+   - When scrolling from Home to About, the same background persists.
+   - About/Skills/Work/Contact have the same global theme + decor.
+   - No horizontal overflow (no bottom scrollbar).
+   - Navigation anchors still work.
+
+DELIVERABLE:
+- Implement the global background wrapper and move Home-only background/decor layers into it.
+- List files changed and where the global background now lives.
+
+Start by locating the Home section/component and identify the exact background/decor elements applied there, then refactor them into a global wrapper around the whole page.
