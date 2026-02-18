@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Image from "next/image";
 
 // components
@@ -40,6 +40,17 @@ import { motion } from "framer-motion";
 import {fadeIn} from '../variants';
 
 const Home = () => {
+  useEffect(() => {
+    if (window.location.hash) {
+      const id = window.location.hash.replace("#", "");
+      setTimeout(() => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 500);
+    }
+  }, []);
 
   return (
     <div className='bg-primary/60 h-full'>

@@ -8,6 +8,15 @@ const SkillsPlayground = () => {
   const [selectedSkill, setSelectedSkill] = useState(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
 
+  useEffect(() => {
+    const handleClose = () => {
+      setIsPanelOpen(false);
+      setSelectedSkill(null);
+    };
+    window.addEventListener('closeSkillModal', handleClose);
+    return () => window.removeEventListener('closeSkillModal', handleClose);
+  }, []);
+
   const handleSkillClick = (skillId) => {
     const skill = skillsData.find(s => s.id === skillId);
     setSelectedSkill(skill);
@@ -16,6 +25,7 @@ const SkillsPlayground = () => {
 
   const handleProjectClick = (projectName) => {
     setIsPanelOpen(false);
+    setSelectedSkill(null);
     // Anchor scroll to work section
     const workSection = document.getElementById('work');
     if (workSection) {
@@ -97,7 +107,10 @@ const SkillsPlayground = () => {
       <SkillSpotlightModal 
         skill={selectedSkill} 
         isOpen={isPanelOpen} 
-        onClose={() => setIsPanelOpen(false)}
+        onClose={() => {
+          setIsPanelOpen(false);
+          setSelectedSkill(null);
+        }}
         onProjectClick={handleProjectClick}
       />
     </div>

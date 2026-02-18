@@ -1,0 +1,98 @@
+Fix my single-page navigation so clicking Home / Projects / Contact (and other nav items) smoothly scrolls to the correct section. Right now clicking does nothing.
+
+CONTEXT:
+- This is a Next.js single-page portfolio (sections stacked vertically).
+- Nav items should scroll to section IDs (anchors), not route to new pages.
+- Must keep smooth scrolling, and must NOT break animations or overlays.
+
+========================
+REQUIREMENTS (must do)
+========================
+1) Ensure every target section has an EXACT id that matches the nav:
+   - Home        -> id="home"
+   - About       -> id="about"         (if exists)
+   - Skills      -> id="skills"        (Skills Playground)
+   - Projects    -> id="work"          (or id="projects" if I use that label—pick ONE and align both)
+   - Testimonials-> id="testimonials"  (if exists)
+   - Contact     -> id="contact"
+
+2) Update the navigation component so each nav item scrolls using JS:
+   - On click: preventDefault()
+   - Close any open modal/panel first (setSelectedSkill(null) or setModalOpen(false))
+   - Then scroll: document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" })
+   - Update URL hash without reload: history.pushState(null, "", `#${id}`)
+
+3) Fix common blockers that prevent clicks/scroll:
+   - Any decorative/particle/background layers must be pointer-events: none
+   - Navbar must be above content (z-index high) and pointer-events: auto
+   - Remove nested scrolling containers that break anchor scrolling:
+     - Search for wrappers like .page { overflow-y: scroll; height: 100vh; }
+     - Ensure scrolling happens on window (html/body), not inside a div
+   - Keep overflow-x hidden to prevent horizontal scrollbar, but do not break scroll.
+
+4) Support deep links:
+   - If user loads /#contact, auto-scroll to Contact after page load.
+
+5) Keep it cross-browser:
+   - smooth scrolling works for mouse wheel/trackpad/touch
+   - nav works on mobile and desktop
+
+========================
+IMPLEMENTATION STEPS
+========================
+A) Scan the repo and locate:
+   - Navbar / side-nav component file(s)
+   - Sections in pages/index.js (or the main page file)
+   - Any modal overlays (Skills panel/modal) that might block clicks
+   - Any CSS that creates nested scroll containers
+
+B) Apply fixes:
+   1) Add missing section ids in the main page:
+      - Add id="home" to hero section wrapper
+      - Add id="work" (or "projects") to the Projects section wrapper
+      - Add id="contact" to Contact section wrapper
+      - Ensure ids are unique and match nav targets
+
+   2) In the nav component:
+      - Replace Next.js route links like "/contact" or "/#contact" with click handlers
+      - Create a helper:
+
+        function scrollToSection(id) {
+          const el = document.getElementById(id);
+          if (!el) return;
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
+          window.history.pushState(null, "", `#${id}`);
+        }
+
+      - On each nav item click:
+        e.preventDefault();
+        closeModalIfOpen();
+        requestAnimationFrame(() => scrollToSection("contact"));
+
+   3) Deep link on load:
+      - In the main page (or layout), add useEffect:
+        if (window.location.hash) {
+          const id = window.location.hash.replace("#","");
+          setTimeout(() => scrollToSection(id), 150);
+        }
+
+   4) Fix CSS nested scrolling:
+      - Remove/avoid overflow-y: scroll from page wrappers.
+      - Ensure html, body are scroll container:
+        html { scroll-behavior: smooth; }
+        body { overflow-x: hidden; }
+
+   5) Ensure overlays don’t block navbar:
+      - Backdrop overlays should close on click but should not cover navbar if navbar must remain clickable.
+      - Use z-index layering:
+        navbar: z-50
+        modal: z-40
+        background effects: z-0 + pointer-events none
+
+========================
+DELIVERABLE
+========================
+- Home/Projects/Contact nav items smoothly scroll to the correct sections.
+- Clicking nav works even after opening Skills modal (modal closes then scrolls).
+- Deep links like /#contact also scroll correctly after load.
+- Provide a list of files changed and the final section ids used (especially for Projects: "work" or "proje
