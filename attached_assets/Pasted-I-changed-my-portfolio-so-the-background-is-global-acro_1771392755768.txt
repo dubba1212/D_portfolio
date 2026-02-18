@@ -1,0 +1,58 @@
+I changed my portfolio so the background is global across the entire single-page. Now when I scroll, the bulb and circles appear repeatedly on each section/page because they are still rendered inside each section.
+
+GOALS:
+1) Keep the global background consistent across the whole single-page (I like it).
+2) Remove duplicated bulb/circles from individual sections so they do NOT repeat while scrolling.
+3) Keep bulb + circles as a single global decoration (render once only).
+4) Make the background brighter / higher contrast than it is now (still premium, but not too dark).
+5) Do not break navigation scroll, section anchors, animations, or overlays.
+
+WHAT TO DO (step-by-step):
+A) FIND duplicates:
+- Search for where bulb.png and circles.png are imported/used.
+  Keywords: "bulb.png", "circles.png", "Bulb", "Circles", "SectionCornerDecor", "DecorativeElements"
+- They are currently placed inside multiple sections (About, Work, Contact, etc.). Remove those per-section usages.
+
+B) CREATE/CONFIRM a single GLOBAL decor component:
+- Create or use: components/GlobalCornerDecor.js (or DecorativeElements.js if already exists)
+- Render bulb.png bottom-left and circles.png bottom-right ONLY ONCE at the page root wrapper.
+- Must not create horizontal overflow:
+  - wrapper uses overflow-x-hidden
+  - decor container uses pointer-events-none
+  - z-index behind content
+- Keep them partially off-screen (half visible) like your style.
+
+C) PLACE IT AT ROOT ONLY:
+- In pages/index.js (or main layout), wrap all sections in a global container:
+  <div className="relative min-h-screen overflow-x-hidden bg-[theme]">
+    <GlobalBackgroundLayers />  // gradients/particles if used
+    <GlobalCornerDecor />       // bulb + circles only once
+    <main className="relative z-10"> ... all sections ... </main>
+  </div>
+
+D) REMOVE section-level clipping that hides the decor incorrectly:
+- If any section has overflow-hidden and the decor is inside it, remove decor from that section.
+- Keep overflow-hidden on sections only if needed for local animations, but global decor must be outside sections.
+
+E) BRIGHTEN THE BACKGROUND (still premium):
+- Increase brightness by adjusting the global background layers:
+  1) Add a lighter radial gradient behind content:
+     - Example: radial-gradient(circle at 35% 25%, rgba(255,255,255,0.08), transparent 55%)
+  2) Slightly lighten base background color (purple) and reduce black overlay strength.
+  3) Increase contrast for text:
+     - Headings stay white
+     - Body text use white/70-80 not too dim.
+- If there is a dark overlay layer, reduce its opacity.
+
+F) KEEP SCROLL & NAV WORKING:
+- Ensure scroll is on html/body (no nested scroll container).
+- Keep smooth scrolling enabled.
+- Ensure background layers and decor are pointer-events:none so they never block clicks.
+
+DELIVERABLE:
+- Bulb/circles appear only once globally and do not repeat per section while scrolling.
+- Global background remains consistent and is brighter than before.
+- No horizontal scrollbar appears.
+- Navigation scroll still works.
+
+After changes, list the files modified and confirm where bulb/circles are now rendered (only at root).
