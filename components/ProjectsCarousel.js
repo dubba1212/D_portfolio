@@ -8,54 +8,7 @@ import { Pagination, Navigation, Keyboard } from "swiper";
 import { BsArrowRight, BsGithub } from 'react-icons/bs';
 import { FiExternalLink } from 'react-icons/fi';
 import { motion, AnimatePresence } from "framer-motion";
-
-export const projectsData = [
-  {
-    title: 'Walmart Microservices',
-    description: 'Enterprise retail microservices platform serving 1,000+ daily users.',
-    path: '/thumb1.jpg',
-    tech: ['Kubernetes', 'Docker', 'Jenkins', 'Go'],
-    live: '#',
-    github: '#',
-    skills: ['Kubernetes', 'Docker', 'Git']
-  },
-  {
-    title: 'CloudMart AI',
-    description: 'AI-driven retail recommendations using OpenAI and AWS Bedrock.',
-    path: '/thumb2.jpg',
-    tech: ['AWS', 'Bedrock', 'OpenAI', 'Next.js'],
-    live: '#',
-    github: '#',
-    skills: ['AWS', 'AI Integration', 'React']
-  },
-  {
-    title: 'E-commerce Engine',
-    description: 'Full-stack modernization for multi-brand retail platform.',
-    path: '/thumb3.jpg',
-    tech: ['Node.js', 'Postgres', 'React', 'TypeScript'],
-    live: '#',
-    github: '#',
-    skills: ['Node.js', 'Postgres', 'React', 'Docker']
-  },
-  {
-    title: 'Version Modernization',
-    description: 'Full-stack enterprise modernization with 30% delivery improvement.',
-    path: '/thumb4.jpg',
-    tech: ['React', 'Git', 'Agile', 'Postgres'],
-    live: '#',
-    github: '#',
-    skills: ['Git', 'React', 'Postgres']
-  },
-  {
-    title: 'AI Appointment Scheduler',
-    description: 'LLM-powered scheduling system using ChatGPT and Google APIs.',
-    path: '/thumb1.jpg',
-    tech: ['OpenAI', 'GCP', 'Node.js', 'React'],
-    live: '#',
-    github: '#',
-    skills: ['AI Integration', 'Node.js', 'React']
-  },
-];
+import { getGithubRepos } from '../lib/github';
 
 // Chunking projects into slides of 4
 const chunk = (arr, size) => 
@@ -64,32 +17,34 @@ const chunk = (arr, size) =>
   );
 
 const ProjectsCarousel = () => {
+  const [projects, setProjects] = useState([]);
   const [filter, setFilter] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadRepos() {
+      const data = await getGithubRepos();
+      setProjects(data);
+      setLoading(false);
+    }
+    loadRepos();
+  }, []);
 
   useEffect(() => {
     const handleFilter = (e) => {
-      // Mapping project names to skill labels for filtering
-      const skillMap = {
-        'Walmart Microservices': 'Kubernetes',
-        'CloudMart': 'AWS',
-        'E-commerce': 'Node.js',
-        'AI Appointment Scheduler': 'AI Integration',
-        'Version Full-stack Modernization': 'Git'
-      };
-      
-      const skillName = skillMap[e.detail] || e.detail;
-      setFilter(skillName);
+      setFilter(e.detail);
     };
-
     window.addEventListener('filterProjects', handleFilter);
     return () => window.removeEventListener('filterProjects', handleFilter);
   }, []);
 
   const filteredProjects = filter 
-    ? projectsData.filter(p => p.skills.includes(filter) || p.title.includes(filter))
-    : projectsData;
+    ? projects.filter(p => p.skills.some(s => s.toLowerCase().includes(filter.toLowerCase())) || p.title.toLowerCase().includes(filter.toLowerCase()))
+    : projects;
 
   const slides = chunk(filteredProjects, 4);
+
+  if (loading) return <div className="text-center py-20 text-accent animate-pulse">Loading amazing projects...</div>;
 
   return (
     <div className="w-full relative px-4 md:px-12">
@@ -111,6 +66,7 @@ const ProjectsCarousel = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
       <Swiper
         spaceBetween={20}
         pagination={{
@@ -138,17 +94,11 @@ const ProjectsCarousel = () => {
                   key={index}
                   className="relative group rounded-2xl overflow-hidden bg-secondary/20 border border-white/10 h-[220px] md:h-[280px] shadow-2xl hover:shadow-accent/20 transition-all duration-500"
                 >
-                  {/* Image */}
-                  <div className="w-full h-full relative overflow-hidden">
-                    <Image
-                      src={project.path}
-                      fill
-                      style={{ objectFit: 'cover' }}
-                      alt={project.title}
-                      className="group-hover:scale-110 transition-transform duration-700"
-                    />
+                  <div className="w-full h-full relative overflow-hidden bg-gradient-to-br from-secondary/40 to-primary/40 flex items-center justify-center">
+                    <div className="text-white/10 text-6xl font-black uppercase select-none group-hover:scale-150 transition-transform duration-700">
+                      {project.title.substring(0, 2)}
+                    </div>
                     
-                    {/* Overlay */}
                     <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-center p-6 md:p-8 backdrop-blur-sm">
                       <h3 className="text-xl md:text-2xl font-bold text-accent mb-2 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
                         {project.title}
@@ -157,22 +107,22 @@ const ProjectsCarousel = () => {
                         {project.description}
                       </p>
                       
-                      {/* Tech Stack */}
                       <div className="flex flex-wrap gap-2 mb-6 translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-100">
-                        {project.tech.map((t, i) => (
+                        {project.tech.slice(0, 3).map((t, i) => (
                           <span key={i} className="text-[10px] md:text-xs bg-accent/20 text-accent px-2 py-1 rounded-full border border-accent/30 font-medium">
                             {t}
                           </span>
                         ))}
                       </div>
 
-                      {/* Buttons */}
                       <div className="flex items-center gap-4 translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-150">
-                        <a href={project.live} className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-white hover:text-accent transition-colors">
-                          Live <FiExternalLink />
-                        </a>
-                        <a href={project.github} className="flex items-center gap-2 border border-white/20 hover:border-white text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
-                          Code <BsGithub />
+                        {project.live !== '#' && (
+                          <a href={project.live} target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-white hover:text-accent transition-colors">
+                            Live <FiExternalLink />
+                          </a>
+                        )}
+                        <a href={project.github} target="_blank" rel="noreferrer" className="flex items-center gap-2 border border-white/20 hover:border-white text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
+                          GitHub <BsGithub />
                         </a>
                       </div>
                     </div>
@@ -182,12 +132,18 @@ const ProjectsCarousel = () => {
             </div>
           </SwiperSlide>
         ))}
-        
-        {/* Custom Slide Counter (Optional addition) */}
-        <div className="absolute top-0 right-0 text-white/30 text-4xl md:text-6xl font-black select-none pointer-events-none z-0 hidden md:block">
-           PROJ
-        </div>
       </Swiper>
+
+      <div className="mt-10 text-center">
+        <a 
+          href="https://github.com/dubba1212" 
+          target="_blank" 
+          rel="noreferrer"
+          className="inline-flex items-center gap-2 text-white/60 hover:text-accent border border-white/10 hover:border-accent px-6 py-3 rounded-full transition-all"
+        >
+          View More on GitHub <BsArrowRight />
+        </a>
+      </div>
 
       <style jsx global>{`
         .projects-swiper .swiper-button-next,

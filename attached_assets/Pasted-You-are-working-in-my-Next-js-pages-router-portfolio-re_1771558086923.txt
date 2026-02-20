@@ -1,0 +1,118 @@
+You are working in my Next.js (pages router) portfolio repo using TailwindCSS + Framer Motion + Swiper. DO NOT change my existing animation style or navigation behavior—only add content + wire data.
+
+========================
+1) AUTO-POPULATE “WORK / PROJECTS” FROM MY GITHUB
+========================
+GitHub profile: https://github.com/dubba1212?tab=repositories  (repos include D_portfolio, CloudMart-A-Multi-Cloud-DevOps-Journey-with-AI-Enhancement, 2048-game, etc.)
+
+Goal:
+- The “My Work Portfolio” section should automatically pull my public repos and show them as project cards in the existing carousel.
+- Each card must include a “GitHub” button linking to the repo’s html_url (direct link).
+- Keep the same carousel animations/transitions already present.
+
+Implementation:
+A) Create a data fetch layer:
+- Create lib/github.js that fetches repos from GitHub REST API:
+  GET https://api.github.com/users/dubba1212/repos?per_page=100&sort=updated
+  (Public endpoint; handle rate limits gracefully.)
+- Also fetch README excerpt (optional) using the Contents API for description enrichment:
+  GET https://api.github.com/repos/{owner}/{repo}/contents/README.md
+- Use repo fields:
+  - name
+  - description
+  - language
+  - topics (if available; if not, infer from name/description/language)
+  - updated_at
+  - html_url (required for GitHub button)
+  - homepage (optional for Live button if present)
+
+B) Filtering rules:
+- Prefer “original work” first:
+  - deprioritize forks (repo.fork === true) and “forage-*” repos unless needed
+  - but still allow them if you want a “Labs” category
+- Pick top N repos by updated_at (e.g., 8–16) for “Featured”
+- Provide a “View more on GitHub” link button to your profile.
+
+C) Images:
+- If repo has no thumbnail, generate consistent placeholders:
+  - Use a gradient + repo name initials
+  - Keep same card style/hover overlay behavior already implemented.
+
+D) Integrate with existing carousel:
+- Keep the current Swiper/Framer motion animations unchanged.
+- Only replace the hardcoded projects array with the fetched repos data.
+- Ensure cards show:
+  - repo name
+  - 1-line description (truncate)
+  - tech chips (language + inferred tags)
+  - buttons: GitHub (required), Live (only if homepage exists)
+
+Docs reference:
+- Use GitHub REST endpoints. (List repos & contents APIs.)
+
+========================
+2) SKILLS SECTION: ADD MORE SKILLS + TWO-LEVEL PIPELINE / ROTATION
+========================
+Goal:
+- Keep the current Skills Playground look/animation.
+- Add more skills relevant to Full-Stack + AI:
+  Add at least: TypeScript, Java, Spring Boot, CI/CD (Jenkins), Terraform, Redis, Azure/GCP, LLMs (ChatGPT API), AWS Bedrock.
+
+Change:
+- Convert the pipeline into TWO LEVELS (no side panel changes unless required):
+  Row 1 (Platform/DevOps): Git, CI/CD (Jenkins), Docker, Kubernetes, Terraform, AWS/Azure/GCP
+  Row 2 (App/Data/AI): React, TypeScript, Node.js, Spring Boot, Postgres/MySQL, Redis, LLMs/ChatGPT API, AWS Bedrock
+- Alternate animation can be “rotational highlight”:
+  every 3–5 seconds, smoothly highlight the next skill node (glow pulse), WITHOUT changing the click behavior.
+
+Keep:
+- Clicking a skill still opens the existing skill details UI (modal/glass overlay).
+- Close must still work (X / arrow / outside click / ESC).
+
+========================
+3) ABOUT ME: SCROLL-DRIVEN “EXPERIENCE TIMELINE PIPELINE” (ALTERNATING LEFT/RIGHT)
+========================
+Goal:
+- Replace the current About Me static content with a scroll-driven timeline:
+  - As user scrolls down, Experience 1 animates in on the RIGHT with glow.
+  - Scroll further, Experience 2 animates in on the LEFT with glow.
+  - Experience 3 animates in on the RIGHT, etc.
+- This should feel like a guided profile walkthrough.
+- Use the same Framer Motion entrance style you already use (fade/slide), just applied to each timeline item.
+
+Use my resume content (must be accurate):
+- Walmart (Jan 2024–Present): Spring Boot + Kubernetes microservices, React/TS, performance improvements, CI/CD Jenkins+Docker, security (JWT/OAuth), Agile delivery.
+- Verizon (May 2023–Dec 2023): React/TS + Node/Express + .NET Core, Postgres optimization, 2TB/month pipelines, Docker microservices mentoring.
+- Reddy Private Limited (Jan 2021–Oct 2021): Django + React, Postgres tuning, Spark/NumPy 5TB/month workflows, DRF APIs, defect reduction.
+
+Implementation details:
+A) Create components/AboutTimeline.js:
+- timeline list of experiences (3 items from resume)
+- Each item renders as a glass card.
+- Alternate alignment:
+  - even index => right aligned
+  - odd index => left aligned
+B) Scroll behavior:
+- Use whileInView / viewport triggers (Framer Motion) so items animate in as they enter view.
+- Add “active glow” when in view:
+  - subtle red/orange glow ring that intensifies briefly then settles.
+C) Do NOT break global background or section padding.
+
+========================
+4) DO NOT CHANGE EXISTING NAV/SCROLLING/ANIMATIONS
+========================
+- Navigation clicking anchors must still scroll correctly.
+- Keep current smooth scrolling.
+- Do not rewrite the animation system—only reuse existing variants.
+- Ensure overlays/background layers don’t block nav clicks (pointer-events none for background).
+
+========================
+DELIVERABLES
+========================
+- Implement GitHub-driven project population (with GitHub link button on every project).
+- Implement two-level Skills pipeline + add additional skills.
+- Implement About Timeline with alternating reveal + glow on scroll.
+- List files changed and where to edit:
+  - how to “pin” featured repos (optional)
+  - how to rename project titles/descriptions if needed
+- Confirm it works on desktop + mobile.

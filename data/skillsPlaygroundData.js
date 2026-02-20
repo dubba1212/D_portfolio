@@ -1,128 +1,29 @@
 import { 
-  SiDocker, 
-  SiKubernetes, 
-  SiReact, 
-  SiPostgresql, 
-  SiNodedotjs, 
-  SiGit, 
-  SiAmazonaws,
-  SiOpenai
+  SiDocker, SiKubernetes, SiReact, SiPostgresql, SiNodedotjs, SiGit, 
+  SiAmazonaws, SiOpenai, SiTypescript, SiSpringboot, SiTerraform, 
+  SiRedis, SiMicrosoftazure, SiGooglecloud
 } from 'react-icons/si';
-import { FaJenkins } from 'react-icons/fa';
+import { FaJava } from 'react-icons/fa';
 
 export const skillsData = [
-  {
-    id: 'git',
-    label: 'Git',
-    icon: SiGit,
-    proofBadge: '30% Faster Delivery',
-    description: 'Expertise in Agile workflows and version control management.',
-    bullets: [
-      'Delivered 15+ production features following strict Agile methodologies.',
-      'Improved delivery velocity by 30% through optimized code review processes.',
-      'Advanced branching strategies for multi-environment CI/CD pipelines.'
-    ],
-    tags: ['Git', 'Agile', 'DevOps'],
-    linkedProjects: ['Walmart Microservices', 'Version Full-stack Modernization']
-  },
-  {
-    id: 'docker',
-    label: 'Docker',
-    icon: SiDocker,
-    proofBadge: '15m Release Cycles',
-    description: 'Containerization and environment standardization expert.',
-    bullets: [
-      'Reduced release cycles from 2 hours to 15 minutes using Jenkins + Docker.',
-      'Implemented zero-downtime deployments for critical services.',
-      'Orchestrated multi-container applications for local and production parity.'
-    ],
-    tags: ['Docker', 'Jenkins', 'CI/CD'],
-    linkedProjects: ['Walmart Microservices', 'E-commerce']
-  },
-  {
-    id: 'kubernetes',
-    label: 'Kubernetes',
-    icon: SiKubernetes,
-    proofBadge: '99.8% Uptime',
-    description: 'Orchestrating large-scale microservices with high availability.',
-    bullets: [
-      'Maintained 99.8% uptime for enterprise retail microservices.',
-      'Serving 1,000+ daily users on production-grade clusters.',
-      'Automated scaling and self-healing for critical retail infrastructure.'
-    ],
-    tags: ['Kubernetes', 'K8s', 'Microservices'],
-    linkedProjects: ['Walmart Microservices']
-  },
-  {
-    id: 'aws',
-    label: 'AWS',
-    icon: SiAmazonaws,
-    proofBadge: '60% Faster Deploy',
-    description: 'Cloud infrastructure management and serverless architectures.',
-    bullets: [
-      'Reduced deployment time by 60% with automated pipelines.',
-      'Achieved 99.9% uptime with load balancing and autoscaling.',
-      'Engineered cloud-native solutions using AWS Bedrock for AI features.'
-    ],
-    tags: ['AWS', 'Bedrock', 'CloudMart'],
-    linkedProjects: ['CloudMart']
-  },
-  {
-    id: 'postgres',
-    label: 'Postgres',
-    icon: SiPostgresql,
-    proofBadge: '40% Perf Boost',
-    description: 'Advanced database optimization and data architecture.',
-    bullets: [
-      'Improved backend performance by 40% via query optimization.',
-      'Reduced latency from 2.5s to 1.0s (60%) through indexing and tuning.',
-      'Managed scalable relational schemas for high-traffic applications.'
-    ],
-    tags: ['Postgres', 'SQL', 'Optimization'],
-    linkedProjects: ['E-commerce', 'Version Full-stack Modernization']
-  },
-  {
-    id: 'node',
-    label: 'Node.js',
-    icon: SiNodedotjs,
-    proofBadge: '2TB/mo Data Scale',
-    description: 'Building high-performance backend pipelines and real-time APIs.',
-    bullets: [
-      'Built pipelines handling ~2TB/month for real-time analytics.',
-      'Engineered RESTful and GraphQL APIs for enterprise scale.',
-      'Implemented real-time dashboards with low-latency streaming.'
-    ],
-    tags: ['Node.js', 'Express', 'Streaming'],
-    linkedProjects: ['AI Appointment Scheduler', 'E-commerce']
-  },
-  {
-    id: 'react',
-    label: 'React',
-    icon: SiReact,
-    proofBadge: 'High-Perf UI',
-    description: 'Modern frontend engineering with focus on performance and DX.',
-    bullets: [
-      'Built full-stack features with React + TypeScript.',
-      'Improved component performance and state management architecture.',
-      'Delivered seamless user experiences for data-heavy dashboards.'
-    ],
-    tags: ['React', 'TypeScript', 'Frontend'],
-    linkedProjects: ['E-commerce', 'CloudMart', 'Version Full-stack Modernization']
-  },
-  {
-    id: 'ai',
-    label: 'AI Integration',
-    icon: SiOpenai,
-    proofBadge: 'LLM Powered',
-    description: 'Specialized in building AI-driven features and automations.',
-    bullets: [
-      'Built AI Appointment Scheduler using ChatGPT + GCP APIs.',
-      'Engineered CloudMart AI recommendations using OpenAI + AWS Bedrock.',
-      'Integrated LLMs into production workflows for real-time intelligence.'
-    ],
-    tags: ['OpenAI', 'Bedrock', 'GCP'],
-    linkedProjects: ['AI Appointment Scheduler', 'CloudMart']
-  }
+  // Platform / DevOps
+  { id: 'git', label: 'Git', icon: SiGit, proofBadge: '30% Faster Delivery', description: 'Expertise in Agile workflows and version control management.', bullets: ['Delivered 15+ production features.', 'Improved delivery velocity by 30%.'], tags: ['Git'], linkedProjects: [] },
+  { id: 'jenkins', label: 'Jenkins', icon: SiGit, proofBadge: 'CI/CD Automation', description: 'Automated release cycles reducing manual overhead.', bullets: ['Automated CI/CD pipelines with Jenkins and Docker.'], tags: ['Jenkins', 'CI/CD'], linkedProjects: [] },
+  { id: 'docker', label: 'Docker', icon: SiDocker, proofBadge: '15m Release Cycles', description: 'Containerization and environment standardization expert.', bullets: ['Reduced release cycles from 2 hours to 15 minutes.'], tags: ['Docker'], linkedProjects: [] },
+  { id: 'kubernetes', label: 'Kubernetes', icon: SiKubernetes, proofBadge: '99.8% Uptime', description: 'Orchestrating large-scale microservices.', bullets: ['Maintained 99.8% uptime for enterprise retail apps.'], tags: ['K8s'], linkedProjects: [] },
+  { id: 'terraform', label: 'Terraform', icon: SiTerraform, proofBadge: 'IaC Expert', description: 'Infrastructure as Code for multi-cloud deployments.', bullets: ['Managed cloud resources via Terraform scripts.'], tags: ['IaC'], linkedProjects: [] },
+  { id: 'cloud', label: 'Cloud (AWS/GCP)', icon: SiAmazonaws, proofBadge: 'Multi-Cloud', description: 'Expertise in AWS, Azure, and GCP architectures.', bullets: ['Implemented cross-cloud deployment infrastructure.'], tags: ['AWS', 'GCP'], linkedProjects: [] },
+  
+  // App / Data / AI
+  { id: 'typescript', label: 'TypeScript', icon: SiTypescript, proofBadge: 'Type-Safe', description: 'Building robust, maintainable full-stack applications.', bullets: ['Developed enterprise-grade apps with TS.'], tags: ['TS'], linkedProjects: [] },
+  { id: 'java', label: 'Java', icon: FaJava, proofBadge: 'Enterprise Core', description: 'Backend engineering with focus on performance and security.', bullets: ['Engineered microservices using Java.'], tags: ['Java'], linkedProjects: [] },
+  { id: 'springboot', label: 'Spring Boot', icon: SiSpringboot, proofBadge: 'Microservices', description: 'Architecting scalable backend services.', bullets: ['Engineered containerized microservices using Spring Boot.'], tags: ['Spring'], linkedProjects: [] },
+  { id: 'react', label: 'React', icon: SiReact, proofBadge: 'High-Perf UI', description: 'Modern frontend engineering.', bullets: ['Delivered full-stack features with React.'], tags: ['React'], linkedProjects: [] },
+  { id: 'node', label: 'Node.js', icon: SiNodedotjs, proofBadge: 'Real-time API', description: 'High-performance backend pipelines.', bullets: ['Built pipelines handling ~2TB/month.'], tags: ['Node'], linkedProjects: [] },
+  { id: 'postgres', label: 'Postgres', icon: SiPostgresql, proofBadge: '40% Perf Boost', description: 'Database optimization and data architecture.', bullets: ['Improved performance by 40% via query optimization.'], tags: ['Postgres'], linkedProjects: [] },
+  { id: 'redis', label: 'Redis', icon: SiRedis, proofBadge: 'Caching', description: 'Optimizing load times through intelligent caching.', bullets: ['Reduced page load times via Redis caching.'], tags: ['Redis'], linkedProjects: [] },
+  { id: 'ai', label: 'AI/LLM', icon: SiOpenai, proofBadge: 'GPT-4 Powered', description: 'Integrating LLMs into production workflows.', bullets: ['Built AI Appointment Scheduler using ChatGPT API.'], tags: ['AI'], linkedProjects: [] }
 ];
 
-export const pipelineFlow = ['git', 'docker', 'kubernetes', 'aws', 'postgres', 'node', 'react', 'ai'];
+export const pipelineRow1 = ['git', 'jenkins', 'docker', 'kubernetes', 'terraform', 'cloud'];
+export const pipelineRow2 = ['react', 'typescript', 'java', 'springboot', 'postgres', 'redis', 'ai'];
