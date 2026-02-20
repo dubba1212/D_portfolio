@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { skillsData, pipelineRow1, pipelineRow2 } from '../data/skillsPlaygroundData';
 import SkillSpotlightModal from './SkillSpotlightModal';
 import { fadeIn } from '../variants';
@@ -9,27 +9,19 @@ const SkillsPlayground = () => {
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const containerRef = useRef(null);
   const hasTeased = useRef(false);
-  const isInView = useInView(containerRef, { amount: 0.3 });
-  const [teaserX, setTeaserX] = useState(0);
+  const isInView = useInView(containerRef, { amount: 0.2, once: true });
+  
+  const [teaserOffset, setTeaserOffset] = useState(0);
 
   useEffect(() => {
     if (isInView && !hasTeased.current) {
-      setTeaserX(-100);
+      setTeaserOffset(100);
       setTimeout(() => {
-        setTeaserX(0);
+        setTeaserOffset(0);
         hasTeased.current = true;
-      }, 1000);
+      }, 800);
     }
   }, [isInView]);
-
-  useEffect(() => {
-    const handleClose = () => {
-      setIsPanelOpen(false);
-      setSelectedSkill(null);
-    };
-    window.addEventListener('closeSkillModal', handleClose);
-    return () => window.removeEventListener('closeSkillModal', handleClose);
-  }, []);
 
   const handleSkillClick = (skillId) => {
     const skill = skillsData.find(s => s.id === skillId);
@@ -47,13 +39,13 @@ const SkillsPlayground = () => {
     }
   };
 
-  const SkillNode = ({ skillId, index }) => {
+  const SkillNode = ({ skillId, index, isTopRow }) => {
     const skill = skillsData.find(s => s.id === skillId);
     if (!skill) return null;
     const Icon = skill.icon;
 
     return (
-      <div key={skillId} className="relative z-10 group flex flex-col items-center flex-shrink-0">
+      <div className="relative z-10 flex flex-col items-center group">
         <motion.button
           variants={fadeIn('up', index * 0.05)}
           initial="hidden"
@@ -68,48 +60,61 @@ const SkillsPlayground = () => {
         >
           <Icon />
         </motion.button>
-        <motion.span 
-          variants={fadeIn('up', (index * 0.05) + 0.05)}
-          initial="hidden"
-          whileInView="show"
-          className="mt-2 text-[10px] md:text-xs font-bold uppercase tracking-widest text-white/40 group-hover:text-white transition-colors text-center"
-        >
+        <span className="mt-3 text-[10px] md:text-xs font-bold uppercase tracking-widest text-white/40 group-hover:text-white transition-colors text-center whitespace-nowrap">
           {skill.label}
-        </motion.span>
+        </span>
       </div>
     );
   };
 
-  return (
-    <div className="w-full py-12 space-y-16" ref={containerRef}>
-      {/* Row 1: DevOps / Platform */}
-      <div className="relative overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing pb-4">
-        <motion.div 
-          animate={{ x: teaserX }}
-          transition={{ type: "spring", stiffness: 100, damping: 20 }}
-          className="flex items-center justify-start xl:justify-between gap-6 md:gap-12 min-w-max xl:min-w-0 max-w-6xl mx-auto px-4"
-        >
-          {pipelineRow1.map((id, i) => <SkillNode key={id} skillId={id} index={i} />)}
-        </motion.div>
-      </div>
+  const ConnectorLine = () => (
+    <svg className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-visible" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="transparent" />
+          <stop offset="50%" stopColor="#f13024" stopOpacity="0.2" />
+          <stop offset="100%" stopColor="transparent" />
+        </linearGradient>
+      </defs>
+      {/* Row 1 line */}
+      <line x1="0" y1="35%" x2="100%" y2="35%" stroke="url(#lineGrad)" strokeWidth="1" strokeDasharray="5,5" />
+      {/* Row 2 line */}
+      <line x1="0" y1="75%" x2="100%" y2="75%" stroke="url(#lineGrad)" strokeWidth="1" strokeDasharray="5,5" />
+    </svg>
+  );
 
-      {/* Row 2: App / AI */}
-      <div className="relative overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing pb-4">
-        <motion.div 
-          animate={{ x: -teaserX }}
-          transition={{ type: "spring", stiffness: 100, damping: 20 }}
-          className="flex items-center justify-start xl:justify-between gap-6 md:gap-12 min-w-max xl:min-w-0 max-w-6xl mx-auto px-4"
-        >
-          {pipelineRow2.map((id, i) => <SkillNode key={id} skillId={id} index={i + 6} />)}
-        </motion.div>
+  return (
+    <div className="w-full py-12 relative" ref={containerRef}>
+      <div className="max-w-6xl mx-auto px-4 relative h-[450px] md:h-[500px]">
+        
+        {/* Horizontal Scroll Wrapper for mobile/tablet */}
+        <div className="absolute inset-0 overflow-x-auto no-scrollbar overflow-y-hidden cursor-grab active:cursor-grabbing">
+          <motion.div 
+            animate={{ x: teaserOffset }}
+            transition={{ type: "spring", stiffness: 100, damping: 20 }}
+            className="relative h-full min-w-[800px] xl:min-w-0 flex flex-col justify-around py-8"
+          >
+            <ConnectorLine />
+            
+            {/* Row 1 */}
+            <div className="flex items-center justify-between px-8 relative">
+              {pipelineRow1.map((id, i) => <SkillNode key={id} skillId={id} index={i} isTopRow={true} />)}
+            </div>
+
+            {/* Row 2 */}
+            <div className="flex items-center justify-between px-16 relative">
+              {pipelineRow2.map((id, i) => <SkillNode key={id} skillId={id} index={i} isTopRow={false} />)}
+            </div>
+          </motion.div>
+        </div>
       </div>
 
       <motion.p 
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
-        className="text-center mt-10 text-white/30 text-sm font-light italic"
+        className="text-center mt-8 text-white/30 text-sm font-light italic"
       >
-        Click to explore resume-verified technical proof
+        Click stages to explore technical proof
       </motion.p>
 
       <SkillSpotlightModal 
@@ -121,6 +126,11 @@ const SkillsPlayground = () => {
         }}
         onProjectClick={handleProjectClick}
       />
+
+      <style jsx global>{`
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
     </div>
   );
 };

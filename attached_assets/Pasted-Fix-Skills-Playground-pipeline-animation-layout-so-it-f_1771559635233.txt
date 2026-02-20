@@ -1,0 +1,96 @@
+Fix Skills Playground pipeline animation + layout so it feels like the previous premium pipeline, and update Experience section to a true zigzag left/right layout (keep existing experience animations).
+
+Use my resume as reference for content (do NOT invent). :contentReference[oaicite:0]{index=0}
+
+========================
+A) SKILLS PLAYGROUND: RESTORE “PIPELINE FEEL” + ONE-TIME TEASER (NO LOOP)
+========================
+CURRENT PROBLEM (from screenshots):
+- Skills look like a static grid of icons.
+- There are vertical scrollbars inside the skill area.
+- It lost the premium pipeline vibe (connected stages, motion/flow).
+- The animation feels worse than before.
+
+TARGET:
+- Bring back the old “pipeline” feel:
+  - skills arranged in a pipeline / two-row pipeline
+  - connected with subtle line(s)
+  - hover glow + soft scale
+  - premium easing transitions
+- Do ONE small motion when section enters view, then STOP forever.
+- No continuous looping / no autoplay.
+
+REQUIREMENTS:
+1) Remove internal scrollbars from the Skills section:
+   - DO NOT use nested vertical scrolling inside the skills area.
+   - The page scroll must remain the only vertical scroll.
+   - If horizontal overflow is needed, allow horizontal drag/scroll but HIDE its scrollbar.
+   - Add "no-scrollbar" utility and use overflow-x-auto only.
+
+2) Layout as 2-row pipeline with no nested vertical scroll:
+   - Use a fixed 2-row grid layout (2 x N) OR flex-wrap layout that preserves the pipeline look.
+   - Align nodes consistently (same spacing).
+   - Use a connecting line layer behind nodes:
+     - horizontal lines between nodes (or a subtle polyline)
+     - line opacity ~0.25, red accent on active/hover
+
+3) Add “flow” feeling (subtle):
+   - Add a small animated gradient/dots moving along the connector line.
+   - Keep it subtle and performant (CSS animation only).
+
+4) One-time teaser movement:
+   - When Skills section enters viewport first time:
+     - animate the pipeline container horizontally by ~80–140px (scrollLeft) then stop.
+   - Must run only once using a ref:
+     hasTeased.current = true
+   - After that, no further auto movement.
+   - User can still manually drag horizontally if needed.
+
+5) Interaction:
+   - Hover: glow ring + slight scale + smooth easing
+   - Click: open existing skill detail modal (keep your current modal UI)
+   - Keep close behavior working (X, arrow, outside click, ESC)
+
+IMPLEMENTATION HINT (do exactly):
+- Create a horizontal container:
+  <div ref={rowRef} className="relative overflow-x-auto overflow-y-hidden no-scrollbar cursor-grab select-none">
+- Inside it render two rows:
+  Row1 array + Row2 array
+- Put connector lines as absolutely positioned behind nodes using an SVG overlay:
+  <svg className="pointer-events-none absolute inset-0 z-0">...</svg>
+- Nodes themselves are z-10.
+
+IMPORTANT:
+- Remove any code that created the internal vertical scrollbars you see in screenshot (it looks like you used overflow-y-auto on the skill container). Replace with overflow-y-hidden.
+
+========================
+B) EXPERIENCE SECTION: TRUE ZIGZAG RIGHT/LEFT
+========================
+You said the experience animation works fine, only alignment needs zigzag.
+
+REQUIREMENTS:
+1) Alternate alignment by index:
+   - index 0 -> RIGHT aligned card
+   - index 1 -> LEFT aligned card
+   - index 2 -> RIGHT aligned card
+2) Keep your existing Framer Motion reveal animations exactly as-is.
+3) Add a center vertical timeline line + dots (if not already present).
+4) On mobile: collapse to single-column (left aligned or centered).
+
+Implementation:
+- Wrap timeline in a 3-column grid:
+  [left spacer] [center line] [right spacer]
+- For each item:
+  - If left item: render in left column
+  - If right item: render in right column
+- Keep the same card component and animation variants.
+
+========================
+DELIVERABLE
+========================
+- Skills section feels like a connected pipeline again (not a static grid).
+- No internal scrollbars in Skills.
+- One-time teaser motion triggers once, then stops.
+- Experience section becomes true zigzag (right/left alternating) while keeping current animations.
+
+Start by editing the SkillsPlayground component: remove overflow-y scroll, rebuild 2-row pipeline layout with connector lines, then adjust AboutTimeline alignment logic to alternate left/right columns.
