@@ -6,7 +6,8 @@
     "dev": "next dev -H 0.0.0.0 -p 5000",
     "build": "next build",
     "start": "next start -H 0.0.0.0 -p 5000",
-    "lint": "next lint"
+    "lint": "next lint",
+    "fetch:thumbs": "node scripts/fetchRepoImages.mjs"
   },
   "dependencies": {
     "@next/font": "^13.4.4",

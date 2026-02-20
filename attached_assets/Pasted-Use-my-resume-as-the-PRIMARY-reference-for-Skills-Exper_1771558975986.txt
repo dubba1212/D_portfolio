@@ -1,0 +1,113 @@
+Use my resume as the PRIMARY reference for Skills + Experience + Projects content. Do not invent experience. Use the exact tools, metrics, and project names from my resume. :contentReference[oaicite:0]{index=0}
+
+Repo: Next.js (pages router) + TailwindCSS + Framer Motion + Swiper.
+Keep my existing animations and navigation behavior. Do NOT redesign motion styles—only adjust behavior + add resume-accurate content.
+
+========================
+A) SKILLS SECTION: PIPELINE ON SINGLE SCROLL (NO CONTINUOUS LOOP)
+========================
+Problem:
+- Skills pipeline is continuously looping/auto-rotating.
+I want:
+- A one-time “teaser” movement when the Skills section first enters viewport, then STOP.
+- After that, pipeline should stay stable until user manually drags/scrolls.
+
+Requirements:
+1) Remove/disable any auto-rotation/infinite animation (setInterval/autoplay/marquee).
+2) When Skills section becomes visible the FIRST time:
+   - Do a subtle horizontal “teaser slide” once (scrollLeft by ~80–140px smoothly OR a small translateX animation).
+   - Then stop forever (no repeated loops).
+   - Ensure the teaser triggers only once using a ref flag like hasTeased.current.
+3) Keep user interaction:
+   - Allow drag/scroll horizontally (desktop + mobile).
+   - Clicking a skill still opens the existing skill detail UI.
+4) Skills content must come from resume Technical Skills + Experience:
+   - Languages: Python, Java, JavaScript, TypeScript, SQL, PowerShell
+   - Frameworks: React, Node.js, Express, Spring Boot, Django, .NET Core
+   - Databases: PostgreSQL, MySQL, MongoDB, Redis (resume mentions Redis in Walmart bullet)
+   - DevOps/Cloud: Docker, Kubernetes, Jenkins, Terraform, AWS, Azure, GCP, CI/CD
+   - Tools: Git, Maven, JIRA, Postman, pgAdmin, JUnit, Mockito, OAuth 2.0, JWT, Spring Security
+   - AI/ML: ChatGPT API, OpenAI, AWS Bedrock, NLP, PyTorch, TensorFlow
+   Use proof badges per skill from resume metrics (99.8% uptime; 3.2s→1.6s; 2.5s→1.0s; etc.). :contentReference[oaicite:1]{index=1}
+
+Pipeline layout update:
+- Convert to TWO-LEVEL pipeline (2 rows) using resume categories:
+  Row 1 (Platform/DevOps): Git → Jenkins (CI/CD) → Docker → Kubernetes → Terraform → AWS/Azure/GCP
+  Row 2 (App/Data/AI): React/TypeScript → Node.js/Express → Spring Boot/.NET Core/Django → PostgreSQL/MySQL/MongoDB/Redis → ChatGPT API/OpenAI → AWS Bedrock
+- Keep click behavior unchanged.
+
+========================
+B) ABOUT/EXPERIENCE: ZIGZAG TIMELINE (LEFT/RIGHT) USING RESUME ONLY
+========================
+Goal:
+- Replace About static content with a scroll-driven zigzag timeline:
+  Item 1 appears RIGHT, item 2 LEFT, item 3 RIGHT.
+- Each item should glow when it enters view (subtle red/orange glow).
+- Use existing Framer Motion fade/slide variants; only apply them to each item.
+
+Use these exact experiences and details from resume:
+1) Walmart (Jan 2024–Present):
+   - Java + Spring Boot + Kubernetes microservices, 99.8% uptime, 1,000+ daily users
+   - React + TypeScript full-stack features
+   - MySQL optimization + Redis caching (3.2s → 1.6s)
+   - Jenkins + Docker CI/CD, hours → minutes, zero downtime
+   - Spring Security, JWT, OAuth 2.0, 90% test coverage (JUnit)
+2) Verizon (May 2023–Dec 2023):
+   - React + TypeScript + Node.js (Express) + .NET Core
+   - Modernized 3 legacy Python systems (300+ simultaneous users)
+   - PostgreSQL optimization (40% improvement)
+   - Pipelines handling 2TB/month
+   - Docker microservices mentoring
+3) Reddy Private Limited (Jan 2021–Oct 2021):
+   - Django + React e-commerce, 500+ active users
+   - PostgreSQL tuning (2.5s → 1.0s, 60%)
+   - Spark + NumPy processing 5TB/month
+   - DRF + JWT APIs, defect reduction 25%
+All content must be resume-accurate. :contentReference[oaicite:2]{index=2}
+
+Implementation:
+- Create/Update components/AboutTimeline.js
+- Add a center vertical line + dots connecting items.
+- Alternate alignment by index.
+- Mobile collapses to one column.
+
+========================
+C) PROJECTS: RESUME PROJECTS + GITHUB REPOS + THUMBNAILS
+========================
+Goal:
+- Work/Projects section should show projects that match BOTH:
+  1) My resume projects:
+     - Personal Appointment Scheduler (ChatGPT API + Google Calendar/Docs via GCP APIs)
+     - CloudMart (OpenAI GPT + AWS Bedrock, multi-cloud AWS+GCP, CI/CD, logging/health checks)
+  2) My GitHub repos (auto fetched)
+- Every project card must include a direct GitHub link button.
+- Keep current Swiper/ProjectCard animations unchanged.
+
+Implementation:
+1) Keep GitHub repo fetch integration (GitHub REST API), but ALSO pin the two resume projects at the top even if repo sorting changes.
+2) Add tags/skills to each project using resume tech (ChatGPT API, GCP, OpenAI, Bedrock, CI/CD, etc.). :contentReference[oaicite:3]{index=3}
+
+Project images:
+- Auto-generate attractive thumbnails by downloading GitHub OpenGraph images:
+  Use: https://opengraph.githubassets.com/<any-string>/dubba1212/<repo>
+- Create scripts/fetchRepoImages.mjs that downloads thumbnails into:
+  public/projects/thumbnails/<repo>.png
+- Add npm script: "fetch:thumbs": "node scripts/fetchRepoImages.mjs"
+- ProjectCard should use local thumbnail if exists; fallback to remote OG URL; otherwise placeholder gradient.
+
+========================
+D) DO NOT BREAK THESE
+========================
+- Keep smooth scrolling and anchors working.
+- Do not add continuous looping animations.
+- Ensure no horizontal overflow / no bottom scrollbar.
+- Modal close behavior remains correct (X, arrow, outside click, ESC).
+
+========================
+DELIVERABLE
+========================
+- Implement A (single teaser + stop; two-level pipeline; resume-based skills/proofs)
+- Implement B (zigzag timeline; resume-based experience content)
+- Implement C (resume projects pinned + GitHub repos; thumbnails downloaded)
+- List files changed and exact command to run thumbnails: npm run fetch:thumbs
+- Confirm everything works on desktop + mobile.

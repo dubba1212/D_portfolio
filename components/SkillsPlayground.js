@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, useInView } from 'framer-motion';
 import { skillsData, pipelineRow1, pipelineRow2 } from '../data/skillsPlaygroundData';
 import SkillSpotlightModal from './SkillSpotlightModal';
 import { fadeIn } from '../variants';
@@ -7,7 +7,20 @@ import { fadeIn } from '../variants';
 const SkillsPlayground = () => {
   const [selectedSkill, setSelectedSkill] = useState(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
-  const [highlightedSkill, setHighlightedSkill] = useState(null);
+  const containerRef = useRef(null);
+  const hasTeased = useRef(false);
+  const isInView = useInView(containerRef, { amount: 0.3 });
+  const [teaserX, setTeaserX] = useState(0);
+
+  useEffect(() => {
+    if (isInView && !hasTeased.current) {
+      setTeaserX(-100);
+      setTimeout(() => {
+        setTeaserX(0);
+        hasTeased.current = true;
+      }, 1000);
+    }
+  }, [isInView]);
 
   useEffect(() => {
     const handleClose = () => {
@@ -16,16 +29,6 @@ const SkillsPlayground = () => {
     };
     window.addEventListener('closeSkillModal', handleClose);
     return () => window.removeEventListener('closeSkillModal', handleClose);
-  }, []);
-
-  useEffect(() => {
-    const allSkills = [...pipelineRow1, ...pipelineRow2];
-    let index = 0;
-    const interval = setInterval(() => {
-      setHighlightedSkill(allSkills[index]);
-      index = (index + 1) % allSkills.length;
-    }, 3000);
-    return () => clearInterval(interval);
   }, []);
 
   const handleSkillClick = (skillId) => {
@@ -48,10 +51,9 @@ const SkillsPlayground = () => {
     const skill = skillsData.find(s => s.id === skillId);
     if (!skill) return null;
     const Icon = skill.icon;
-    const isHighlighted = highlightedSkill === skillId && !isPanelOpen;
 
     return (
-      <div key={skillId} className="relative z-10 group flex flex-col items-center">
+      <div key={skillId} className="relative z-10 group flex flex-col items-center flex-shrink-0">
         <motion.button
           variants={fadeIn('up', index * 0.05)}
           initial="hidden"
@@ -59,7 +61,7 @@ const SkillsPlayground = () => {
           whileHover={{ scale: 1.1 }}
           onClick={() => handleSkillClick(skillId)}
           className={`w-16 h-16 md:w-20 md:h-20 rounded-2xl flex items-center justify-center text-2xl md:text-3xl transition-all duration-500 border ${
-            selectedSkill?.id === skillId || isHighlighted
+            selectedSkill?.id === skillId
             ? 'bg-accent text-white border-accent shadow-[0_0_25px_rgba(241,48,36,0.6)]' 
             : 'bg-secondary/40 text-white/60 border-white/10 hover:border-accent/50 hover:text-accent group-hover:shadow-[0_0_20px_rgba(241,48,36,0.2)]'
           }`}
@@ -79,33 +81,27 @@ const SkillsPlayground = () => {
   };
 
   return (
-    <div className="w-full py-12 space-y-16">
+    <div className="w-full py-12 space-y-16" ref={containerRef}>
       {/* Row 1: DevOps / Platform */}
-      <div className="relative">
-        <div className="absolute hidden xl:block top-1/2 left-0 w-full h-0.5 bg-white/5 -translate-y-1/2 overflow-hidden">
-          <motion.div
-            animate={{ x: ['-100%', '100%'] }}
-            transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
-            className="w-1/4 h-full bg-gradient-to-r from-transparent via-accent/40 to-transparent"
-          />
-        </div>
-        <div className="flex flex-wrap items-center justify-center gap-6 md:gap-12 xl:justify-between max-w-6xl mx-auto px-4">
+      <div className="relative overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing pb-4">
+        <motion.div 
+          animate={{ x: teaserX }}
+          transition={{ type: "spring", stiffness: 100, damping: 20 }}
+          className="flex items-center justify-start xl:justify-between gap-6 md:gap-12 min-w-max xl:min-w-0 max-w-6xl mx-auto px-4"
+        >
           {pipelineRow1.map((id, i) => <SkillNode key={id} skillId={id} index={i} />)}
-        </div>
+        </motion.div>
       </div>
 
       {/* Row 2: App / AI */}
-      <div className="relative">
-        <div className="absolute hidden xl:block top-1/2 left-0 w-full h-0.5 bg-white/5 -translate-y-1/2 overflow-hidden">
-          <motion.div
-            animate={{ x: ['100%', '-100%'] }}
-            transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
-            className="w-1/4 h-full bg-gradient-to-r from-transparent via-accent/40 to-transparent"
-          />
-        </div>
-        <div className="flex flex-wrap items-center justify-center gap-6 md:gap-12 xl:justify-between max-w-6xl mx-auto px-4">
+      <div className="relative overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing pb-4">
+        <motion.div 
+          animate={{ x: -teaserX }}
+          transition={{ type: "spring", stiffness: 100, damping: 20 }}
+          className="flex items-center justify-start xl:justify-between gap-6 md:gap-12 min-w-max xl:min-w-0 max-w-6xl mx-auto px-4"
+        >
           {pipelineRow2.map((id, i) => <SkillNode key={id} skillId={id} index={i + 6} />)}
-        </div>
+        </motion.div>
       </div>
 
       <motion.p 
@@ -113,7 +109,7 @@ const SkillsPlayground = () => {
         whileInView={{ opacity: 1 }}
         className="text-center mt-10 text-white/30 text-sm font-light italic"
       >
-        Explore the multi-level technical stack and AI integration flow
+        Click to explore resume-verified technical proof
       </motion.p>
 
       <SkillSpotlightModal 

@@ -95,20 +95,40 @@ const ProjectsCarousel = () => {
                   className="relative group rounded-2xl overflow-hidden bg-secondary/20 border border-white/10 h-[220px] md:h-[280px] shadow-2xl hover:shadow-accent/20 transition-all duration-500"
                 >
                   <div className="w-full h-full relative overflow-hidden bg-gradient-to-br from-secondary/40 to-primary/40 flex items-center justify-center">
-                    <div className="text-white/10 text-6xl font-black uppercase select-none group-hover:scale-150 transition-transform duration-700">
-                      {project.title.substring(0, 2)}
+                    <Image
+                      src={project.path}
+                      fill
+                      style={{ objectFit: 'cover' }}
+                      alt={project.title}
+                      className="opacity-40 group-hover:opacity-60 transition-opacity duration-700"
+                      onError={(e) => {
+                        // If local fails, try remote OG or just show text
+                        if (project.remotePath) {
+                           e.currentTarget.src = project.remotePath;
+                        } else {
+                           e.currentTarget.style.display = 'none';
+                        }
+                      }}
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                       <div className="text-white/10 text-6xl font-black uppercase select-none group-hover:scale-150 transition-transform duration-700">
+                        {project.title.substring(0, 2)}
+                      </div>
                     </div>
                     
                     <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-center p-6 md:p-8 backdrop-blur-sm">
-                      <h3 className="text-xl md:text-2xl font-bold text-accent mb-2 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                        {project.title}
-                      </h3>
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="text-xl md:text-2xl font-bold text-accent translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                          {project.title}
+                        </h3>
+                        {project.pinned && <span className="text-[10px] bg-accent/20 text-accent px-2 py-0.5 rounded border border-accent/30 uppercase tracking-tighter">Featured</span>}
+                      </div>
                       <p className="text-sm md:text-base text-white/70 mb-4 line-clamp-2 translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-75">
                         {project.description}
                       </p>
                       
                       <div className="flex flex-wrap gap-2 mb-6 translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-100">
-                        {project.tech.slice(0, 3).map((t, i) => (
+                        {project.tech.slice(0, 4).map((t, i) => (
                           <span key={i} className="text-[10px] md:text-xs bg-accent/20 text-accent px-2 py-1 rounded-full border border-accent/30 font-medium">
                             {t}
                           </span>
