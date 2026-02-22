@@ -1,0 +1,93 @@
+Fix Skills Playground pipeline looping issue. Right now skills are continuously “coming and going” (constant loop). I want the pipeline to STOP looping and stay stable.
+
+Repo: Next.js (pages router) + Tailwind + Framer Motion.
+IMPORTANT: Do NOT change my layout, styling, or overall animation system. Only remove the infinite loop behavior and make it stable.
+
+========================================================
+A) CURRENT PROBLEM (from screenshot)
+========================================================
+- Skills pipeline is in a constant loop (skills keep moving in/out).
+- It feels like a marquee/autoplay animation is running forever.
+- I want the pipeline to animate only once (small teaser) OR not autoplay at all.
+
+========================================================
+B) TARGET BEHAVIOR
+========================================================
+- Skills pipeline is STATIC by default (no continuous movement).
+- Optional: one-time teaser motion when section first comes into view (then stop forever).
+- User can still interact (hover/click).
+- If horizontal drag/scroll exists, user controls it (not autoplay).
+
+========================================================
+C) WHAT TO REMOVE / DISABLE (must do)
+========================================================
+1) Remove any infinite animation sources:
+- Any `setInterval`, `setTimeout` loop, requestAnimationFrame loop
+- Any “marquee” CSS animation like `animation: scroll ... infinite`
+- Any Framer Motion animation with:
+  - `repeat: Infinity`
+  - `repeatType: "loop"`
+  - `loop: true`
+- Any Swiper autoplay logic if used in Skills
+
+2) If skills are rendered twice for looping (like [...skills, ...skills]):
+- Remove duplication.
+- Render skills only once.
+
+========================================================
+D) FIX IMPLEMENTATION (do this exactly)
+========================================================
+1) Find Skills component (SkillsPlayground / SkillsPipeline).
+- Search keywords:
+  - repeat: Infinity
+  - loop
+  - marquee
+  - autoplay
+  - setInterval
+  - requestAnimationFrame
+  - duplicated array concat
+
+2) Replace looping motion with a stable layout:
+- Use a normal container with NO animation controlling x-position continuously.
+Example container:
+<div ref={pipelineRef} className="relative overflow-x-auto overflow-y-hidden no-scrollbar">
+  ...skills rows...
+</div>
+
+3) Optional one-time teaser (ONLY ONCE):
+- Run only once using a ref flag.
+- Use scrollLeft (safe, no layout break).
+Code:
+
+const hasTeased = useRef(false);
+useEffect(() => {
+  const el = pipelineRef.current;
+  if (!el) return;
+
+  const obs = new IntersectionObserver(([entry]) => {
+    if (entry.isIntersecting && !hasTeased.current) {
+      hasTeased.current = true;
+      el.scrollTo({ left: 90, behavior: "smooth" });
+      setTimeout(() => el.scrollTo({ left: 0, behavior: "smooth" }), 650);
+    }
+  }, { threshold: 0.35 });
+
+  obs.observe(el);
+  return () => obs.disconnect();
+}, []);
+
+4) Make sure NOTHING else moves the pipeline after teaser:
+- No timers.
+- No infinite motion configs.
+- No CSS infinite keyframes on the pipeline container.
+
+========================================================
+E) DELIVERABLE
+========================================================
+✅ Skills pipeline no longer loops endlessly  
+✅ Skills stay visible and stable (no “coming and going”)  
+✅ Optional teaser runs once only, then stops forever  
+✅ Hover/click still work exactly as before  
+✅ No layout redesign  
+
+Start by locating the Skills component and deleting the infinite loop logic (repeat Infinity / marquee / setInterval). Then add the one-time teaser scroll (optional) and verify the pipeline stays stable after 10+ seconds.

@@ -10,7 +10,6 @@ const SkillsPlayground = () => {
   const [activePulseNode, setActivePulseNode] = useState(null);
   const pipelineRef = useRef(null);
   const hasTeased = useRef(false);
-  const containerRef = useRef(null);
 
   useEffect(() => {
     const el = pipelineRef.current;
@@ -21,12 +20,12 @@ const SkillsPlayground = () => {
         setTimeout(() => el.scrollTo({ left: 0, behavior: "smooth" }), 650);
         hasTeased.current = true;
       }
-    }, { threshold: 0.4 });
+    }, { threshold: 0.35 });
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
 
-  // Node "receive pulse" logic
+  // Node "receive pulse" logic - subtle highlight
   useEffect(() => {
     const allSkills = [...pipelineRow1, ...pipelineRow2];
     let currentIndex = 0;
@@ -87,7 +86,7 @@ const SkillsPlayground = () => {
   };
 
   return (
-    <div className="w-full py-12 relative" ref={containerRef}>
+    <div className="w-full py-12 relative">
       <div 
         ref={pipelineRef}
         className="max-w-6xl mx-auto px-4 relative h-[400px] md:h-[450px] overflow-x-auto overflow-y-hidden no-scrollbar cursor-grab active:cursor-grabbing"
