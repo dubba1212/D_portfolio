@@ -68,7 +68,15 @@ const ProjectsCarousel = () => {
       </AnimatePresence>
 
       <Swiper
-        spaceBetween={20}
+        spaceBetween={18}
+        slidesPerView={1}
+        grabCursor={true}
+        speed={650}
+        resistanceRatio={0.75}
+        threshold={10}
+        longSwipes={true}
+        longSwipesRatio={0.2}
+        followFinger={true}
         pagination={{
           clickable: true,
           type: 'bullets',

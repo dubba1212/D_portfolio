@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, useInView, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { skillsData, pipelineRow1, pipelineRow2 } from '../data/skillsPlaygroundData';
 import SkillSpotlightModal from './SkillSpotlightModal';
 import { fadeIn } from '../variants';
@@ -7,21 +7,22 @@ import { fadeIn } from '../variants';
 const SkillsPlayground = () => {
   const [selectedSkill, setSelectedSkill] = useState(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
-  const containerRef = useRef(null);
+  const pipelineRef = useRef(null);
   const hasTeased = useRef(false);
-  const isInView = useInView(containerRef, { amount: 0.2, once: true });
-  
-  const [teaserOffset, setTeaserOffset] = useState(0);
 
   useEffect(() => {
-    if (isInView && !hasTeased.current) {
-      setTeaserOffset(100);
-      setTimeout(() => {
-        setTeaserOffset(0);
+    const el = pipelineRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !hasTeased.current) {
+        el.scrollTo({ left: 90, behavior: "smooth" });
+        setTimeout(() => el.scrollTo({ left: 0, behavior: "smooth" }), 650);
         hasTeased.current = true;
-      }, 800);
-    }
-  }, [isInView]);
+      }
+    }, { threshold: 0.4 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
 
   const handleSkillClick = (skillId) => {
     const skill = skillsData.find(s => s.id === skillId);
@@ -39,13 +40,13 @@ const SkillsPlayground = () => {
     }
   };
 
-  const SkillNode = ({ skillId, index, isTopRow }) => {
+  const SkillNode = ({ skillId, index }) => {
     const skill = skillsData.find(s => s.id === skillId);
     if (!skill) return null;
     const Icon = skill.icon;
 
     return (
-      <div className="relative z-10 flex flex-col items-center group">
+      <div className="relative z-10 flex flex-col items-center group flex-shrink-0">
         <motion.button
           variants={fadeIn('up', index * 0.05)}
           initial="hidden"
@@ -67,45 +68,30 @@ const SkillsPlayground = () => {
     );
   };
 
-  const ConnectorLine = () => (
-    <svg className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-visible" preserveAspectRatio="none">
-      <defs>
-        <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="transparent" />
-          <stop offset="50%" stopColor="#f13024" stopOpacity="0.2" />
-          <stop offset="100%" stopColor="transparent" />
-        </linearGradient>
-      </defs>
-      {/* Row 1 line */}
-      <line x1="0" y1="35%" x2="100%" y2="35%" stroke="url(#lineGrad)" strokeWidth="1" strokeDasharray="5,5" />
-      {/* Row 2 line */}
-      <line x1="0" y1="75%" x2="100%" y2="75%" stroke="url(#lineGrad)" strokeWidth="1" strokeDasharray="5,5" />
-    </svg>
-  );
-
   return (
-    <div className="w-full py-12 relative" ref={containerRef}>
-      <div className="max-w-6xl mx-auto px-4 relative h-[450px] md:h-[500px]">
-        
-        {/* Horizontal Scroll Wrapper for mobile/tablet */}
-        <div className="absolute inset-0 overflow-x-auto no-scrollbar overflow-y-hidden cursor-grab active:cursor-grabbing">
-          <motion.div 
-            animate={{ x: teaserOffset }}
-            transition={{ type: "spring", stiffness: 100, damping: 20 }}
-            className="relative h-full min-w-[800px] xl:min-w-0 flex flex-col justify-around py-8"
-          >
-            <ConnectorLine />
-            
-            {/* Row 1 */}
-            <div className="flex items-center justify-between px-8 relative">
-              {pipelineRow1.map((id, i) => <SkillNode key={id} skillId={id} index={i} isTopRow={true} />)}
-            </div>
+    <div className="w-full py-12 relative">
+      <div 
+        ref={pipelineRef}
+        className="max-w-6xl mx-auto px-4 relative h-[400px] md:h-[450px] overflow-x-auto overflow-y-hidden no-scrollbar cursor-grab active:cursor-grabbing"
+      >
+        <div className="relative h-full min-w-[900px] xl:min-w-0 flex flex-col justify-around py-8">
+          {/* Connector Line & Energy Flow */}
+          <div className="absolute top-[35%] left-0 w-full h-[1px] bg-white/10 pointer-events-none">
+            <div className="h-full w-40 bg-gradient-to-r from-transparent via-accent to-transparent pipeline-energy" />
+          </div>
+          <div className="absolute top-[75%] left-0 w-full h-[1px] bg-white/10 pointer-events-none">
+            <div className="h-full w-40 bg-gradient-to-r from-transparent via-accent to-transparent pipeline-energy" />
+          </div>
+          
+          {/* Row 1 */}
+          <div className="flex items-center justify-between px-8 relative z-10">
+            {pipelineRow1.map((id, i) => <SkillNode key={id} skillId={id} index={i} />)}
+          </div>
 
-            {/* Row 2 */}
-            <div className="flex items-center justify-between px-16 relative">
-              {pipelineRow2.map((id, i) => <SkillNode key={id} skillId={id} index={i} isTopRow={false} />)}
-            </div>
-          </motion.div>
+          {/* Row 2 */}
+          <div className="flex items-center justify-between px-16 relative z-10">
+            {pipelineRow2.map((id, i) => <SkillNode key={id} skillId={id} index={i + 6} />)}
+          </div>
         </div>
       </div>
 
@@ -128,6 +114,12 @@ const SkillsPlayground = () => {
       />
 
       <style jsx global>{`
+        @keyframes pipelineFlow {
+          0% { transform: translateX(-160px); opacity: 0; }
+          20% { opacity: 1; }
+          100% { transform: translateX(100vw); opacity: 0; }
+        }
+        .pipeline-energy { animation: pipelineFlow 4s linear infinite; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>

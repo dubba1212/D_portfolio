@@ -1,0 +1,171 @@
+Fix Skills pipeline animation + Projects swipe behavior + clean template wording/code, matching the previous “pipeline” feel shown in my screenshots.
+
+Repo: Next.js (pages router) + TailwindCSS + Framer Motion + Swiper.
+IMPORTANT: Keep existing animations and navigation behavior. Do NOT redesign the whole UI. Only restore the pipeline motion/feel, enable swipe drag for projects, and clean unused code/wording.
+
+========================================================
+A) SKILLS PLAYGROUND: RESTORE “PIPELINE FEEL” (ONE-TIME TEASER + STOP)
+========================================================
+CURRENT PROBLEM (from screenshots):
+- Skills look like a static grid of icons.
+- The previous “pipeline” feeling is missing (connected flow + motion/energy).
+- The skill area feels dead/flat compared to previous pipeline version.
+
+TARGET:
+- Bring back the old premium “pipeline” vibe:
+  - nodes aligned in a clean pipeline layout (two rows is OK)
+  - subtle connector line(s) behind nodes
+  - subtle energy flow animation along connectors
+  - hover glow + soft scale
+- One-time teaser movement when section enters viewport, then STOP forever (no loop).
+
+REQUIREMENTS:
+1) Remove internal/nested scrollbars in Skills:
+   - No overflow-y scrolling inside the Skills container.
+   - Only allow optional horizontal drag/scroll if needed (overflow-x-auto).
+   - Hide horizontal scrollbar.
+
+2) Build pipeline layout (two-level pipeline):
+   Row 1 (DevOps/Infra): Git → Jenkins → Docker → Kubernetes → Terraform → AWS/Azure/GCP
+   Row 2 (App/Data/AI): React/TS → Node/Express → Spring Boot → Postgres/MySQL → Redis → AI/LLM
+   - Nodes should be evenly spaced and aligned like a pipeline, not a grid.
+
+3) Add connector lines + “energy” flow:
+   - Add an SVG or div-based connector line behind nodes.
+   - Add a subtle animated gradient “energy bar” moving across the line (CSS keyframes).
+   - Keep it premium (soft glow, 3–5s cycle).
+
+4) One-time teaser motion:
+   - When Skills section becomes visible FIRST time:
+     - shift/slide pipeline slightly (like 60–120px) and then settle back (or scrollLeft).
+   - Must run only once using a ref flag (hasTeased.current).
+
+5) Interaction:
+   - Hover: glow + scale
+   - Click: keep existing click behavior (open existing skill modal/overlay).
+   - Do not change the modal system here.
+
+IMPLEMENTATION NOTES (do this exactly):
+- In SkillsPlayground component:
+  - remove setInterval/autoplay/marquee loop logic.
+  - ensure skills wrapper uses:
+    className="relative overflow-x-auto overflow-y-hidden no-scrollbar"
+- Add CSS:
+
+@keyframes pipelineFlow {
+  0% { transform: translateX(-160px); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translateX(100vw); opacity: 0; }
+}
+.pipeline-energy { animation: pipelineFlow 4s linear infinite; }
+
+- Add the energy bar behind nodes:
+  <div className="absolute top-1/2 left-0 w-full h-[2px] bg-white/10">
+    <div className="h-full w-40 bg-gradient-to-r from-transparent via-[#f13024] to-transparent pipeline-energy" />
+  </div>
+
+- Add teaser motion once:
+  const hasTeased = useRef(false);
+  useEffect(() => {
+    const el = pipelineRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !hasTeased.current) {
+        el.scrollTo({ left: 90, behavior: "smooth" });
+        setTimeout(() => el.scrollTo({ left: 0, behavior: "smooth" }), 650);
+        hasTeased.current = true;
+      }
+    }, { threshold: 0.4 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+DELIVERABLE:
+- Skills section feels like a connected animated pipeline again.
+- One-time teaser slide runs once, then stops.
+- No nested vertical scrollbars.
+- Hover glow/scale works; click still opens modal.
+
+========================================================
+B) PROJECTS: ENABLE MOUSE DRAG SWIPE (NO ARROW-ONLY UX)
+========================================================
+CURRENT PROBLEM (from screenshot):
+- Projects titles show, but navigation feels like “button click only”.
+- I want user to drag/swipe with mouse/trackpad to move to next slide once.
+
+TARGET:
+- Drag/swipe to move between project slides.
+- Keep Swiper animations the same, just make swipe the primary control.
+- Optional: keep arrows but not required.
+
+REQUIREMENTS:
+1) Swiper must allow:
+   - mouse drag (grabCursor)
+   - trackpad swipe
+   - mobile swipe
+2) Remove dependence on arrows:
+   - navigation arrows can be hidden or optional.
+3) Smooth snap:
+   - slide should snap into place, not free-scroll forever.
+
+IMPLEMENTATION:
+- Update Swiper config:
+  grabCursor={true}
+  navigation={false} (or keep but not required)
+  pagination={{ clickable: true }}
+  speed={650}
+  slidesPerView={1}
+  spaceBetween={18}
+
+- If you want “slide once per drag”, enable:
+  resistanceRatio={0.75}
+  threshold={10}
+  longSwipes={true}
+  longSwipesRatio={0.2}
+  followFinger={true}
+
+DELIVERABLE:
+- User can drag with mouse to move to next slide.
+- Works on desktop/mobile.
+- Existing look/animations remain.
+
+========================================================
+C) CLEANUP: REMOVE UNNECESSARY FILES, REQUESTS, AND TEMPLATE WORDING
+========================================================
+GOAL:
+- Remove unused files, unused requests, unused code lines.
+- Remove any wording that doesn’t reflect MY portfolio.
+
+REQUIREMENTS:
+1) Identify unused components/files:
+   - old slider components not used anymore
+   - duplicate skills components
+   - unused assets/images
+   - unused api calls/hooks
+   - unused CSS classes
+   Remove them ONLY if they are not referenced anywhere.
+
+2) Remove template/demo wording everywhere:
+   - Search and delete/replace text like:
+     "coming soon", "template", "demo", "sample", "example", "boilerplate"
+   - Replace with portfolio-accurate text.
+
+3) Keep project descriptions professional and real:
+   - If any card says “The project is coming soon”, remove or replace with:
+     “GitHub repository” or a real short description.
+
+DELIVERABLE:
+- Repo contains no dead code or unused files.
+- No template/demo wording remains.
+- Everything reads like Srikanth’s personal portfolio.
+
+========================================================
+FINAL OUTPUT CHECKLIST
+========================================================
+✅ Skills pipeline restored to animated “pipeline feel” (like earlier version)  
+✅ Projects carousel supports mouse drag swipe to next slide  
+✅ Unused files/code removed safely (no break)  
+✅ All template/demo wording removed  
+✅ No navigation/scroll/animation regressions  
+
+Start by fixing SkillsPlayground layout/animation first, then Projects Swiper swipe behavior, then cleanup pass.
