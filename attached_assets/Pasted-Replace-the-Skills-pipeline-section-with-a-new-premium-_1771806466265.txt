@@ -1,0 +1,98 @@
+Replace the Skills “pipeline” section with a new premium animated Skills Showcase using Framer Motion (NO looping/marquee/pipeline scroll). The current pipeline keeps looping and skills keep “coming and going”. I want to completely remove the pipeline logic and use a different animation layout that looks premium and stable.
+
+Repo: Next.js (pages router) + TailwindCSS + Framer Motion.
+IMPORTANT:
+- Remove ALL pipeline/marquee/autoplay logic (no infinite x-translation, no repeat Infinity, no duplicated arrays).
+- The Skills section must stay stable (skills always visible).
+- Keep the rest of the site unchanged (navigation, sections, backgrounds, projects, etc.).
+
+========================================================
+A) CURRENT PROBLEM
+========================================================
+- I can see the pipeline lines, but skills are still in a constant loop.
+- Skills keep moving in/out (marquee behavior) — this is the bug I want gone.
+- Instead of fixing pipeline again, REPLACE the Skills section with a different animation system.
+
+========================================================
+B) NEW TARGET: “SKILLS SHOWCASE” (STABLE + PREMIUM)
+========================================================
+Create a Skills section that is:
+- visually attractive and engineered
+- stable (no continuous movement across the screen)
+- interactive (hover + click)
+- uses Framer Motion micro-interactions only (fade/slide/scale/tilt/glow)
+- optional subtle background particles behind skills (very light)
+
+I want one of these two layouts (choose the best):
+OPTION 1 (preferred): “Orbit + Focus”
+- A central featured skill card (auto-rotates every 4–6 seconds OR changes only when user clicks).
+- Around it, 8–12 skill chips placed in a circle/orbit.
+- Hovering a chip highlights it (glow + lift).
+- Clicking a chip sets it as the focused skill in the center (with smooth transition).
+- Orbit can have a very slow subtle rotation ONLY if it does NOT look like looping content coming/going (keep orbit rotation extremely subtle, or stop rotation completely and just animate on selection).
+
+OPTION 2: “Interactive Skills Grid”
+- Premium glass grid of skill cards (2 rows).
+- On hover: glow + scale + slight tilt (CSS transform).
+- On click: expands into a detail panel/modal (reuse existing modal if available).
+- Add staggered entrance on scroll (Framer Motion whileInView).
+
+========================================================
+C) CONTENT (resume-aligned skills)
+========================================================
+Use these skill groups (do not invent random skills):
+DevOps/Cloud:
+- Git, Jenkins, Docker, Kubernetes, Terraform, AWS/Azure/GCP
+Full Stack:
+- React + TypeScript, Node.js + Express, Spring Boot, Postgres/MySQL, Redis
+AI:
+- OpenAI/ChatGPT API, AWS Bedrock, NLP (only if already in my resume/project content)
+
+Each skill should have:
+- label
+- icon (existing icons ok)
+- short proof tag (optional) like “CI/CD”, “Microservices”, “Caching”, “Cloud”, “API”, etc.
+
+========================================================
+D) IMPLEMENTATION REQUIREMENTS
+========================================================
+1) DELETE pipeline loop logic:
+- In Skills component, remove:
+  - setInterval / requestAnimationFrame loops
+  - Framer Motion repeat: Infinity animations
+  - duplicated skills arrays used for looping
+  - CSS marquee infinite keyframes
+- Remove connector line + pipeline energy movement if it’s tied to loop behavior.
+
+2) Build new Skills component:
+- Create: components/SkillsShowcase.js
+- Replace the Skills section usage in pages/index.js with <SkillsShowcase />
+- Keep section heading text “Skills Playground” (or rename to “Skills Showcase” if better).
+
+3) Add Framer Motion animations (stable):
+- Entrance: stagger children, fade+slide up whileInView
+- Hover: scale 1.05 + glow shadow + slight tilt
+- Click: animate selected skill into center (layoutId animation preferred if using Orbit layout)
+
+4) Modal/details:
+- If I already have skill modal logic, reuse it:
+  - clicking a skill opens the same modal
+  - modal close works (X, ESC, outside click)
+- If not, implement a lightweight detail modal with glass background.
+
+5) Performance + no overflow:
+- Ensure no horizontal scrollbar.
+- Ensure nothing moves continuously across viewport like a marquee.
+- Any subtle motion must be low amplitude and not appear like looping content.
+
+========================================================
+E) DELIVERABLE
+========================================================
+✅ Skills section no longer loops endlessly  
+✅ Skills always visible and stable  
+✅ Looks premium using Framer Motion micro-interactions  
+✅ Hover/click interactions feel modern  
+✅ No horizontal overflow / no scrollbars added  
+✅ Only Skills section changed; rest of site remains unchanged  
+
+Start by removing the pipeline loop code, then implement SkillsShowcase using OPTION 1 (Orbit + Focus). If OPTION 1 becomes too complex, fallback to OPTION 2 (Interactive Skills Grid) but keep it premium.
