@@ -1,0 +1,105 @@
+Replace the entire Skills section with a new “Systems Architecture Matrix” layout.
+
+Tech stack: Next.js (pages router) + TailwindCSS + Framer Motion.
+CRITICAL:
+- Remove all previous pipeline logic.
+- Remove all repeat: Infinity animations.
+- No continuous scrolling.
+- No marquee.
+- No duplicated arrays.
+- Section must remain stable.
+
+========================================================
+CONCEPT: SYSTEMS ARCHITECTURE MATRIX
+========================================================
+
+The Skills section should visually represent a production-grade system architecture.
+
+Layout:
+
+CENTER:
+A large glassmorphism “Core System” card that says:
+Title: Systems Engineer
+Subtitle: Full Stack • DevOps • AI
+Description: Building scalable production systems from frontend to infrastructure to intelligence.
+Button: View Technical Proof
+
+AROUND THE CORE:
+Four skill clusters arranged in quadrants:
+
+Top Left → Frontend Layer
+- React / TypeScript
+- UI Performance
+- State Management
+
+Top Right → Backend Layer
+- Node.js / Express
+- Spring Boot
+- REST APIs
+- Microservices
+
+Bottom Left → Infrastructure Layer
+- Docker
+- Kubernetes
+- Terraform
+- AWS / Azure / GCP
+- CI/CD (Jenkins)
+
+Bottom Right → Intelligence Layer
+- OpenAI API
+- AWS Bedrock
+- Data Pipelines
+- NLP
+
+========================================================
+ANIMATION RULES
+========================================================
+
+- Entrance: stagger fade + slide up (only once).
+- Hover on skill:
+  - scale 1.05
+  - glow effect
+  - thin animated SVG line appears connecting skill to core
+  - line draws once using strokeDash animation (no repeat).
+- Click skill:
+  - opens modal or expands detail card.
+- No repeat: Infinity.
+- No setInterval loops.
+- No requestAnimationFrame loops.
+- No autoplay motion.
+
+========================================================
+STYLE
+========================================================
+
+- Dark matte background (keep current).
+- Red accent glow (#f13024).
+- Thin elegant connection lines (white/20 opacity).
+- Subtle floating particles allowed (very slow, no looping marquee).
+- Glass panels with blur and soft shadow.
+
+========================================================
+RESPONSIVE
+========================================================
+
+- On mobile:
+  - Stack vertically.
+  - Core card first.
+  - Then grouped layers.
+- No horizontal overflow.
+- No scrollbars introduced.
+
+========================================================
+FILES
+========================================================
+
+1) Delete old Skills component logic.
+2) Create components/SystemsArchitectureMatrix.js
+3) Replace Skills section in pages/index.js with new component.
+
+========================================================
+
+Result should feel like:
+Enterprise system architecture visualization, professional, minimal, engineered, senior-level.
+
+Do NOT reintroduce any infinite loop behavior.
