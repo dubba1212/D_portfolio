@@ -5,7 +5,7 @@ import SectionIndicators from "../components/SectionIndicators";
 import ProjectsCarousel from '../components/ProjectsCarousel';
 import TestimonialSlider from '../components/TestimonialSlider';
 import Avatar from '../components/Avatar';
-import SystemsArchitectureMatrix from "../components/SystemsArchitectureMatrix";
+import SkillsBuilderToolkit from "../components/SkillsBuilderToolkit";
 import AboutTimeline from '../components/AboutTimeline';
 import Contact from '../components/Contact';
 import ProjectsBtn from "../components/ProjectsBtn";
@@ -95,10 +95,10 @@ const Home = () => {
             <h2 className='h2 text-5xl md:text-6xl font-black mb-6'>Skills <span className='text-accent'>Playground</span></h2>
             <div className='w-24 h-1 bg-gradient-to-r from-transparent via-accent to-transparent mx-auto mb-8'></div>
             <p className='text-white/70 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed'>
-              Enterprise system architecture visualization.
+              What I use to ship AI-powered, production-ready applications.
             </p>
           </motion.div>
-          <SystemsArchitectureMatrix />
+          <SkillsBuilderToolkit />
         </div>
       </section>
 

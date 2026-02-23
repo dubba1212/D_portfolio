@@ -1,0 +1,150 @@
+Redesign the Skills section into a NEW premium “AI Product Builder Toolkit” style (NOT the current Systems Architecture Matrix), while keeping the idea of grouping skills (Frontend, Backend, Infra/DevOps, AI). The goal is to align with my next 2-year target roles: Software Engineer, Full Stack Engineer, AI Engineer.
+
+Repo: Next.js (pages router) + TailwindCSS + Framer Motion.
+IMPORTANT:
+- Keep the site’s global theme (dark + red accent) and smooth motion style.
+- Do NOT use any looping marquee/pipeline animations.
+- Keep the rest of the portfolio unchanged (nav, backgrounds, sections).
+
+========================================================
+A) CURRENT STATE + PROBLEM
+========================================================
+- Current section is clean and grouped, but it feels like a “static dashboard”.
+- Animation is smooth, but I want a NEW style that feels more like:
+  “I’m building an AI application end-to-end.”
+- I still want grouped categories (Frontend, Backend, Infra/DevOps, AI), but with a more interactive/attractive presentation.
+
+========================================================
+B) NEW TARGET: “AI PRODUCT BUILDER TOOLKIT” (PREMIUM + INTERACTIVE)
+========================================================
+Create a Skills section that looks like a product-building toolkit:
+- Left side: Category selector tabs (Frontend / Backend / Infra / AI)
+- Center: “Build Flow” board showing the chosen category’s tools as interactive modules
+- Right side: “Build Output” panel showing what I can build using those skills
+  (ex: “AI Assistant Extension”, “Full-stack Web App”, “Microservice Platform”, “RAG Chatbot”)
+
+Key feel:
+- More like a real software builder workflow.
+- Recruiter sees: UI → API → Infra → AI integration in one glance.
+
+========================================================
+C) LAYOUT SPEC (MUST FOLLOW)
+========================================================
+1) Section Header (keep same typography)
+- Title: Skills Playground (or rename to “Builder Toolkit”)
+- Subtitle: “What I use to ship AI-powered, production-ready applications.”
+
+2) 3-Column Grid (desktop)
+LEFT (Category Tabs):
+- 4 vertical tabs with icons:
+  - Frontend
+  - Backend
+  - Infrastructure
+  - AI / LLM
+- Clicking a tab updates center + right panels.
+- Active tab glows red and has a subtle pulse.
+
+CENTER (Toolkit Modules Grid):
+- Show 6–10 “modules” (chips/cards) for the selected category.
+- Each module:
+  - icon
+  - name
+  - short tag (ex: “UI”, “API”, “Deploy”, “LLM”, “Data”)
+- Hover: tilt + glow + soft scale
+- Click: opens a small “Proof Drawer” BELOW center panel (NOT a modal that blocks the page)
+  Drawer shows:
+  - 1–2 bullet proof points (from resume/projects if available)
+  - optional link button “View Project / GitHub”
+
+RIGHT (Build Output Panel):
+- Shows “What this enables” for the selected category:
+  - 3–4 outcomes cards (mini)
+  Example outcomes:
+    Frontend -> “Dashboard UI”, “Performance UI”, “Reusable component systems”
+    Backend -> “REST APIs”, “Auth/JWT”, “Microservices”
+    Infra -> “CI/CD pipelines”, “K8s deployments”, “IaC automation”
+    AI -> “ChatGPT tools”, “Bedrock integration”, “RAG pipeline”
+- Add a “Compose” button:
+  - When clicked: briefly highlights the path across all categories (Frontend→Backend→Infra→AI)
+  - This highlight must be a ONE-TIME animation (2 seconds) and then stops.
+
+Mobile:
+- Stack order: Tabs (horizontal) → Modules → Output → Drawer
+- No overflow / no horizontal scrollbar.
+
+========================================================
+D) ANIMATION RULES (NO LOOPS)
+========================================================
+- Entrance: stagger fade-up (Framer Motion whileInView) once.
+- Tab switch:
+  - smooth crossfade/slide between module sets (AnimatePresence)
+- Hover modules:
+  - scale 1.04
+  - glow ring
+  - slight tilt using transform perspective
+- Proof Drawer:
+  - slide down + fade in, close button works.
+- “Compose” highlight:
+  - run once on click (2s), NO repeat Infinity.
+
+========================================================
+E) CONTENT (use these groupings)
+========================================================
+Frontend:
+- React / TypeScript
+- UI Performance
+- State Management
+
+Backend:
+- Node.js / Express
+- Spring Boot
+- REST APIs
+- Microservices
+
+Infrastructure:
+- Docker
+- Kubernetes
+- Terraform
+- AWS / Azure / GCP
+- CI/CD (Jenkins)
+
+AI / LLM:
+- OpenAI API
+- AWS Bedrock
+- Data Pipelines
+- NLP (only if already relevant in my portfolio content)
+
+========================================================
+F) IMPLEMENTATION STEPS
+========================================================
+1) Create new component:
+- components/SkillsBuilderToolkit.js
+
+2) Replace current Skills section usage in pages/index.js:
+- Remove old Skills Matrix component import/usage
+- Add <SkillsBuilderToolkit />
+
+3) Add small reusable components:
+- components/SkillTab.js
+- components/SkillModule.js
+- components/ProofDrawer.js
+
+4) Ensure no infinite animations:
+- Search and remove in skills files:
+  - repeat: Infinity
+  - marquee CSS
+  - setInterval loops
+  - requestAnimationFrame loops
+
+========================================================
+G) DELIVERABLE
+========================================================
+✅ A new Skills section style (Toolkit) that feels like building an AI application end-to-end  
+✅ Grouped categories remain (Frontend/Backend/Infra/AI)  
+✅ Smooth transitions and premium micro-interactions  
+✅ Proof Drawer opens/closes correctly (no stuck UI)  
+✅ No looping/marquee behavior  
+✅ No horizontal overflow / no scrollbars introduced  
+✅ Rest of portfolio unchanged  
+
+Start implementing SkillsBuilderToolkit first. Keep styling consistent with my dark + red theme.
