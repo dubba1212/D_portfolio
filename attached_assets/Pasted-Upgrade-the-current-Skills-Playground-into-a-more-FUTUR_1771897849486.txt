@@ -1,0 +1,112 @@
+Upgrade the current Skills Playground into a more FUTURISTIC interactive “Neural Sandbox Board” with stronger playground feel.
+
+Stack: Next.js (pages router) + TailwindCSS + Framer Motion.
+IMPORTANT:
+- Keep the existing functionality: tabs switch categories; clicking a module opens the proof/drawer.
+- Do NOT introduce marquee/pipeline looping where skills move off-screen.
+- Add premium futuristic motion + playground interactions.
+- No horizontal overflow.
+
+========================================================
+A) DEFINE COMPOSE_ARCHITECTURE (MAKE IT REAL)
+========================================================
+The button COMPOSE_ARCHITECTURE should run a one-time “System Build Sequence”.
+
+When clicked:
+1) Auto-highlight tabs in sequence:
+   Frontend -> Backend -> Infrastructure -> AI/LLM (200ms each)
+2) For each tab, highlight the first module in that category (brief glow pulse)
+3) Animate thin neon “wiring lines” from Center modules to Output Streams panel (stroke draw)
+4) Populate Output Streams with a FULL architecture blueprint:
+   - UI Layer: React/TS dashboard UI
+   - API Layer: Node/Express REST APIs + Auth/JWT
+   - Services: Spring Boot microservice (optional) OR microservices
+   - Data: Postgres + Redis
+   - Deploy: Docker + Kubernetes + CI/CD
+   - AI: OpenAI API + (optional) RAG/Data pipeline
+5) Show a “Build Summary” in the Proof Dock:
+   Title: SYSTEM BLUEPRINT GENERATED
+   Bullet list: stack + what it ships
+6) Sequence runs once (2–3 seconds) then stops (NO repeat Infinity)
+
+========================================================
+B) LAYOUT CHANGE: NEURAL SANDBOX BOARD
+========================================================
+Keep the 3-column idea but change visual structure:
+
+LEFT: Tabs (same logic)
+- Make tabs look like “workflow switches”
+- Active tab has animated scanning border
+
+CENTER: Neural Board (NEW)
+- Modules are arranged like a circuit board (grid, but irregular spacing)
+- Add a subtle background grid + dots inside the center panel only
+- Each module card feels like a chip:
+  - layered glass
+  - inner glow
+  - tiny “status LED” dot blinking slowly
+
+RIGHT: Output Streams (enhance)
+- Each output item has a subtle animated “stream line” running beside it
+- On hover over a module, the relevant output stream glows
+
+BOTTOM: Proof Dock (change from drawer to dock)
+- Instead of a big drawer in the middle, create a bottom “terminal dock”
+- When a module is clicked:
+  - dock slides up from bottom inside the section (not full screen)
+  - terminal-style header + close button works
+  - includes: proof bullets + “View Project” button
+- Add a tiny blinking cursor in the dock header.
+
+========================================================
+C) PLAYGROUND INTERACTIONS (WOW FACTOR)
+========================================================
+1) Magnetic hover:
+- Modules slightly move toward cursor within 6–10px max (subtle)
+- Implement with mousemove on the center panel only
+- Must not create performance issues (throttle)
+
+2) Pulse + energy wiring:
+- On module hover:
+  - pulse ring expands from icon
+  - thin neon line draws from module -> Output Streams panel (only while hovering)
+  - line disappears on hover out
+
+3) Cinematic tab switching:
+- Use AnimatePresence:
+  - modules blur/fade out + slide
+  - new modules blur/fade in + slide
+- Duration 0.35–0.55s, easeOut
+
+========================================================
+D) TAILWIND FUTURISTIC STYLING (APPLY TO PANELS)
+========================================================
+- Add layered glass:
+  bg-white/5 backdrop-blur-xl border border-white/10
+- Add “hologram” overlay via ::before (gradient + scanlines)
+- Add scanning border animation to active elements (tabs & center panel)
+- Add inner shadow and subtle glow:
+  shadow-[0_0_40px_rgba(241,48,36,0.12)]
+
+========================================================
+E) REMOVE ANY LOOPING BEHAVIOR
+========================================================
+- Ensure no repeat:Infinity and no setInterval loops driving movement.
+- Only hover-based motion + one-time compose sequence.
+
+========================================================
+F) FILES TO UPDATE
+========================================================
+- Update the Skills component (SkillsBuilderToolkit / SkillsPlayground)
+- Update globals.css for hologram overlays, scanlines, pulse rings
+- No other site sections should change
+
+========================================================
+DELIVERABLE
+========================================================
+✅ Skills section feels like a futuristic AI playground
+✅ User “builds” an architecture with COMPOSE_ARCHITECTURE
+✅ Modules feel interactive (magnetic hover + wiring lines)
+✅ Proof shows in a terminal dock (close works)
+✅ No infinite loops, no skills sliding away
+✅ No overflow/scrollbar issues

@@ -173,6 +173,36 @@ body::-webkit-scrollbar {
     z-index: 2;
   }
 
+  /* Neural Sandbox Board Utilities */
+  .neural-grid {
+    background-image: radial-gradient(rgba(241,48,36,0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+  .scanning-border {
+    position: relative;
+  }
+  .scanning-border::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 1px solid rgba(241,48,36,0.3);
+    border-radius: inherit;
+    mask-image: linear-gradient(to right, transparent, black, transparent);
+    mask-size: 200% 100%;
+    animation: scanBorder 3s linear infinite;
+  }
+  @keyframes scanBorder {
+    0% { mask-position: 200% 0; }
+    100% { mask-position: -200% 0; }
+  }
+  .led-blink {
+    animation: ledBlink 2s ease-in-out infinite;
+  }
+  @keyframes ledBlink {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.2); box-shadow: 0 0 8px #f13024; }
+  }
+
   .scanline-overlay {
     position: absolute;
     inset: 0;
