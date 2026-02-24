@@ -1,0 +1,211 @@
+Update the Skills Playground (Scenario Selector + Drag-to-Connect) with the following UX rules and improvements.
+
+Stack: Next.js (pages router) + TailwindCSS + Framer Motion.
+CRITICAL:
+- Do NOT navigate away from the page.
+- No full-screen overlays.
+- No infinite marquee loops.
+- Keep everything inside the Skills section container.
+- No horizontal overflow; no scrollbars introduced.
+
+========================================================
+1) ADD MORE SCENARIOS (MULTIPLE)
+========================================================
+Expand Scenario Selector from 3 to 6 (or 7) pill buttons.
+
+Add these scenarios (keep existing 3, add more):
+1) Build AI Chatbot
+2) Build SaaS Dashboard
+3) Build Microservices Platform
+4) Build DevOps CI/CD Pipeline
+5) Build Real-time Data Pipeline
+6) Build AI-Powered Search (RAG)
+(Optional 7) Build Monitoring & Observability
+
+UI:
+- Pills should wrap on smaller screens.
+- Active scenario pill has a stronger glow + subtle scanning border.
+
+========================================================
+2) SCENARIO CLICK BEHAVIOR: SHOW ONLY NEEDED SKILLS
+========================================================
+When a scenario is clicked:
+- The CENTER board must show ONLY the modules required for that scenario (hide the rest temporarily).
+- The RIGHT Output Streams must show ONLY the outputs for that scenario.
+- Do NOT keep showing whatever module was previously selected.
+- Instead, show a “Scenario Plan” in the bottom dock (terminal) with:
+  - Title: "SCENARIO PLAN"
+  - List of required modules by category (Frontend/Backend/Infra/AI)
+  - A short 1–2 line explanation of what gets built
+
+After scenario is set:
+- User can click any of the displayed modules to view proof (normal behavior).
+- “Compose_Architecture” should build ONLY the currently active scenario blueprint.
+
+Implementation detail:
+- Add state: activeScenarioId
+- Add state: scenarioModulesByTab (derived from scenario definition)
+- On scenario click: clear selectedModuleId and openDock with scenarioPlan mode.
+
+========================================================
+3) TERMINAL / DOCK RULES (IMPORTANT FIX)
+========================================================
+The bottom terminal dock must NOT remain visible permanently.
+
+New behavior:
+- Dock is CLOSED by default.
+- Dock opens ONLY when:
+  A) user clicks a module (module proof mode)
+  B) user clicks a scenario (scenario plan mode)
+  C) user clicks Compose_Architecture (scenario blueprint mode)
+
+Dock must CLOSE automatically when:
+- user switches the main category tab (Frontend/Backend/Infrastructure/AI)
+- user clicks outside the dock AND outside a module
+- user clicks the close (X)
+
+Also:
+- If user changes category tabs, clear selectedModuleId and close the dock.
+- If user clicks a different scenario, clear selectedModuleId and replace dock content with scenario plan.
+
+========================================================
+4) GITHUB LINK LOGIC (SCENARIO ONLY, OPTIONAL, AUTO)
+========================================================
+DO NOT show GitHub links for every skill/module anymore.
+Remove/disable GitHub button inside module proof mode entirely.
+
+Only show GitHub link optionally in the Scenario Plan / Blueprint (one place only).
+
+Logic:
+- When a scenario is clicked, attempt to find a matching GitHub repository from my public GitHub:
+  username: "dubba1212"
+
+Method (automatic):
+- Use fetch to GitHub API: https://api.github.com/users/dubba1212/repos?per_page=100
+- Cache results in sessionStorage for performance.
+- Match scenario keywords against repo.name + repo.description + repo.topics (if available).
+- If a match is found:
+  - show ONE button in scenario dock: "View matching repo"
+  - link to that repo.html_url
+- If no match found:
+  - do not show any GitHub link/button at all (hide the button area).
+
+Matching examples (keywords per scenario):
+- AI Chatbot: ["chat", "bot", "llm", "openai", "assistant"]
+- SaaS Dashboard: ["dashboard", "admin", "portal", "ui"]
+- Microservices Platform: ["microservice", "spring", "services"]
+- DevOps CI/CD Pipeline: ["devops", "ci", "cd", "jenkins", "kubernetes", "docker", "terraform"]
+- Real-time Data Pipeline: ["data", "pipeline", "stream", "etl", "spark", "kafka"]
+- AI Search (RAG): ["rag", "search", "retrieval", "vector", "embedding"]
+
+Safety:
+- Handle rate limit gracefully: if GitHub fetch fails, just hide link.
+
+========================================================
+5) GUIDED MODE — EXPLAIN + FIX OR REMOVE
+========================================================
+WHAT GUIDED MODE SHOULD MEAN:
+Guided Mode = “progression game” that locks next tabs until the user completes at least one connection for the current stage.
+
+Current issue:
+When user toggles guided mode ON mid-way, they get stuck in the current module state.
+
+Fix behavior:
+- Guided Mode should NOT trap the user in a selected module.
+- When Guided Mode is toggled ON:
+  - Clear selectedModuleId
+  - Close dock
+  - Reset stageProgress to current tab
+  - Show a tiny hint text: "Connect a module to an output to unlock the next stage."
+- Provide a “Reset Guided Progress” small button next to the toggle.
+
+If Guided Mode feels unnecessary or still causes friction:
+- Remove the Guided Mode toggle entirely and leave all tabs unlocked always.
+(Prefer FIX, but if implementation becomes messy, remove it.)
+
+Default:
+- Guided Mode OFF by default.
+
+========================================================
+6) DRAG-TO-CONNECT UX IMPROVEMENTS (MORE INTERESTING, STILL SUBTLE)
+========================================================
+Make drag-to-connect more satisfying but not chaotic.
+
+Add:
+- Ghost wire follows cursor during drag (SVG path).
+- Drop targets (output items) glow when hovered during drag.
+- On successful connect:
+  - quick snap pulse on module and output
+  - show a tiny “linked” LED dot on both
+  - store connection in state and render a permanent thin neon wire
+- Add a tiny “Connections” counter near Output Streams header.
+
+Mobile fallback:
+- Tap module -> UI says “Now tap an output to connect”
+- Tap output -> connect
+
+Connections must be scoped to the active scenario if a scenario is selected:
+- If scenario is active, only allow connecting scenario outputs.
+- If no scenario active, allow connecting normal outputs for that tab.
+
+========================================================
+7) SCENARIO DEFINITIONS (MUST IMPLEMENT)
+========================================================
+Create a single config object like scenarios.js:
+
+Each scenario contains:
+- id, label
+- requiredModules grouped by main tab category
+- outputs list
+- optional keywords list for GitHub matching
+
+Example requirements:
+
+A) Build AI Chatbot
+Frontend: React/TS, UI Perf
+Backend: Node/Express, Auth/JWT
+Infrastructure: Docker, Kubernetes
+AI: OpenAI API / AWS Bedrock, NLP
+Outputs: Chat UI, Auth, API Gateway, LLM Tools, Deployment
+
+B) Build SaaS Dashboard
+Frontend: React/TS, State Mgmt, UI Perf
+Backend: REST APIs, Auth/JWT
+Infrastructure: CI/CD, AWS/Azure/GCP, Postgres
+AI optional: OpenAI API (Insights)
+Outputs: Dashboard UI, RBAC/Auth, APIs, Database, Deployment
+
+C) Build Microservices Platform
+Backend: Spring Boot, REST APIs, Microservices
+Infrastructure: Docker, Kubernetes, Terraform, CI/CD(Jenkins)
+Data: Postgres/Redis
+Outputs: Services, Gateway, Orchestration, IaC, Pipeline
+
+D) Build DevOps CI/CD Pipeline
+Infrastructure: Jenkins, Git, Docker, Kubernetes, Terraform
+Outputs: Build pipeline, Deploy pipeline, Rollback strategy, Environments
+
+E) Build Real-time Data Pipeline
+Backend/Data: Python, SQL, Postgres, Redis
+Infrastructure: AWS/GCP, Docker
+AI optional: NLP
+Outputs: Ingestion, Processing, Storage, Monitoring
+
+F) Build AI-Powered Search (RAG)
+Backend: Node/Express or Python
+Data: Postgres, Redis
+Infrastructure: Docker
+AI: OpenAI API / Bedrock, Embeddings/NLP
+Outputs: Retriever, Ranker, Prompting, APIs, Deployment
+
+========================================================
+8) DELIVERABLE
+========================================================
+✅ More scenarios added
+✅ Scenario click shows ONLY required modules + outputs
+✅ Dock closes automatically when changing tabs / leaving module
+✅ No GitHub links for skills/modules
+✅ Scenario shows ONE GitHub repo link only if matched from my GitHub repos, else none
+✅ Guided Mode is fixed (no getting stuck) OR removed if friction remains
+✅ Drag-to-connect looks more interactive but stays subtle and premium
+✅ No navigation away, no overflow, no scrollbars
