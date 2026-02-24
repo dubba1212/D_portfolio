@@ -1,28 +1,31 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { motion, AnimatePresence, useSpring, useMotionValue, useTransform } from 'framer-motion';
+import { motion, AnimatePresence, useSpring, useMotionValue } from 'framer-motion';
 import { 
   SiDocker, SiKubernetes, SiReact, SiPostgresql, SiNodedotjs, SiGit, 
   SiAmazonaws, SiOpenai, SiTypescript, SiSpringboot, SiTerraform, 
   SiRedis, SiJenkins
 } from 'react-icons/si';
-import { FaCode, FaServer, FaCogs, FaBrain, FaExternalLinkAlt, FaTimes, FaCopy, FaCheck } from 'react-icons/fa';
+import { FaCode, FaServer, FaCogs, FaBrain, FaExternalLinkAlt, FaTimes, FaCopy, FaCheck, FaLock, FaRocket, FaFlask } from 'react-icons/fa';
 
-const SkillTab = ({ id, label, icon: Icon, active, onClick, isComposingActive }) => (
+const SkillTab = ({ id, label, icon: Icon, active, locked, onClick, isComposingActive }) => (
   <motion.button
-    onClick={() => onClick(id)}
-    whileHover={{ x: 5 }}
-    whileTap={{ scale: 0.95 }}
+    onClick={() => !locked && onClick(id)}
+    whileHover={!locked ? { x: 5 } : {}}
+    whileTap={!locked ? { scale: 0.95 } : {}}
     className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all duration-300 border holo-card group relative ${
       active || isComposingActive
       ? 'bg-accent/20 border-accent/50 text-white shadow-[0_0_20px_rgba(241,48,36,0.3)]' 
+      : locked 
+      ? 'bg-black/40 border-white/5 text-white/20 cursor-not-allowed opacity-50'
       : 'bg-secondary/20 border-white/5 text-white/50 hover:border-white/20 hover:text-white'
     } ${active ? 'scanning-border' : ''}`}
   >
     <div className="holo-sweep group-hover:animate-holo-sweep" />
     <div className={`relative z-10 text-xl ${active || isComposingActive ? 'text-accent' : ''}`}>
-      <Icon />
+      {locked ? <FaLock className="text-sm" /> : <Icon />}
     </div>
     <span className="relative z-10 text-xs font-black uppercase tracking-widest">{label}</span>
+    {locked && <span className="ml-auto text-[8px] font-bold text-white/20 uppercase tracking-tighter">LOCKED</span>}
     {(active || isComposingActive) && (
       <motion.div 
         layoutId="activeTabDot"
@@ -32,11 +35,9 @@ const SkillTab = ({ id, label, icon: Icon, active, onClick, isComposingActive })
   </motion.button>
 );
 
-const SkillModule = ({ skill, active, onClick, isComposingActive, onHover, boardRef }) => {
+const SkillModule = ({ skill, active, onClick, isComposingActive, onHover, onDragStart, id }) => {
   const [isPulsing, setIsPulsing] = useState(false);
   const Icon = skill.icon || SiReact;
-  
-  // Magnetic Effect
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const springX = useSpring(x, { stiffness: 150, damping: 15 });
@@ -46,34 +47,29 @@ const SkillModule = ({ skill, active, onClick, isComposingActive, onHover, board
     const rect = e.currentTarget.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
-    const distanceX = e.clientX - centerX;
-    const distanceY = e.clientY - centerY;
-    
-    // Max 8px movement
-    x.set(distanceX * 0.1);
-    y.set(distanceY * 0.1);
+    x.set((e.clientX - centerX) * 0.1);
+    y.set((e.clientY - centerY) * 0.1);
   };
 
   const handleMouseLeave = () => {
-    x.set(0);
-    y.set(0);
+    x.set(0); y.set(0);
     onHover(null);
-  };
-
-  const handleClick = () => {
-    setIsPulsing(true);
-    setTimeout(() => setIsPulsing(false), 800);
-    onClick(skill);
   };
 
   return (
     <motion.button
+      id={`module-${skill.id}`}
       style={{ x: springX, y: springY, perspective: '1000px' }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       onMouseEnter={() => onHover(skill.id)}
-      onClick={handleClick}
-      className={`relative group p-4 rounded-xl border bg-secondary/40 backdrop-blur-md transition-all duration-300 text-left holo-card ${
+      onPointerDown={(e) => onDragStart(e, skill.id)}
+      onClick={() => {
+        setIsPulsing(true);
+        setTimeout(() => setIsPulsing(false), 800);
+        onClick(skill);
+      }}
+      className={`relative group p-4 rounded-xl border bg-secondary/40 backdrop-blur-md transition-all duration-300 text-left holo-card touch-none ${
         active || isComposingActive
         ? 'border-accent/50 shadow-[0_0_30px_rgba(241,48,36,0.2)]' 
         : 'border-white/5 hover:border-accent/30'
@@ -109,13 +105,11 @@ const ProofDock = ({ skill, onClose }) => {
       exit={{ y: 100, opacity: 0 }}
       className="absolute bottom-0 left-0 w-full z-50 p-4"
     >
-      <div className="bg-[#0a0a0c]/90 backdrop-blur-2xl border border-accent/30 rounded-2xl shadow-[0_-20px_50px_rgba(0,0,0,0.5)] overflow-hidden">
+      <div className="bg-[#0a0a0c]/95 backdrop-blur-2xl border border-accent/30 rounded-2xl shadow-[0_-20px_50px_rgba(0,0,0,0.5)] overflow-hidden">
         <div className="flex items-center justify-between p-4 border-b border-white/5 bg-white/5">
-          <div className="flex items-center gap-3">
-            <div className="text-accent animate-pulse font-mono text-xs tracking-tighter">
-              {skill.id === 'blueprint' ? 'SYSTEM_BLUEPRINT_GEN' : `MODULE_DATA_STREAM: ${skill.label.toUpperCase()}`}
-              <span className="cursor-blink">_</span>
-            </div>
+          <div className="text-accent animate-pulse font-mono text-[10px] tracking-tighter">
+            {skill.id === 'blueprint' ? 'SCENARIO_BLUEPRINT_GENERATED' : `MODULE_DATA_STREAM: ${skill.label.toUpperCase()}`}
+            <span className="cursor-blink">_</span>
           </div>
           <div className="flex items-center gap-4">
             <button 
@@ -124,34 +118,36 @@ const ProofDock = ({ skill, onClose }) => {
                 setCopied(true);
                 setTimeout(() => setCopied(false), 2000);
               }}
-              className="text-[10px] text-white/40 hover:text-accent flex items-center gap-1 uppercase font-bold"
+              className="text-[10px] text-white/40 hover:text-white flex items-center gap-1 uppercase font-bold"
             >
               {copied ? <FaCheck className="text-green-500" /> : <FaCopy />} {copied ? 'COPIED' : 'COPY'}
             </button>
-            <button onClick={onClose} className="text-white/30 hover:text-white transition-colors">
+            <button onClick={onClose} className="text-white/30 hover:text-white">
               <FaTimes />
             </button>
           </div>
         </div>
         <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 max-h-[250px] overflow-y-auto no-scrollbar">
-          <ul className="space-y-2">
-            {skill.bullets?.map((bullet, i) => (
-              <li key={i} className="flex gap-2 text-[12px] text-white/70 font-mono">
-                <span className="text-accent">{'>'}</span>
-                <span>{bullet}</span>
-              </li>
-            ))}
-          </ul>
-          {skill.id !== 'blueprint' && (
-            <div className="flex items-end justify-end">
-              <motion.button 
-                whileHover={{ x: 5 }}
-                className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-accent border border-accent/20 px-4 py-2 rounded-lg hover:bg-accent/10 transition-all"
-              >
-                <FaExternalLinkAlt /> View Source
-              </motion.button>
-            </div>
-          )}
+          <div className="space-y-4">
+            <ul className="space-y-2">
+              {skill.bullets?.map((bullet, i) => (
+                <li key={i} className="flex gap-2 text-[12px] text-white/70 font-mono">
+                  <span className="text-accent">{'>'}</span>
+                  <span>{bullet}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="flex flex-col justify-between items-end">
+            <p className="text-[10px] text-white/40 italic mb-4 text-right">{skill.description}</p>
+            <motion.button 
+              whileHover={{ x: 5 }}
+              onClick={() => window.open('https://github.com/DubbaSrikanthReddy', '_blank')}
+              className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-accent border border-accent/20 px-4 py-2 rounded-lg hover:bg-accent/10"
+            >
+              <FaExternalLinkAlt /> View GitHub
+            </motion.button>
+          </div>
         </div>
       </div>
     </motion.div>
@@ -164,6 +160,15 @@ const SkillsBuilderToolkit = () => {
   const [hoveredSkillId, setHoveredSkillId] = useState(null);
   const [isComposing, setIsComposing] = useState(false);
   const [composingStep, setComposingStep] = useState(null);
+  const [guidedMode, setGuidedMode] = useState(false);
+  const [unlockedTabs, setUnlockedTabs] = useState(['frontend']);
+  const [connections, setConnections] = useState([]);
+  const [dragging, setDragging] = useState(false);
+  const [dragStartPos, setDragStartPos] = useState({ x: 0, y: 0 });
+  const [dragCurrentPos, setDragCurrentPos] = useState({ x: 0, y: 0 });
+  const [dragSourceId, setDragSourceId] = useState(null);
+  const [activeDropTarget, setActiveDropTarget] = useState(null);
+
   const boardRef = useRef(null);
 
   const categories = [
@@ -176,120 +181,227 @@ const SkillsBuilderToolkit = () => {
   const toolkitData = {
     frontend: {
       modules: [
-        { id: 'react', label: 'React / TS', icon: SiReact, tag: 'UI', bullets: ['Built high-performance dashboards.', 'Reusable component libraries.'] },
-        { id: 'ui-perf', label: 'UI Perf', icon: SiTypescript, tag: 'Optimize', bullets: ['Reduced LCP by 40%.', 'Implemented code splitting.'] },
-        { id: 'state', label: 'State Mgmt', icon: SiRedis, tag: 'Data', bullets: ['Complex Redux/Zustand workflows.', 'Real-time data synchronization.'] },
+        { id: 'react', label: 'React / TS', icon: SiReact, tag: 'UI', bullets: ['Built high-performance dashboards.', 'Reusable component libraries.'], description: 'Modern UI engineering with strong focus on performance and accessibility.' },
+        { id: 'ui-perf', label: 'UI Perf', icon: SiTypescript, tag: 'Optimize', bullets: ['Reduced LCP by 40%.', 'Implemented code splitting.'], description: 'Frontend optimization and performance metrics auditing.' },
+        { id: 'state', label: 'State Mgmt', icon: SiRedis, tag: 'Data', bullets: ['Complex Redux/Zustand workflows.', 'Real-time data synchronization.'], description: 'Scalable state management patterns for enterprise applications.' },
       ],
-      outcomes: ['Dashboard UI', 'Performance UI', 'Component Systems']
+      outcomes: [
+        { id: 'out-dash', label: 'Dashboard UI' },
+        { id: 'out-perf', label: 'Performance UI' },
+        { id: 'out-comp', label: 'Component Systems' }
+      ]
     },
     backend: {
       modules: [
-        { id: 'node', label: 'Node/Express', icon: SiNodedotjs, tag: 'API', bullets: ['Scalable RESTful services.', 'Real-time WebSockets integration.'] },
-        { id: 'springboot', label: 'Spring Boot', icon: SiSpringboot, tag: 'Enterprise', bullets: ['Microservices architecture.', '90%+ test coverage.'] },
-        { id: 'auth', label: 'Auth/JWT', icon: SiGit, tag: 'Security', bullets: ['OAuth2 & JWT implementation.', 'Secure session management.'] },
+        { id: 'node', label: 'Node/Express', icon: SiNodedotjs, tag: 'API', bullets: ['Scalable RESTful services.', 'Real-time WebSockets integration.'], description: 'Server-side engineering for high-traffic data pipelines.' },
+        { id: 'springboot', label: 'Spring Boot', icon: SiSpringboot, tag: 'Enterprise', bullets: ['Microservices architecture.', '90%+ test coverage.'], description: 'Robust enterprise Java development with Spring ecosystem.' },
+        { id: 'auth', label: 'Auth/JWT', icon: SiGit, tag: 'Security', bullets: ['OAuth2 & JWT implementation.', 'Secure session management.'], description: 'Authentication and authorization security protocols.' },
       ],
-      outcomes: ['REST APIs', 'Auth Systems', 'Microservices']
+      outcomes: [
+        { id: 'out-api', label: 'REST APIs' },
+        { id: 'out-auth', label: 'Auth/JWT' },
+        { id: 'out-micro', label: 'Microservices' }
+      ]
     },
     infrastructure: {
       modules: [
-        { id: 'docker', label: 'Docker', icon: SiDocker, tag: 'Container', bullets: ['Optimized multi-stage builds.', 'Standardized dev environments.'] },
-        { id: 'k8s', label: 'Kubernetes', icon: SiKubernetes, tag: 'Orchestrate', bullets: ['Helm chart management.', 'Auto-scaling production clusters.'] },
-        { id: 'terraform', label: 'Terraform', icon: SiTerraform, tag: 'IaC', bullets: ['Infrastructure as Code for AWS/GCP.', 'Automated environment teardowns.'] },
-        { id: 'jenkins', label: 'Jenkins', icon: SiJenkins, tag: 'CI/CD', bullets: ['Automated build & test pipelines.', 'Blue/Green deployment strategy.'] },
+        { id: 'docker', label: 'Docker', icon: SiDocker, tag: 'Container', bullets: ['Optimized multi-stage builds.', 'Standardized dev environments.'], description: 'Containerization and environment orchestration.' },
+        { id: 'k8s', label: 'Kubernetes', icon: SiKubernetes, tag: 'Orchestrate', bullets: ['Helm chart management.', 'Auto-scaling production clusters.'], description: 'Cluster management and cloud-native scaling.' },
+        { id: 'terraform', label: 'Terraform', icon: SiTerraform, tag: 'IaC', bullets: ['Infrastructure as Code for AWS/GCP.', 'Automated environment teardowns.'], description: 'Cloud infrastructure automation and management.' },
+        { id: 'jenkins', label: 'Jenkins', icon: SiJenkins, tag: 'CI/CD', bullets: ['Automated build & test pipelines.', 'Blue/Green deployment strategy.'], description: 'Continuous integration and deployment engineering.' },
       ],
-      outcomes: ['CI/CD Pipelines', 'K8s Clusters', 'IaC Automation']
+      outcomes: [
+        { id: 'out-cicd', label: 'CI/CD Pipelines' },
+        { id: 'out-k8s', label: 'K8s Clusters' },
+        { id: 'out-iac', label: 'IaC Automation' }
+      ]
     },
     ai: {
       modules: [
-        { id: 'openai', label: 'OpenAI API', icon: SiOpenai, tag: 'LLM', bullets: ['Prompt engineering for RAG.', 'Token optimization strategies.'] },
-        { id: 'bedrock', label: 'AWS Bedrock', icon: SiAmazonaws, tag: 'Cloud AI', bullets: ['Multi-model evaluations.', 'Enterprise AI deployments.'] },
-        { id: 'rag', label: 'RAG Pipeline', icon: SiTypescript, tag: 'Data', bullets: ['Vector DB integration (Pinecone).', 'Context-aware AI responses.'] },
+        { id: 'openai', label: 'OpenAI API', icon: SiOpenai, tag: 'LLM', bullets: ['Prompt engineering for RAG.', 'Token optimization strategies.'], description: 'Integrating large language models into production applications.' },
+        { id: 'bedrock', label: 'AWS Bedrock', icon: SiAmazonaws, tag: 'Cloud AI', bullets: ['Multi-model evaluations.', 'Enterprise AI deployments.'], description: 'Cloud-native AI services and foundation models.' },
+        { id: 'rag', label: 'RAG Pipeline', icon: SiTypescript, tag: 'Data', bullets: ['Vector DB integration (Pinecone).', 'Context-aware AI responses.'], description: 'Retrieval Augmented Generation for intelligent data access.' },
       ],
-      outcomes: ['ChatGPT Tools', 'Bedrock Apps', 'RAG Pipelines']
+      outcomes: [
+        { id: 'out-gpt', label: 'ChatGPT Tools' },
+        { id: 'out-bed', label: 'Bedrock Apps' },
+        { id: 'out-rag', label: 'RAG Pipelines' }
+      ]
     }
   };
 
-  const handleCompose = useCallback(() => {
+  const scenarios = [
+    { id: 'chatbot', label: 'Build AI Chatbot', icon: FaFlask },
+    { id: 'saas', label: 'Build SaaS Dashboard', icon: FaRocket },
+    { id: 'micro', label: 'Build Microservices', icon: FaCogs }
+  ];
+
+  const handleScenario = (scenarioId) => {
     if (isComposing) return;
     setIsComposing(true);
+    setConnections([]);
     setSelectedSkill(null);
     
-    const steps = ['frontend', 'backend', 'infrastructure', 'ai'];
-    let currentStep = 0;
+    let sequence = [];
+    if (scenarioId === 'chatbot') {
+      sequence = [
+        { cat: 'frontend', mod: 'react', out: 'out-dash' },
+        { cat: 'backend', mod: 'node', out: 'out-api' },
+        { cat: 'infrastructure', mod: 'docker', out: 'out-cicd' },
+        { cat: 'ai', mod: 'openai', out: 'out-gpt' }
+      ];
+    } else if (scenarioId === 'saas') {
+      sequence = [
+        { cat: 'frontend', mod: 'react', out: 'out-dash' },
+        { cat: 'backend', mod: 'auth', out: 'out-auth' },
+        { cat: 'infrastructure', mod: 'terraform', out: 'out-iac' },
+        { cat: 'ai', mod: 'bedrock', out: 'out-bed' }
+      ];
+    } else {
+      sequence = [
+        { cat: 'backend', mod: 'springboot', out: 'out-micro' },
+        { cat: 'infrastructure', mod: 'k8s', out: 'out-k8s' },
+        { cat: 'infrastructure', mod: 'jenkins', out: 'out-cicd' }
+      ];
+    }
 
-    const runStep = () => {
-      if (currentStep < steps.length) {
-        const step = steps[currentStep];
-        setComposingStep(step);
-        setActiveCategory(step);
-        currentStep++;
-        setTimeout(runStep, 250);
+    let i = 0;
+    const runSequence = () => {
+      if (i < sequence.length) {
+        const step = sequence[i];
+        setComposingStep(step.cat);
+        setActiveCategory(step.cat);
+        setConnections(prev => [...prev, { moduleId: step.mod, outputId: step.out }]);
+        i++;
+        setTimeout(runSequence, 300);
       } else {
         setComposingStep(null);
+        setIsComposing(false);
+        setUnlockedTabs(['frontend', 'backend', 'infrastructure', 'ai']);
         setSelectedSkill({
           id: 'blueprint',
-          label: 'System Blueprint',
-          bullets: [
-            'STACK: React/TS + Node/Express + Postgres/Redis',
-            'SERVICES: Microservices + Auth/JWT',
-            'DEPLOY: Docker + Kubernetes + Jenkins CI/CD',
-            'INTELLIGENCE: OpenAI RAG Pipeline'
-          ]
+          label: 'Scenario Blueprint',
+          bullets: sequence.map(s => `${s.cat.toUpperCase()}: ${s.mod} connected to ${s.out}`),
+          description: `Architecture blueprint for ${scenarioId} successfully synthesized.`
         });
-        setTimeout(() => setIsComposing(false), 500);
       }
     };
-    runStep();
-  }, [isComposing]);
+    runSequence();
+  };
+
+  const onDragStart = (e, moduleId) => {
+    setDragging(true);
+    setDragSourceId(moduleId);
+    const rect = e.currentTarget.getBoundingClientRect();
+    const boardRect = boardRef.current.getBoundingClientRect();
+    const startX = rect.left + rect.width / 2 - boardRect.left;
+    const startY = rect.top + rect.height / 2 - boardRect.top;
+    setDragStartPos({ x: startX, y: startY });
+    setDragCurrentPos({ x: startX, y: startY });
+  };
+
+  useEffect(() => {
+    if (!dragging) return;
+    const handleMove = (e) => {
+      const boardRect = boardRef.current.getBoundingClientRect();
+      const x = (e.clientX || e.touches?.[0]?.clientX) - boardRect.left;
+      const y = (e.clientY || e.touches?.[0]?.clientY) - boardRect.top;
+      setDragCurrentPos({ x, y });
+      
+      const elements = document.elementsFromPoint(e.clientX || e.touches?.[0]?.clientX, e.clientY || e.touches?.[0]?.clientY);
+      const target = elements.find(el => el.hasAttribute('data-output-id'));
+      setActiveDropTarget(target ? target.getAttribute('data-output-id') : null);
+    };
+    const handleUp = () => {
+      if (activeDropTarget && dragSourceId) {
+        setConnections(prev => [...prev, { moduleId: dragSourceId, outputId: activeDropTarget }]);
+        if (guidedMode) {
+          const catMap = { frontend: 'backend', backend: 'infrastructure', infrastructure: 'ai' };
+          if (catMap[activeCategory] && !unlockedTabs.includes(catMap[activeCategory])) {
+            setUnlockedTabs(prev => [...prev, catMap[activeCategory]]);
+          }
+        }
+      }
+      setDragging(false);
+      setDragSourceId(null);
+      setActiveDropTarget(null);
+    };
+    window.addEventListener('pointermove', handleMove);
+    window.addEventListener('pointerup', handleUp);
+    return () => {
+      window.removeEventListener('pointermove', handleMove);
+      window.removeEventListener('pointerup', handleUp);
+    };
+  }, [dragging, activeDropTarget, dragSourceId, activeCategory, guidedMode, unlockedTabs]);
 
   return (
-    <div className="relative w-full py-12 px-4 max-w-7xl mx-auto min-h-[800px]">
-      <div className="scanline-overlay opacity-20" />
+    <div className="relative w-full py-12 px-4 max-w-7xl mx-auto min-h-[900px] select-none" ref={boardRef}>
+      <div className="scanline-overlay opacity-10" />
       
+      {/* Header & Scenario Selector */}
+      <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-6 relative z-20">
+        <div className="flex gap-3">
+          {scenarios.map(s => (
+            <button
+              key={s.id}
+              onClick={() => handleScenario(s.id)}
+              className="px-4 py-2 bg-secondary/40 border border-white/5 rounded-full text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-accent hover:border-accent/30 transition-all flex items-center gap-2"
+            >
+              <s.icon className="text-xs" /> {s.label}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-3 bg-black/40 px-4 py-2 rounded-full border border-white/5">
+          <span className="text-[9px] font-black uppercase tracking-widest text-white/40">Guided Mode</span>
+          <button 
+            onClick={() => {
+              setGuidedMode(!guidedMode);
+              if (!guidedMode) setUnlockedTabs(['frontend']);
+              else setUnlockedTabs(['frontend', 'backend', 'infrastructure', 'ai']);
+            }}
+            className={`w-8 h-4 rounded-full relative transition-all ${guidedMode ? 'bg-accent' : 'bg-white/10'}`}
+          >
+            <motion.div 
+              animate={{ x: guidedMode ? 16 : 2 }}
+              className="absolute top-1 left-0 w-2 h-2 rounded-full bg-white shadow-sm"
+            />
+          </button>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10 h-full">
-        
-        {/* LEFT: Neural Workflow Switches */}
+        {/* LEFT: Tabs */}
         <div className="lg:col-span-3 space-y-4">
-          <div className="mb-6">
-            <h3 className="text-white/30 text-[9px] font-black uppercase tracking-[0.4em] mb-3 flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-              PROCESS_SELECT
-            </h3>
-            <div className="w-full h-[1px] bg-white/5" />
+          <div className="mb-4">
+            <h3 className="text-white/30 text-[9px] font-black uppercase tracking-[0.4em] mb-3">SYSTEM_NODES</h3>
+            <div className="flex gap-1">
+              {categories.map((_, i) => (
+                <div key={i} className={`w-2 h-2 rounded-full ${unlockedTabs.length > i ? 'bg-accent shadow-[0_0_8px_#f13024]' : 'bg-white/10'}`} />
+              ))}
+            </div>
           </div>
           {categories.map((cat) => (
             <SkillTab 
               key={cat.id}
               {...cat}
               active={activeCategory === cat.id}
+              locked={guidedMode && !unlockedTabs.includes(cat.id)}
               isComposingActive={composingStep === cat.id}
-              onClick={(id) => {
-                setActiveCategory(id);
-                setSelectedSkill(null);
-              }}
+              onClick={setActiveCategory}
             />
           ))}
         </div>
 
-        {/* CENTER: Neural Sandbox Board */}
-        <div className="lg:col-span-6 flex flex-col min-h-[500px] relative" ref={boardRef}>
-          <div className="mb-6 flex justify-between items-end">
-            <h3 className="text-white/30 text-[9px] font-black uppercase tracking-[0.4em]">NEURAL_BOARD_V5</h3>
-            <div className="text-[9px] font-bold text-accent uppercase tracking-widest flex items-center gap-2">
-              <span className="w-1 h-1 bg-accent rounded-full led-blink" />
-              ACTIVE_BUS: {activeCategory}
-            </div>
-          </div>
-
+        {/* CENTER: Board */}
+        <div className="lg:col-span-6 flex flex-col min-h-[550px] relative">
           <div className="flex-1 bg-[#0d0d0f]/60 border border-white/5 rounded-[40px] p-8 backdrop-blur-md holo-card neural-grid relative overflow-hidden">
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeCategory}
-                initial={{ opacity: 0, scale: 0.95, filter: 'blur(10px)' }}
-                animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-                exit={{ opacity: 0, scale: 1.05, filter: 'blur(10px)' }}
-                transition={{ duration: 0.4, ease: "easeOut" }}
-                className="grid grid-cols-2 gap-6"
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.02 }}
+                className="grid grid-cols-2 gap-6 relative z-10"
               >
                 {toolkitData[activeCategory].modules.map((skill) => (
                   <SkillModule 
@@ -299,28 +411,49 @@ const SkillsBuilderToolkit = () => {
                     isComposingActive={composingStep === activeCategory}
                     onClick={setSelectedSkill}
                     onHover={setHoveredSkillId}
-                    boardRef={boardRef}
+                    onDragStart={onDragStart}
                   />
                 ))}
               </motion.div>
             </AnimatePresence>
 
-            {/* Neural Wiring SVG */}
-            <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
-              <AnimatePresence>
-                {hoveredSkillId && (
+            {/* Wiring Layer */}
+            <svg className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-visible">
+              <defs>
+                <filter id="glow">
+                  <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                  <feMerge>
+                    <feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+              </defs>
+              {dragging && (
+                <motion.line
+                  x1={dragStartPos.x} y1={dragStartPos.y}
+                  x2={dragCurrentPos.x} y2={dragCurrentPos.y}
+                  stroke="#f13024" strokeWidth="2" strokeDasharray="4,4" filter="url(#glow)"
+                  initial={{ opacity: 0 }} animate={{ opacity: 0.6 }}
+                />
+              )}
+              {connections.map((conn, idx) => {
+                const modEl = document.getElementById(`module-${conn.moduleId}`);
+                const outEl = document.querySelector(`[data-output-id="${conn.outputId}"]`);
+                if (!modEl || !outEl) return null;
+                const bRect = boardRef.current.getBoundingClientRect();
+                const mRect = modEl.getBoundingClientRect();
+                const oRect = outEl.getBoundingClientRect();
+                return (
                   <motion.path
-                    d="M 300 250 L 600 250" // Placeholder, dynamic calculation would be better
-                    stroke="#f13024"
-                    strokeWidth="1"
-                    strokeDasharray="5,5"
-                    fill="none"
-                    initial={{ pathLength: 0, opacity: 0 }}
-                    animate={{ pathLength: 1, opacity: 0.3 }}
-                    exit={{ opacity: 0 }}
+                    key={idx}
+                    d={`M ${mRect.left + mRect.width/2 - bRect.left} ${mRect.top + mRect.height/2 - bRect.top} 
+                       C ${mRect.right - bRect.left + 50} ${mRect.top + mRect.height/2 - bRect.top}, 
+                         ${oRect.left - bRect.left - 50} ${oRect.top + oRect.height/2 - bRect.top}, 
+                         ${oRect.left - bRect.left} ${oRect.top + oRect.height/2 - bRect.top}`}
+                    stroke="#f13024" strokeWidth="1" fill="none" opacity="0.3" filter="url(#glow)"
+                    initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
                   />
-                )}
-              </AnimatePresence>
+                );
+              })}
             </svg>
 
             <AnimatePresence>
@@ -334,63 +467,32 @@ const SkillsBuilderToolkit = () => {
           </div>
         </div>
 
-        {/* RIGHT: Output Streams */}
-        <div className="lg:col-span-3 flex flex-col">
-          <div className="mb-6">
-            <h3 className="text-white/30 text-[9px] font-black uppercase tracking-[0.4em]">OUTPUT_STREAMS</h3>
-            <div className="w-full h-[1px] bg-white/5" />
-          </div>
-
-          <div className="flex-1 space-y-3">
-            {toolkitData[activeCategory].outcomes.map((outcome, i) => (
-              <motion.div
-                key={outcome}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.05 }}
-                className={`p-4 bg-secondary/30 border rounded-xl flex items-center gap-3 group holo-card transition-all duration-500 ${
-                  hoveredSkillId ? 'border-accent/30 bg-accent/5' : 'border-white/5'
+        {/* RIGHT: Outputs */}
+        <div className="lg:col-span-3 flex flex-col space-y-3">
+          <h3 className="text-white/30 text-[9px] font-black uppercase tracking-[0.4em] mb-3">OUTPUT_STREAMS</h3>
+          {toolkitData[activeCategory].outcomes.map((out) => {
+            const isConnected = connections.some(c => c.outputId === out.id);
+            return (
+              <div
+                key={out.id}
+                data-output-id={out.id}
+                className={`p-4 bg-secondary/30 border rounded-xl transition-all duration-300 relative group holo-card ${
+                  activeDropTarget === out.id ? 'drop-target-active' : isConnected ? 'border-accent/40 bg-accent/5' : 'border-white/5'
                 }`}
               >
-                <div className="w-1 h-3 bg-accent/20 rounded-full overflow-hidden">
-                  <motion.div 
-                    animate={{ y: [-12, 12] }}
-                    transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                    className="w-full h-2 bg-accent shadow-[0_0_8px_#f13024]"
-                  />
+                <div className="flex items-center gap-3">
+                  <div className={`w-1 h-3 rounded-full ${isConnected ? 'bg-accent' : 'bg-white/10'}`} />
+                  <span className={`text-[10px] font-black uppercase tracking-widest ${isConnected ? 'text-white' : 'text-white/40'}`}>
+                    {out.label}
+                  </span>
+                  {isConnected && <FaCheck className="ml-auto text-accent text-[8px]" />}
                 </div>
-                <span className="text-[11px] font-black uppercase tracking-widest text-white/60 group-hover:text-white">{outcome}</span>
-              </motion.div>
-            ))}
-
-            <div className="pt-8 relative">
-              <motion.button
-                onClick={handleCompose}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className={`w-full py-5 rounded-xl border-2 font-black uppercase text-[10px] tracking-[0.3em] transition-all duration-700 flex items-center justify-center gap-3 holo-card overflow-hidden ${
-                  isComposing 
-                  ? 'bg-accent border-accent text-white shadow-[0_0_50px_rgba(241,48,36,0.5)]' 
-                  : 'bg-transparent border-accent/20 text-accent hover:border-accent hover:bg-accent/5'
-                }`}
-              >
-                {isComposing ? 'INITIALIZING_BUILD_SEQUENCE...' : 'COMPOSE_ARCHITECTURE'}
-              </motion.button>
-              
-              <AnimatePresence>
-                {isComposing && (
-                  <motion.div 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="mt-4 font-mono text-[9px] text-center text-accent/60 uppercase tracking-widest animate-pulse"
-                  >
-                    MAPPING_NEURAL_PATHWAYS...
-                  </motion.div>
+                {isConnected && (
+                  <div className="absolute top-1 right-2 text-[6px] text-accent font-black uppercase tracking-tighter">Connected</div>
                 )}
-              </AnimatePresence>
-            </div>
-          </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

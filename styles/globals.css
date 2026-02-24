@@ -173,7 +173,6 @@ body::-webkit-scrollbar {
     z-index: 2;
   }
 
-  /* Neural Sandbox Board Utilities */
   .neural-grid {
     background-image: radial-gradient(rgba(241,48,36,0.1) 1px, transparent 1px);
     background-size: 20px 20px;
@@ -201,6 +200,24 @@ body::-webkit-scrollbar {
   @keyframes ledBlink {
     0%, 100% { opacity: 0.3; transform: scale(1); }
     50% { opacity: 1; transform: scale(1.2); box-shadow: 0 0 8px #f13024; }
+  }
+
+  /* Scenario & Wiring Styles */
+  .wire-glow {
+    filter: drop-shadow(0 0 4px rgba(241,48,36,0.6));
+  }
+  .drop-target-active {
+    background: rgba(241,48,36,0.1) !important;
+    border-color: rgba(241,48,36,0.5) !important;
+    box-shadow: 0 0 20px rgba(241,48,36,0.2);
+  }
+  .connection-snap {
+    animation: snapPulse 0.4s ease-out;
+  }
+  @keyframes snapPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); filter: brightness(1.5); }
+    100% { transform: scale(1); }
   }
 
   .scanline-overlay {

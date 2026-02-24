@@ -1,0 +1,191 @@
+Implement BOTH: (1) Scenario Selector + (2) Drag-to-Connect mode inside the existing Skills Playground section, without navigating away or opening new pages.
+
+Stack: Next.js (pages router) + TailwindCSS + Framer Motion.
+CRITICAL:
+- Everything must stay inside the Skills section (single-page).
+- No full-screen takeovers, no route changes.
+- No marquee/pipeline infinite loops moving skills off-screen.
+- Any motion must be subtle, premium, and bounded inside the section container.
+- No horizontal overflow; no new scrollbars.
+
+========================================================
+A) GOAL (PLAYGROUND FEEL WITHOUT BREAKING STRUCTURE)
+========================================================
+Keep the current structure:
+LEFT = Category tabs (Frontend/Backend/Infrastructure/AI)
+CENTER = Neural Board modules
+RIGHT = Output Streams
+BOTTOM = Proof Dock (terminal style)
+
+Add:
+1) Scenario Selector row (top)
+2) Drag-to-Connect mode (interactive wiring)
+3) Small visualization overlay (background-style) that reacts to interactions
+
+========================================================
+B) SCENARIO SELECTOR (TOP ROW)
+========================================================
+Add 3 pill buttons under the Skills title:
+- Build AI Chatbot
+- Build SaaS Dashboard
+- Build Microservices Platform
+
+On click:
+- Auto-select the relevant category and modules.
+- Trigger a one-time “blueprint build” animation (2–3 seconds max).
+- Populate Output Streams with a complete blueprint for the chosen scenario.
+- Open Proof Dock with:
+  - Title: “SCENARIO BLUEPRINT GENERATED”
+  - Stack bullets
+  - 1–2 line why-this-stack
+  - Button: “View GitHub” linking to my GitHub profile
+
+Must end in a stable state (no loops). User can still manually click modules afterward.
+
+========================================================
+C) DRAG-TO-CONNECT MODE (MAIN NEW FEATURE)
+========================================================
+Interaction concept:
+User drags from a module chip (center board) to an Output Stream item (right panel) to “connect” them.
+When connected:
+- Show a permanent thin neon wire line between the module and the output item.
+- The output item shows “CONNECTED” status badge.
+- The module shows a small check/LED “linked” status.
+- Connecting required items unlocks the next category tab (progression).
+
+HOW TO DO DRAGGING (simple and stable):
+- On mousedown (or pointerdown) on a module:
+  - Start dragging state `dragging = true`, set `sourceModule`
+  - Show a temporary “ghost wire” line following the cursor (SVG overlay)
+- On pointer move:
+  - Update cursor position and ghost line endpoint
+- On pointer up:
+  - If pointer is over a valid Output Stream drop target:
+    - Add a connection record { moduleId, outputId }
+    - Play a short “snap” animation (scale pulse)
+  - Else:
+    - Cancel drag; wire fades out
+
+Drop targets:
+- Make each Output Stream item a droppable region with a data-output-id.
+- Add hover feedback: output item glows when draggable wire is near it.
+
+MOBILE:
+- Drag should still work with touch.
+- Also add a fallback: tapping a module then tapping an output creates a connection (for mobile usability).
+
+========================================================
+D) PROGRESSION / UNLOCKING (FUN BUT NOT ANNOYING)
+========================================================
+Start state:
+- Only Frontend tab is active by default (others locked visually with a subtle “LOCKED” label).
+Unlock logic:
+- When user connects at least:
+  - 1 module -> 1 output in Frontend => unlock Backend
+  - 1 module -> 1 output in Backend => unlock Infrastructure
+  - 1 module -> 1 output in Infrastructure => unlock AI/LLM
+
+Provide a small progress indicator near tabs:
+- “1/3 steps complete” (or tiny dots)
+No forcing — user can still click tabs if they want (optional):
+- Add a toggle: “Guided Mode” ON/OFF
+  - ON = unlock progression
+  - OFF = all tabs available (default OFF so recruiters aren’t blocked)
+Make Guided Mode toggle subtle, near Scenario Selector.
+
+========================================================
+E) SMALL VISUALIZATION OVERLAY (BACKGROUND-STYLE)
+========================================================
+Add a lightweight visualization inside the Skills section container only:
+- An SVG “neural grid” overlay in the center board background.
+- It reacts to:
+  - Hover: nearest nodes brighten
+  - Drag: faint pulse travels along the ghost wire
+  - Connect: a brief ripple expands from the connection point
+This must be subtle and never move content around.
+No infinite motion that distracts; use interaction-based animation only.
+
+========================================================
+F) SCENARIO + DRAG INTEGRATION
+========================================================
+When a scenario button is clicked:
+- Auto-create the connections visually (simulate the drag-to-connect):
+  - Animate ghost wire snapping into place for each required connection (sequential, 150–250ms each).
+- Fill Output Streams based on scenario and mark items connected.
+- Open Proof Dock with scenario summary.
+- End state stable, connections remain visible.
+
+Scenario blueprints:
+
+1) Build AI Chatbot
+Frontend:
+- React/TS -> Chat UI
+Backend:
+- Node/Express -> API Gateway + Auth
+Infrastructure:
+- Docker/K8s -> Deploy + Scaling
+AI:
+- OpenAI/AWS Bedrock -> LLM + Tools
+Outputs:
+- Chat UI, Auth, API, Vector/RAG (optional), Deployment
+
+2) Build SaaS Dashboard
+Frontend:
+- React/TS -> Dashboard UI
+Backend:
+- REST APIs + Auth/JWT
+Infrastructure:
+- CI/CD + Cloud + DB
+Outputs:
+- Dashboard UI, RBAC/Auth, APIs, Database, Deployment pipeline
+
+3) Build Microservices Platform
+Backend:
+- Spring Boot -> Services
+Infrastructure:
+- Docker + K8s + CI/CD + Terraform
+AI optional:
+- Observability/alerts summary assistant (optional)
+Outputs:
+- Services, API Gateway, Container orchestration, IaC, CI/CD
+
+========================================================
+G) IMPLEMENTATION NOTES (DO NOT BREAK UI)
+========================================================
+- Add a single SVG overlay layer spanning Center + Right panels for drawing wires:
+  - absolute inset-0 pointer-events-none
+- Use getBoundingClientRect() to compute anchor points for module chips and output items.
+- Store connection state in React state:
+  - connections: Array<{moduleId, outputId}>
+  - dragging: boolean
+  - dragPos: {x,y}
+  - sourceModuleId
+- Render:
+  - ghost wire while dragging
+  - permanent wires from connections
+- Ensure cleanup on unmount:
+  - remove event listeners
+  - cancel pending timeouts from scenario sequence
+
+========================================================
+H) FILES TO CHANGE
+========================================================
+- components/SkillsPlayground (or SkillsBuilderToolkit) main component:
+  - add scenario selector row
+  - add guided mode toggle
+  - implement drag-to-connect interaction
+  - add wire rendering SVG overlay
+  - integrate scenario to auto-connect
+- globals.css:
+  - add wire glow styles, pulse ripple, subtle hologram overlay
+- Keep everything else unchanged
+
+========================================================
+DELIVERABLE
+========================================================
+✅ Scenario Selector + Drag-to-Connect BOTH implemented
+✅ Works on desktop + mobile (tap fallback)
+✅ Wires & micro-visualization remain inside section (no navigation)
+✅ No infinite marquee loops / no content sliding off screen
+✅ No overflow / no new scrollbars
+✅ Premium futuristic “playground” feel that impresses recruiters
