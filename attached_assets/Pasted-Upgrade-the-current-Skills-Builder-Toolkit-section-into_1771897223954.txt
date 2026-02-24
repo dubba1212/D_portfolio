@@ -1,0 +1,186 @@
+Upgrade the current “Skills Builder Toolkit” section into a FUTURISTIC AI SKILLS PLAYGROUND with cinematic motion + interactive “wow” factor, while keeping the same structure (Left tabs → Center modules → Right outputs → Proof drawer). Make it feel like a real AI interface, not a normal UI.
+
+Stack: Next.js (pages router) + TailwindCSS + Framer Motion.
+IMPORTANT:
+- Keep the existing layout and content groups.
+- Do NOT add any infinite marquee/pipeline loops that move skills off-screen.
+- Animations must feel premium, subtle, and “alive”, but stable.
+- No horizontal overflow. No scrollbars introduced.
+
+========================================================
+A) CURRENT STATE
+========================================================
+- The section is good and usable, but it looks like a normal dashboard.
+- I want a futuristic AI “playground” vibe:
+  - interactive, cinematic
+  - advanced motion
+  - recruiter says “wow”
+- Keep category grouping (Frontend/Backend/Infrastructure/AI-LLM).
+
+========================================================
+B) NEW TARGET: “AI SKILLS LAB” PLAYGROUND FEEL
+========================================================
+Make this section feel like an AI lab interface:
+- holographic glass panels
+- neon red accent
+- subtle volumetric glow
+- dynamic scanning lines
+- animated micro-feedback on hover/click
+- optional “energy” connectors that activate only when interacting
+
+The user should feel like they are exploring a live AI system.
+
+========================================================
+C) VISUAL + MOTION UPGRADES (MUST IMPLEMENT)
+========================================================
+1) Holographic Panel Treatment (all cards/tabs/panels)
+- Add a subtle hologram gradient overlay using ::before
+- Add noise texture (CSS only) at very low opacity
+- Add soft inner border highlight
+- Add “glass reflection” sweep on hover (one-time sweep per hover)
+
+2) Futuristic Motion Layers (stable, no marquee)
+- Add a slow background “scanline” animation inside the section only (CSS keyframes)
+  - must not move content, only an overlay layer
+- Add subtle floating particles (2–6 dots) behind panels
+  - extremely slow drift (no looping carousel), stay within section bounds
+
+3) Skill Module Interaction: “AI Pulse”
+On hover of a skill module:
+- module glows + lifts + tilts slightly (perspective)
+- icon emits a pulse ring (expand + fade)
+- show a thin “energy beam” line from hovered module to the Proof Drawer header
+  (only while hovering)
+On click:
+- brief “impact” ripple (scale down 0.98 then up)
+
+4) Tab Switching: Cinematic Transition
+When switching tabs:
+- use AnimatePresence with a directional slide:
+  - if moving down list: modules slide up
+  - if moving up list: modules slide down
+- add subtle blur-in and blur-out (opacity + filter blur)
+- keep duration ~0.35–0.55s, easeOut.
+
+5) Proof Drawer Upgrade: “Terminal Proof”
+Keep the drawer, but make it feel like a terminal/hologram:
+- header label like: “TECHNICAL PROOF”
+- typing effect (ONLY for the drawer title or 1 line; not the whole paragraph)
+- add a small blinking cursor in header (CSS animation)
+- add a “Copy proof” button (copies bullet points to clipboard)
+
+6) “Compose System” Button becomes a real Playground Effect
+When user clicks “COMPOSE SYSTEM”:
+- briefly highlight path across all four tabs:
+  - Frontend -> Backend -> Infrastructure -> AI/LLM
+- each tab and its first module flashes in sequence (150–220ms each)
+- a thin animated line draws from left panel to right output panel
+- animation runs ONCE and stops.
+- no repeats.
+
+========================================================
+D) CSS (ADD THESE UTILITIES)
+========================================================
+Add in globals.css:
+
+1) Hologram overlay:
+.holo-card {
+  position: relative;
+  overflow: hidden;
+}
+.holo-card::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  background: radial-gradient(circle at 30% 20%, rgba(241,48,36,0.18), transparent 55%),
+              linear-gradient(120deg, rgba(255,255,255,0.06), transparent 35%, rgba(241,48,36,0.08));
+  opacity: 0.7;
+  pointer-events: none;
+}
+.holo-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255,255,255,0.03),
+    rgba(255,255,255,0.03) 1px,
+    transparent 1px,
+    transparent 6px
+  );
+  opacity: 0.08;
+  pointer-events: none;
+}
+
+2) Hover sweep reflection:
+@keyframes holoSweep {
+  0% { transform: translateX(-120%) skewX(-20deg); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translateX(180%) skewX(-20deg); opacity: 0; }
+}
+.holo-sweep {
+  position: absolute;
+  top: -40%;
+  left: -60%;
+  width: 50%;
+  height: 180%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.10), transparent);
+  transform: skewX(-20deg);
+  pointer-events: none;
+  opacity: 0;
+}
+.group:hover .holo-sweep { animation: holoSweep 0.9s ease-out; }
+
+3) Pulse ring:
+@keyframes pulseRing {
+  0% { transform: scale(0.6); opacity: 0.0; }
+  20% { opacity: 0.35; }
+  100% { transform: scale(1.7); opacity: 0.0; }
+}
+.pulse-ring { animation: pulseRing 0.8s ease-out; }
+
+4) Terminal cursor:
+@keyframes cursorBlink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+.cursor-blink { animation: cursorBlink 0.9s steps(1) infinite; }
+
+========================================================
+E) COMPONENT CHANGES (DO THIS)
+========================================================
+Apply .holo-card + group classes to:
+- Left workflow tabs
+- Center toolkit module cards
+- Right output cards
+- Proof drawer container
+
+For each skill module:
+- wrap icon area with a pulse ring element on hover using Framer Motion state:
+  - onHoverStart -> setPulse(true), then setPulse(false) after 250ms
+  - render <span className="pulse-ring absolute ..."/>
+
+Add “energy beam” line:
+- Use an SVG overlay inside center panel:
+  - when hoveredModuleId exists, draw a line from hovered module position to drawer header
+  - animate strokeDashoffset once when hover begins
+  - remove line when hover ends
+
+Add “Compose System” sequence:
+- On click:
+  - set a state `composeRun=true`
+  - run a timed sequence highlighting tabs/modules (setActiveTab temporarily then revert)
+  - total duration < 2.5s
+  - no interval loops; use chained setTimeouts and clear them on unmount.
+
+========================================================
+F) DELIVERABLE
+========================================================
+✅ Same layout, but now feels like a futuristic AI playground  
+✅ Holographic cards + scanlines + reflections  
+✅ Hover pulse + energy beam + cinematic tab transitions  
+✅ Terminal-style proof drawer with cursor and copy button  
+✅ Compose System triggers a one-time “system build” animation sequence  
+✅ No infinite marquee loops; no skills moving off-screen  
+✅ No new scrollbars/overflow issues  
+✅ Rest of site unchanged
+
+Implement these upgrades by editing only the Skills toolkit component + globals.css.
+Keep everything else untouched.
