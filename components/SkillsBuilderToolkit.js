@@ -3,9 +3,9 @@ import { motion, AnimatePresence, useSpring, useMotionValue } from 'framer-motio
 import { 
   SiDocker, SiKubernetes, SiReact, SiPostgresql, SiNodedotjs, SiGit, 
   SiAmazonaws, SiOpenai, SiTypescript, SiSpringboot, SiTerraform, 
-  SiRedis, SiJenkins
+  SiRedis, SiJenkins, SiMysql, SiPython, SiDjango, SiDotnet, SiMongodb, SiApachespark, SiNumpy
 } from 'react-icons/si';
-import { FaCode, FaServer, FaCogs, FaBrain, FaExternalLinkAlt, FaTimes, FaCopy, FaCheck, FaLock, FaRocket, FaFlask } from 'react-icons/fa';
+import { FaCode, FaServer, FaCogs, FaBrain, FaExternalLinkAlt, FaTimes, FaCopy, FaCheck, FaLock, FaRocket, FaFlask, FaSearch, FaDatabase, FaChartLine, FaEye } from 'react-icons/fa';
 
 const SkillTab = ({ id, label, icon: Icon, active, locked, onClick, isComposingActive }) => (
   <motion.button
@@ -94,12 +94,19 @@ const SkillModule = ({ skill, active, onClick, isComposingActive, onHover, onDra
   );
 };
 
-const ProofDock = ({ skill, onClose }) => {
+const ProofDock = ({ mode, skill, scenario, githubRepo, onClose }) => {
   const [copied, setCopied] = useState(false);
-  if (!skill) return null;
+  const dockRef = useRef(null);
+
+  if (!skill && !scenario) return null;
+
+  const title = mode === 'module' ? `MODULE_DATA_STREAM: ${skill.label.toUpperCase()}` : `SCENARIO_PLAN: ${scenario.label.toUpperCase()}`;
+  const bullets = mode === 'module' ? skill.bullets : (scenario.plan || []);
+  const description = mode === 'module' ? skill.description : scenario.description;
 
   return (
     <motion.div
+      ref={dockRef}
       initial={{ y: 100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       exit={{ y: 100, opacity: 0 }}
@@ -108,20 +115,22 @@ const ProofDock = ({ skill, onClose }) => {
       <div className="bg-[#0a0a0c]/95 backdrop-blur-2xl border border-accent/30 rounded-2xl shadow-[0_-20px_50px_rgba(0,0,0,0.5)] overflow-hidden">
         <div className="flex items-center justify-between p-4 border-b border-white/5 bg-white/5">
           <div className="text-accent animate-pulse font-mono text-[10px] tracking-tighter">
-            {skill.id === 'blueprint' ? 'SCENARIO_BLUEPRINT_GENERATED' : `MODULE_DATA_STREAM: ${skill.label.toUpperCase()}`}
+            {title}
             <span className="cursor-blink">_</span>
           </div>
           <div className="flex items-center gap-4">
-            <button 
-              onClick={() => {
-                navigator.clipboard.writeText(skill.bullets.join('\n'));
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2000);
-              }}
-              className="text-[10px] text-white/40 hover:text-white flex items-center gap-1 uppercase font-bold"
-            >
-              {copied ? <FaCheck className="text-green-500" /> : <FaCopy />} {copied ? 'COPIED' : 'COPY'}
-            </button>
+            {mode === 'module' && (
+              <button 
+                onClick={() => {
+                  navigator.clipboard.writeText(bullets.join('\n'));
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+                className="text-[10px] text-white/40 hover:text-white flex items-center gap-1 uppercase font-bold"
+              >
+                {copied ? <FaCheck className="text-green-500" /> : <FaCopy />} {copied ? 'COPIED' : 'COPY'}
+              </button>
+            )}
             <button onClick={onClose} className="text-white/30 hover:text-white">
               <FaTimes />
             </button>
@@ -130,7 +139,7 @@ const ProofDock = ({ skill, onClose }) => {
         <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 max-h-[250px] overflow-y-auto no-scrollbar">
           <div className="space-y-4">
             <ul className="space-y-2">
-              {skill.bullets?.map((bullet, i) => (
+              {bullets?.map((bullet, i) => (
                 <li key={i} className="flex gap-2 text-[12px] text-white/70 font-mono">
                   <span className="text-accent">{'>'}</span>
                   <span>{bullet}</span>
@@ -139,14 +148,16 @@ const ProofDock = ({ skill, onClose }) => {
             </ul>
           </div>
           <div className="flex flex-col justify-between items-end">
-            <p className="text-[10px] text-white/40 italic mb-4 text-right">{skill.description}</p>
-            <motion.button 
-              whileHover={{ x: 5 }}
-              onClick={() => window.open('https://github.com/DubbaSrikanthReddy', '_blank')}
-              className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-accent border border-accent/20 px-4 py-2 rounded-lg hover:bg-accent/10"
-            >
-              <FaExternalLinkAlt /> View GitHub
-            </motion.button>
+            <p className="text-[10px] text-white/40 italic mb-4 text-right">{description}</p>
+            {mode === 'scenario' && githubRepo && (
+              <motion.button 
+                whileHover={{ x: 5 }}
+                onClick={() => window.open(githubRepo.html_url, '_blank')}
+                className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-accent border border-accent/20 px-4 py-2 rounded-lg hover:bg-accent/10"
+              >
+                <FaExternalLinkAlt /> View matching repo
+              </motion.button>
+            )}
           </div>
         </div>
       </div>
@@ -156,12 +167,16 @@ const ProofDock = ({ skill, onClose }) => {
 
 const SkillsBuilderToolkit = () => {
   const [activeCategory, setActiveCategory] = useState('frontend');
-  const [selectedSkill, setSelectedSkill] = useState(null);
+  const [selectedModule, setSelectedModule] = useState(null);
+  const [activeScenarioId, setActiveScenarioId] = useState(null);
+  const [dockOpen, setDockOpen] = useState(false);
+  const [dockMode, setDockMode] = useState(null);
+  const [githubRepo, setGithubRepo] = useState(null);
   const [hoveredSkillId, setHoveredSkillId] = useState(null);
   const [isComposing, setIsComposing] = useState(false);
   const [composingStep, setComposingStep] = useState(null);
   const [guidedMode, setGuidedMode] = useState(false);
-  const [unlockedTabs, setUnlockedTabs] = useState(['frontend']);
+  const [unlockedTabs, setUnlockedTabs] = useState(['frontend', 'backend', 'infrastructure', 'ai']);
   const [connections, setConnections] = useState([]);
   const [dragging, setDragging] = useState(false);
   const [dragStartPos, setDragStartPos] = useState({ x: 0, y: 0 });
@@ -170,6 +185,7 @@ const SkillsBuilderToolkit = () => {
   const [activeDropTarget, setActiveDropTarget] = useState(null);
 
   const boardRef = useRef(null);
+  const dockRef = useRef(null);
 
   const categories = [
     { id: 'frontend', label: 'Frontend', icon: FaCode },
@@ -196,11 +212,13 @@ const SkillsBuilderToolkit = () => {
         { id: 'node', label: 'Node/Express', icon: SiNodedotjs, tag: 'API', bullets: ['Scalable RESTful services.', 'Real-time WebSockets integration.'], description: 'Server-side engineering for high-traffic data pipelines.' },
         { id: 'springboot', label: 'Spring Boot', icon: SiSpringboot, tag: 'Enterprise', bullets: ['Microservices architecture.', '90%+ test coverage.'], description: 'Robust enterprise Java development with Spring ecosystem.' },
         { id: 'auth', label: 'Auth/JWT', icon: SiGit, tag: 'Security', bullets: ['OAuth2 & JWT implementation.', 'Secure session management.'], description: 'Authentication and authorization security protocols.' },
+        { id: 'python', label: 'Python/Django', icon: SiPython, tag: 'Data', bullets: ['Rapid API development.', 'Data processing backends.'], description: 'Flexible backend development for AI and data-heavy applications.' },
       ],
       outcomes: [
         { id: 'out-api', label: 'REST APIs' },
         { id: 'out-auth', label: 'Auth/JWT' },
-        { id: 'out-micro', label: 'Microservices' }
+        { id: 'out-micro', label: 'Microservices' },
+        { id: 'out-data', label: 'Data Processing' }
       ]
     },
     infrastructure: {
@@ -209,11 +227,13 @@ const SkillsBuilderToolkit = () => {
         { id: 'k8s', label: 'Kubernetes', icon: SiKubernetes, tag: 'Orchestrate', bullets: ['Helm chart management.', 'Auto-scaling production clusters.'], description: 'Cluster management and cloud-native scaling.' },
         { id: 'terraform', label: 'Terraform', icon: SiTerraform, tag: 'IaC', bullets: ['Infrastructure as Code for AWS/GCP.', 'Automated environment teardowns.'], description: 'Cloud infrastructure automation and management.' },
         { id: 'jenkins', label: 'Jenkins', icon: SiJenkins, tag: 'CI/CD', bullets: ['Automated build & test pipelines.', 'Blue/Green deployment strategy.'], description: 'Continuous integration and deployment engineering.' },
+        { id: 'aws', label: 'AWS/GCP', icon: SiAmazonaws, tag: 'Cloud', bullets: ['Multi-region deployments.', 'Cost optimization.'], description: 'Enterprise cloud infrastructure architecture.' },
       ],
       outcomes: [
         { id: 'out-cicd', label: 'CI/CD Pipelines' },
         { id: 'out-k8s', label: 'K8s Clusters' },
-        { id: 'out-iac', label: 'IaC Automation' }
+        { id: 'out-iac', label: 'IaC Automation' },
+        { id: 'out-cloud', label: 'Cloud Environments' }
       ]
     },
     ai: {
@@ -221,73 +241,142 @@ const SkillsBuilderToolkit = () => {
         { id: 'openai', label: 'OpenAI API', icon: SiOpenai, tag: 'LLM', bullets: ['Prompt engineering for RAG.', 'Token optimization strategies.'], description: 'Integrating large language models into production applications.' },
         { id: 'bedrock', label: 'AWS Bedrock', icon: SiAmazonaws, tag: 'Cloud AI', bullets: ['Multi-model evaluations.', 'Enterprise AI deployments.'], description: 'Cloud-native AI services and foundation models.' },
         { id: 'rag', label: 'RAG Pipeline', icon: SiTypescript, tag: 'Data', bullets: ['Vector DB integration (Pinecone).', 'Context-aware AI responses.'], description: 'Retrieval Augmented Generation for intelligent data access.' },
+        { id: 'nlp', label: 'NLP Engine', icon: SiPython, tag: 'ML', bullets: ['Sentiment analysis.', 'Entity extraction.'], description: 'Natural Language Processing for unstructured data analysis.' },
       ],
       outcomes: [
         { id: 'out-gpt', label: 'ChatGPT Tools' },
         { id: 'out-bed', label: 'Bedrock Apps' },
-        { id: 'out-rag', label: 'RAG Pipelines' }
+        { id: 'out-rag', label: 'RAG Pipelines' },
+        { id: 'out-nlp', label: 'NLP Analytics' }
       ]
     }
   };
 
   const scenarios = [
-    { id: 'chatbot', label: 'Build AI Chatbot', icon: FaFlask },
-    { id: 'saas', label: 'Build SaaS Dashboard', icon: FaRocket },
-    { id: 'micro', label: 'Build Microservices', icon: FaCogs }
+    { 
+      id: 'chatbot', 
+      label: 'Build AI Chatbot', 
+      icon: FaFlask, 
+      keywords: ["chat", "bot", "llm", "openai", "assistant"],
+      description: "Convergent AI architecture for conversational interfaces.",
+      plan: ["FRONTEND: React/TS UI", "BACKEND: Node API", "INFRA: Docker", "AI: OpenAI / Bedrock"],
+      required: { frontend: ['react'], backend: ['node'], infrastructure: ['docker'], ai: ['openai', 'bedrock'] },
+      outputs: ['out-dash', 'out-api', 'out-cicd', 'out-gpt']
+    },
+    { 
+      id: 'saas', 
+      label: 'Build SaaS Dashboard', 
+      icon: FaRocket, 
+      keywords: ["dashboard", "admin", "portal", "ui"],
+      description: "Scale-ready SaaS architecture with secure multitenancy.",
+      plan: ["FRONTEND: Dashboard UI", "BACKEND: Auth/JWT", "INFRA: AWS/GCP", "DATA: Postgres"],
+      required: { frontend: ['react', 'ui-perf'], backend: ['auth'], infrastructure: ['aws'], ai: [] },
+      outputs: ['out-dash', 'out-perf', 'out-auth', 'out-cloud']
+    },
+    { 
+      id: 'micro', 
+      label: 'Build Microservices', 
+      icon: FaCogs, 
+      keywords: ["microservice", "spring", "services"],
+      description: "Distributed systems architecture for enterprise scale.",
+      plan: ["BACKEND: Spring Boot", "INFRA: K8s / Jenkins", "DATA: Redis"],
+      required: { frontend: [], backend: ['springboot'], infrastructure: ['k8s', 'jenkins'], ai: [] },
+      outputs: ['out-micro', 'out-k8s', 'out-cicd']
+    },
+    { 
+      id: 'cicd', 
+      label: 'Build CI/CD Pipeline', 
+      icon: FaCogs, 
+      keywords: ["devops", "ci", "cd", "jenkins", "kubernetes", "docker", "terraform"],
+      description: "Automated delivery pipeline with full orchestration.",
+      plan: ["INFRA: Git / Jenkins / Docker / K8s / Terraform"],
+      required: { frontend: [], backend: [], infrastructure: ['jenkins', 'docker', 'k8s', 'terraform'], ai: [] },
+      outputs: ['out-cicd', 'out-k8s', 'out-iac']
+    },
+    { 
+      id: 'data', 
+      label: 'Build Data Pipeline', 
+      icon: FaDatabase, 
+      keywords: ["data", "pipeline", "stream", "etl", "spark", "kafka"],
+      description: "Real-time data processing and analytics architecture.",
+      plan: ["BACKEND: Python / Node", "DATA: SQL / Redis", "INFRA: AWS"],
+      required: { frontend: [], backend: ['python'], infrastructure: ['aws'], ai: [] },
+      outputs: ['out-data', 'out-cloud']
+    },
+    { 
+      id: 'rag', 
+      label: 'Build AI Search (RAG)', 
+      icon: FaSearch, 
+      keywords: ["rag", "search", "retrieval", "vector", "embedding"],
+      description: "Knowledge-augmented AI search system.",
+      plan: ["BACKEND: Node / Python", "AI: RAG / OpenAI", "DATA: Vector DB"],
+      required: { frontend: [], backend: ['node'], infrastructure: ['docker'], ai: ['rag', 'openai'] },
+      outputs: ['out-rag', 'out-gpt']
+    }
   ];
 
-  const handleScenario = (scenarioId) => {
-    if (isComposing) return;
-    setIsComposing(true);
-    setConnections([]);
-    setSelectedSkill(null);
-    
-    let sequence = [];
-    if (scenarioId === 'chatbot') {
-      sequence = [
-        { cat: 'frontend', mod: 'react', out: 'out-dash' },
-        { cat: 'backend', mod: 'node', out: 'out-api' },
-        { cat: 'infrastructure', mod: 'docker', out: 'out-cicd' },
-        { cat: 'ai', mod: 'openai', out: 'out-gpt' }
-      ];
-    } else if (scenarioId === 'saas') {
-      sequence = [
-        { cat: 'frontend', mod: 'react', out: 'out-dash' },
-        { cat: 'backend', mod: 'auth', out: 'out-auth' },
-        { cat: 'infrastructure', mod: 'terraform', out: 'out-iac' },
-        { cat: 'ai', mod: 'bedrock', out: 'out-bed' }
-      ];
-    } else {
-      sequence = [
-        { cat: 'backend', mod: 'springboot', out: 'out-micro' },
-        { cat: 'infrastructure', mod: 'k8s', out: 'out-k8s' },
-        { cat: 'infrastructure', mod: 'jenkins', out: 'out-cicd' }
-      ];
-    }
+  const fetchGithubRepo = async (scenario) => {
+    try {
+      const cached = sessionStorage.getItem(`gh-repo-${scenario.id}`);
+      if (cached) return JSON.parse(cached);
 
-    let i = 0;
-    const runSequence = () => {
-      if (i < sequence.length) {
-        const step = sequence[i];
-        setComposingStep(step.cat);
-        setActiveCategory(step.cat);
-        setConnections(prev => [...prev, { moduleId: step.mod, outputId: step.out }]);
-        i++;
-        setTimeout(runSequence, 300);
-      } else {
-        setComposingStep(null);
-        setIsComposing(false);
-        setUnlockedTabs(['frontend', 'backend', 'infrastructure', 'ai']);
-        setSelectedSkill({
-          id: 'blueprint',
-          label: 'Scenario Blueprint',
-          bullets: sequence.map(s => `${s.cat.toUpperCase()}: ${s.mod} connected to ${s.out}`),
-          description: `Architecture blueprint for ${scenarioId} successfully synthesized.`
-        });
+      const res = await fetch('https://api.github.com/users/dubba1212/repos?per_page=100');
+      if (!res.ok) return null;
+      const repos = await res.json();
+      
+      const match = repos.find(repo => {
+        const text = `${repo.name} ${repo.description} ${repo.topics?.join(' ')}`.toLowerCase();
+        return scenario.keywords.some(kw => text.includes(kw));
+      });
+
+      if (match) {
+        sessionStorage.setItem(`gh-repo-${scenario.id}`, JSON.stringify(match));
+      }
+      return match;
+    } catch {
+      return null;
+    }
+  };
+
+  const handleScenario = async (scenarioId) => {
+    const scenario = scenarios.find(s => s.id === scenarioId);
+    setActiveScenarioId(scenarioId);
+    setSelectedModule(null);
+    setDockMode('scenario');
+    setDockOpen(true);
+    setConnections([]);
+    
+    const repo = await fetchGithubRepo(scenario);
+    setGithubRepo(repo);
+  };
+
+  const handleModuleClick = (skill) => {
+    setSelectedModule(skill);
+    setDockMode('module');
+    setDockOpen(true);
+  };
+
+  const handleTabChange = (catId) => {
+    setActiveCategory(catId);
+    setSelectedModule(null);
+    setDockOpen(false);
+    setDockMode(null);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dockRef.current && !dockRef.current.contains(e.target)) {
+        const isModuleCard = e.target.closest('.skill-module-card');
+        const isScenarioPill = e.target.closest('.scenario-pill');
+        if (!isModuleCard && !isScenarioPill) {
+          setDockOpen(false);
+          setSelectedModule(null);
+        }
       }
     };
-    runSequence();
-  };
+    document.addEventListener('pointerdown', handleClickOutside);
+    return () => document.removeEventListener('pointerdown', handleClickOutside);
+  }, []);
 
   const onDragStart = (e, moduleId) => {
     setDragging(true);
@@ -304,23 +393,19 @@ const SkillsBuilderToolkit = () => {
     if (!dragging) return;
     const handleMove = (e) => {
       const boardRect = boardRef.current.getBoundingClientRect();
-      const x = (e.clientX || e.touches?.[0]?.clientX) - boardRect.left;
-      const y = (e.clientY || e.touches?.[0]?.clientY) - boardRect.top;
+      const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+      const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+      const x = clientX - boardRect.left;
+      const y = clientY - boardRect.top;
       setDragCurrentPos({ x, y });
       
-      const elements = document.elementsFromPoint(e.clientX || e.touches?.[0]?.clientX, e.clientY || e.touches?.[0]?.clientY);
+      const elements = document.elementsFromPoint(clientX, clientY);
       const target = elements.find(el => el.hasAttribute('data-output-id'));
       setActiveDropTarget(target ? target.getAttribute('data-output-id') : null);
     };
     const handleUp = () => {
       if (activeDropTarget && dragSourceId) {
         setConnections(prev => [...prev, { moduleId: dragSourceId, outputId: activeDropTarget }]);
-        if (guidedMode) {
-          const catMap = { frontend: 'backend', backend: 'infrastructure', infrastructure: 'ai' };
-          if (catMap[activeCategory] && !unlockedTabs.includes(catMap[activeCategory])) {
-            setUnlockedTabs(prev => [...prev, catMap[activeCategory]]);
-          }
-        }
       }
       setDragging(false);
       setDragSourceId(null);
@@ -332,20 +417,31 @@ const SkillsBuilderToolkit = () => {
       window.removeEventListener('pointermove', handleMove);
       window.removeEventListener('pointerup', handleUp);
     };
-  }, [dragging, activeDropTarget, dragSourceId, activeCategory, guidedMode, unlockedTabs]);
+  }, [dragging, activeDropTarget, dragSourceId]);
+
+  const activeScenario = scenarios.find(s => s.id === activeScenarioId);
+  const visibleModules = activeScenario 
+    ? toolkitData[activeCategory].modules.filter(m => activeScenario.required[activeCategory]?.includes(m.id))
+    : toolkitData[activeCategory].modules;
+  const visibleOutputs = activeScenario
+    ? toolkitData[activeCategory].outcomes.filter(o => activeScenario.outputs.includes(o.id))
+    : toolkitData[activeCategory].outcomes;
 
   return (
     <div className="relative w-full py-12 px-4 max-w-7xl mx-auto min-h-[900px] select-none" ref={boardRef}>
       <div className="scanline-overlay opacity-10" />
       
-      {/* Header & Scenario Selector */}
       <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-6 relative z-20">
-        <div className="flex gap-3">
+        <div className="flex flex-wrap justify-center md:justify-start gap-3">
           {scenarios.map(s => (
             <button
               key={s.id}
               onClick={() => handleScenario(s.id)}
-              className="px-4 py-2 bg-secondary/40 border border-white/5 rounded-full text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-accent hover:border-accent/30 transition-all flex items-center gap-2"
+              className={`scenario-pill px-4 py-2 bg-secondary/40 border rounded-full text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
+                activeScenarioId === s.id 
+                ? 'border-accent text-accent shadow-[0_0_15px_rgba(241,48,36,0.3)]' 
+                : 'border-white/5 text-white/40 hover:text-accent hover:border-accent/30'
+              }`}
             >
               <s.icon className="text-xs" /> {s.label}
             </button>
@@ -358,19 +454,17 @@ const SkillsBuilderToolkit = () => {
               setGuidedMode(!guidedMode);
               if (!guidedMode) setUnlockedTabs(['frontend']);
               else setUnlockedTabs(['frontend', 'backend', 'infrastructure', 'ai']);
+              setSelectedModule(null);
+              setDockOpen(false);
             }}
             className={`w-8 h-4 rounded-full relative transition-all ${guidedMode ? 'bg-accent' : 'bg-white/10'}`}
           >
-            <motion.div 
-              animate={{ x: guidedMode ? 16 : 2 }}
-              className="absolute top-1 left-0 w-2 h-2 rounded-full bg-white shadow-sm"
-            />
+            <motion.div animate={{ x: guidedMode ? 16 : 2 }} className="absolute top-1 left-0 w-2 h-2 rounded-full bg-white shadow-sm" />
           </button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10 h-full">
-        {/* LEFT: Tabs */}
         <div className="lg:col-span-3 space-y-4">
           <div className="mb-4">
             <h3 className="text-white/30 text-[9px] font-black uppercase tracking-[0.4em] mb-3">SYSTEM_NODES</h3>
@@ -387,44 +481,40 @@ const SkillsBuilderToolkit = () => {
               active={activeCategory === cat.id}
               locked={guidedMode && !unlockedTabs.includes(cat.id)}
               isComposingActive={composingStep === cat.id}
-              onClick={setActiveCategory}
+              onClick={handleTabChange}
             />
           ))}
         </div>
 
-        {/* CENTER: Board */}
         <div className="lg:col-span-6 flex flex-col min-h-[550px] relative">
           <div className="flex-1 bg-[#0d0d0f]/60 border border-white/5 rounded-[40px] p-8 backdrop-blur-md holo-card neural-grid relative overflow-hidden">
             <AnimatePresence mode="wait">
               <motion.div
-                key={activeCategory}
+                key={activeCategory + (activeScenarioId || '')}
                 initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 1.02 }}
                 className="grid grid-cols-2 gap-6 relative z-10"
               >
-                {toolkitData[activeCategory].modules.map((skill) => (
-                  <SkillModule 
-                    key={skill.id}
-                    skill={skill}
-                    active={selectedSkill?.id === skill.id}
-                    isComposingActive={composingStep === activeCategory}
-                    onClick={setSelectedSkill}
-                    onHover={setHoveredSkillId}
-                    onDragStart={onDragStart}
-                  />
+                {visibleModules.map((skill) => (
+                  <div key={skill.id} className="skill-module-card">
+                    <SkillModule 
+                      skill={skill}
+                      active={selectedModule?.id === skill.id}
+                      isComposingActive={composingStep === activeCategory}
+                      onClick={handleModuleClick}
+                      onHover={setHoveredSkillId}
+                      onDragStart={onDragStart}
+                    />
+                  </div>
                 ))}
               </motion.div>
             </AnimatePresence>
 
-            {/* Wiring Layer */}
             <svg className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-visible">
               <defs>
                 <filter id="glow">
-                  <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-                  <feMerge>
-                    <feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/>
-                  </feMerge>
+                  <feGaussianBlur stdDeviation="2" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
                 </filter>
               </defs>
               {dragging && (
@@ -457,20 +547,24 @@ const SkillsBuilderToolkit = () => {
             </svg>
 
             <AnimatePresence>
-              {selectedSkill && (
-                <ProofDock 
-                  skill={selectedSkill} 
-                  onClose={() => setSelectedSkill(null)}
-                />
+              {dockOpen && (
+                <div ref={dockRef}>
+                  <ProofDock 
+                    mode={dockMode}
+                    skill={selectedModule} 
+                    scenario={activeScenario}
+                    githubRepo={githubRepo}
+                    onClose={() => { setDockOpen(false); setSelectedModule(null); }}
+                  />
+                </div>
               )}
             </AnimatePresence>
           </div>
         </div>
 
-        {/* RIGHT: Outputs */}
         <div className="lg:col-span-3 flex flex-col space-y-3">
           <h3 className="text-white/30 text-[9px] font-black uppercase tracking-[0.4em] mb-3">OUTPUT_STREAMS</h3>
-          {toolkitData[activeCategory].outcomes.map((out) => {
+          {visibleOutputs.map((out) => {
             const isConnected = connections.some(c => c.outputId === out.id);
             return (
               <div
@@ -487,9 +581,6 @@ const SkillsBuilderToolkit = () => {
                   </span>
                   {isConnected && <FaCheck className="ml-auto text-accent text-[8px]" />}
                 </div>
-                {isConnected && (
-                  <div className="absolute top-1 right-2 text-[6px] text-accent font-black uppercase tracking-tighter">Connected</div>
-                )}
               </div>
             );
           })}

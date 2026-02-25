@@ -1,0 +1,124 @@
+Fix the Skills Playground “terminal dock” behavior exactly as shown in my screenshots.
+
+Context:
+- The terminal dock is the black glass panel at the bottom (shows “MODULE_DATA_STREAM: …”, bullet points, COPY + X icons, and currently a “VIEW GITHUB” button).
+- Problem: The dock stays open and persists when I switch tabs (Frontend/Backend/Infrastructure/AI) or when I leave the selected skill.
+- Requirement: Dock must ONLY appear when a skill card is clicked OR when a scenario is clicked. It must disappear automatically when the user leaves that context.
+
+STACK: Next.js (pages router) + Tailwind + Framer Motion.
+DO NOT change the overall layout. Only fix dock logic + GitHub button rules.
+
+========================================================
+1) TERMINAL DOCK VISIBILITY RULES (MUST IMPLEMENT)
+========================================================
+A) Dock CLOSED by default.
+- When page loads or when user scrolls into Skills section, the dock must NOT be open.
+
+B) Open dock ONLY in these cases:
+1) Module Proof Mode:
+   - user clicks a specific module card (e.g., “UI PERF”, “Node/Express”, “Auth/JWT”)
+   - dock opens and shows module proof content
+2) Scenario Mode:
+   - user clicks a Scenario pill (“Build AI Chatbot”, etc.)
+   - dock opens and shows scenario plan/blueprint content (not a module proof)
+
+C) Dock must AUTO-CLOSE in these cases:
+1) User switches the main category tab (Frontend/Backend/Infrastructure/AI)
+   - Close dock immediately
+   - Clear selected module state
+2) User clicks outside:
+   - If user clicks anywhere outside the dock AND not on a module card, close dock
+3) User starts a new scenario:
+   - Replace dock content (scenario plan), do not keep previous module proof
+4) User closes with X:
+   - Close dock and clear selection
+
+D) Dock must NOT persist across tabs:
+- If I was on Frontend and selected “UI PERF” and then I click Backend tab,
+  the dock MUST vanish (close) and not remain on screen.
+
+========================================================
+2) TERMINAL DOCK CONTENT MODES (STATE MANAGEMENT)
+========================================================
+Refactor dock into explicit modes:
+
+State:
+- dockOpen: boolean
+- dockMode: 'module' | 'scenario' | null
+- selectedModuleId: string | null
+- activeScenarioId: string | null
+
+Rules:
+- When module card clicked:
+  - set dockMode='module'
+  - set selectedModuleId
+  - set dockOpen=true
+  - set activeScenarioId unchanged (scenario may still be active, but module click should show module info)
+- When scenario clicked:
+  - set dockMode='scenario'
+  - set activeScenarioId
+  - clear selectedModuleId
+  - set dockOpen=true
+- When tab changes:
+  - set dockOpen=false
+  - set dockMode=null
+  - clear selectedModuleId
+  - (keep activeScenarioId optional: either clear it OR keep it but DO NOT show dock)
+Preferred: clear activeScenarioId on tab change, unless scenario is meant to stay.
+
+========================================================
+3) REMOVE “VIEW GITHUB” BUTTON FROM MODULE DOCK
+========================================================
+Do NOT show “VIEW GITHUB” for individual modules at all.
+- Remove the GitHub button entirely in module mode.
+- Keep COPY + X actions working.
+
+Only allow GitHub link in SCENARIO mode, AND ONLY if matching repo exists.
+
+========================================================
+4) SCENARIO GITHUB BUTTON RULE (ONE PLACE ONLY)
+========================================================
+In Scenario Mode ONLY:
+- Attempt to find a matching GitHub repo using GitHub API:
+  https://api.github.com/users/dubba1212/repos?per_page=100
+- Cache results (sessionStorage).
+- If a good match is found:
+  - Show one button in dock: “VIEW MATCHING REPO”
+  - Link to repo.html_url
+- If no match:
+  - Do not render any GitHub button area at all.
+
+Never show multiple GitHub buttons.
+Never show GitHub for modules.
+
+========================================================
+5) IMPLEMENT CLICK-OUTSIDE CLOSE SAFELY
+========================================================
+Implement click-outside logic:
+- Add a ref to the dock container.
+- Add refs or a selector class for module cards (e.g., .skill-module-card).
+- On document pointerdown:
+  - if click is NOT inside dock AND NOT on module card AND NOT on scenario pill => close dock and clear selection.
+
+Also:
+- If user starts dragging a module (drag-to-connect), do NOT close dock automatically unless they actually leave context.
+- Dock should remain stable during a drag gesture (no flicker).
+
+========================================================
+6) FILES TO UPDATE
+========================================================
+- The Skills Playground component where dock is implemented (SkillsPlayground / NeuralBoard / Toolkit component).
+- The Dock/Terminal component file (if it exists separately).
+- Remove any leftover GitHub button props from module dock rendering.
+
+========================================================
+DELIVERABLE CHECKLIST
+========================================================
+✅ Dock does NOT show by default
+✅ Dock shows ONLY after module click or scenario click
+✅ Dock auto-closes on tab change
+✅ Dock auto-closes on outside click
+✅ Dock closes on X click
+✅ GitHub button removed from module dock
+✅ GitHub button appears ONLY in scenario dock when repo match found, otherwise hidden
+✅ No layout break, no overflow, no scrollbars
