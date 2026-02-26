@@ -1,0 +1,90 @@
+Repo: Next.js (pages router) + Tailwind + Framer Motion.
+Context: Skills Playground section (System Nodes + Center Board + Output Streams + Bottom Terminal Dock).
+Goal (Part 1): Restore the PREVIOUS layout pattern I liked: the center board stays visible AND the terminal shows below it WITHOUT covering/overlapping skills. Also fix the broken data/state bug where Frontend skills show under Backend/Infra/AI and scenarios show the same skills for every scenario.
+
+IMPORTANT VISUAL REQUIREMENT (match my older screenshot pattern):
+- Center board is ABOVE.
+- Terminal is BELOW, in the SAME section container.
+- Terminal must NEVER overlap the center board modules.
+- Terminal should appear only when a module is clicked OR when a scenario is active (scenario plan).
+- When switching tabs (Frontend/Backend/Infrastructure/AI), the module list must change correctly (no “same skills everywhere”).
+
+A) FILES TO LOCATE / MODIFY (do not rename unless needed)
+- pages/index.js (or the page where Skills section lives)
+- components/SkillsPlayground.jsx (or SkillsSection / SkillsBoard / NeuralBoard component)
+- components/TerminalDock.jsx (or SkillTerminal component)
+- data/skills.js (or skills data source)
+- data/scenarios.js (create this if not present)
+
+B) FIX 1 — TERMINAL OVERLAP (layout refactor, NO design downgrade)
+1) Identify the Skills Playground main wrapper (the container that holds:
+   - left system nodes
+   - center board
+   - right output streams
+   - bottom terminal)
+2) Change the layout to a 2-row structure:
+   - Row 1: the 3-column playground (left tabs + center board + right output)
+   - Row 2: the terminal dock (full width)
+3) Implementation detail:
+   - Use CSS Grid or Flex column:
+     - Outer: `grid grid-rows-[1fr_auto]` OR `flex flex-col`
+     - Row 1: `min-h-0` so the board can scroll if needed
+     - Row 2 terminal: fixed max height with internal scroll: `max-h-[220px] md:max-h-[260px] overflow-y-auto`
+4) Remove any `position: fixed` / `absolute bottom-0` terminal styles that cause overlay.
+   - The terminal should be `relative` and flow in the layout.
+5) If you must keep a “dock feel”:
+   - Use `sticky` inside Skills section ONLY (not viewport):
+     - terminal wrapper: `sticky bottom-0` within the skills section container
+     - AND add padding at bottom of row1 (`pb-[240px]`) only if sticky is used.
+6) Ensure on mobile it stacks nicely:
+   - Board stays visible
+   - Terminal collapses into an accordion or smaller height (`max-h-[180px]`) with `overflow-y-auto`
+
+C) FIX 2 — MODULE FILTERING BUG (Frontend skills showing everywhere)
+1) Audit how modules are selected:
+   - There should be a `selectedCategory` (frontend/backend/infra/ai)
+   - Rendering must filter: `skills.filter(s => s.category === selectedCategory)`
+2) Fix the cause:
+   - If you are mapping a constant array without filtering, apply filter.
+   - If category keys mismatch (e.g., "AI/LLM" vs "ai"), normalize them.
+   - Enforce consistent keys:
+     - frontend, backend, infrastructure, ai
+3) When user clicks a different System Node:
+   - clear selected module AND close module terminal
+   - unless scenario mode is active and module belongs to that scenario (handled below)
+
+D) FIX 3 — SCENARIO MODE MUST SHOW DIFFERENT SKILLS PER SCENARIO
+1) Create `data/scenarios.js` (if not exists):
+   - Each scenario has:
+     - id, label
+     - requiredModules: { frontend: [], backend: [], infrastructure: [], ai: [] }
+     - outputs: [] (right panel)
+     - planLines: [] (terminal bullets)
+     - matchingRepoUrl: OPTIONAL (only if you actually have one)
+2) Scenario select behavior:
+   - Clicking a scenario sets `activeScenarioId`
+   - Clicking the SAME scenario again toggles OFF (deselect)
+   - “Clear Scenario” button also resets scenario state
+3) When scenario is active:
+   - Center board should show ONLY the scenario modules, grouped by category (2x2 grid).
+   - The left System Nodes remain clickable:
+     - If user clicks a category while scenario is active:
+       show only that category’s scenario modules (NOT global list)
+4) When scenario is cleared:
+   - Restore normal category browsing (full skill list per category)
+   - Hide scenario terminal (unless a module is still selected)
+   - Clear any scenario-only selected module
+
+E) TERMINAL DISPLAY RULES (very important)
+- If scenario active: terminal shows SCENARIO_PLAN dock (like my screenshot)
+- If scenario NOT active:
+  - terminal shows only when a module is clicked (MODULE_DATA_STREAM)
+- If user switches category tabs:
+  - close module terminal immediately (no “stuck” terminal)
+- Provide close button (X) and ESC key to close terminal.
+
+F) DELIVERABLES
+- Implement all changes.
+- List files modified.
+- Ensure no horizontal overflow, no layout shift.
+- Keep the existing visual style (glass/dark/red accents) and animations (Framer Motion) — do not replace with a plain layout.

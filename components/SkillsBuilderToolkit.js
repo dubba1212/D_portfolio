@@ -69,7 +69,7 @@ const SkillModule = ({ skill, active, onClick, isComposingActive, onHover, onDra
         setTimeout(() => setIsPulsing(false), 800);
         onClick(skill);
       }}
-      className={`relative group rounded-xl border bg-secondary/40 backdrop-blur-md transition-all duration-300 text-left holo-card touch-none ${
+      className={`relative group rounded-xl border bg-secondary/40 backdrop-blur-md transition-all duration-300 text-left holo-card touch-none skill-module-card ${
         small ? 'p-2' : 'p-4'
       } ${
         active || isComposingActive
@@ -149,13 +149,13 @@ const ProofDock = ({ mode, skill, scenario, githubRepo, onClose }) => {
               ))}
             </ul>
           </div>
-          <div className="flex flex-col justify-between items-end">
-            <p className="text-[10px] text-white/40 italic mb-4 text-right">{description}</p>
+          <div className="flex flex-col justify-between items-end text-right">
+            <p className="text-[10px] text-white/40 italic mb-4">{description}</p>
             {mode === 'scenario' && githubRepo && (
               <motion.button 
                 whileHover={{ x: 5 }}
                 onClick={() => window.open(githubRepo.html_url, '_blank')}
-                className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-accent border border-accent/20 px-4 py-2 rounded-lg hover:bg-accent/10"
+                className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-accent border border-accent/20 px-4 py-2 rounded-lg hover:bg-accent/10 transition-all"
               >
                 <FaExternalLinkAlt /> View matching repo
               </motion.button>
@@ -370,8 +370,11 @@ const SkillsBuilderToolkit = () => {
   const handleTabChange = (catId) => {
     setActiveCategory(catId);
     setSelectedModule(null);
-    setDockOpen(false);
-    setDockMode(null);
+    // Only close dock if not in scenario mode, or if scenario doesn't use this module
+    if (dockMode === 'module') {
+      setDockOpen(false);
+      setDockMode(null);
+    }
   };
 
   useEffect(() => {
@@ -380,8 +383,12 @@ const SkillsBuilderToolkit = () => {
         const isModuleCard = e.target.closest('.skill-module-card');
         const isScenarioPill = e.target.closest('.scenario-pill');
         if (!isModuleCard && !isScenarioPill) {
-          setDockOpen(false);
-          setSelectedModule(null);
+          // Don't close if scenario is active and user just clicked category
+          const isCategoryTab = e.target.closest('.category-tab');
+          if (!isCategoryTab) {
+            setDockOpen(false);
+            setSelectedModule(null);
+          }
         }
       }
     };
@@ -439,7 +446,7 @@ const SkillsBuilderToolkit = () => {
     : toolkitData[activeCategory].outcomes;
 
   return (
-    <div className="relative w-full py-12 px-4 max-w-7xl mx-auto min-h-[900px] select-none" ref={boardRef}>
+    <div className="relative w-full py-12 px-4 max-w-7xl mx-auto min-h-[900px] select-none flex flex-col" ref={boardRef}>
       <div className="scanline-overlay opacity-10" />
       
       {/* 1. TOP: Scenario Selector */}
@@ -490,8 +497,8 @@ const SkillsBuilderToolkit = () => {
         </div>
       </div>
 
-      {/* 2. MIDDLE: Skills Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10 h-full">
+      {/* 2. MIDDLE: Skills Content Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10 flex-1">
         {/* Left Side: Category Tabs */}
         <div className="lg:col-span-3 space-y-4">
           <div className="mb-4">
@@ -503,14 +510,17 @@ const SkillsBuilderToolkit = () => {
             </div>
           </div>
           {categories.map((cat) => (
-            <SkillTab 
-              key={cat.id}
-              {...cat}
-              active={activeCategory === cat.id}
-              locked={guidedMode && !unlockedTabs.includes(cat.id)}
-              isComposingActive={composingStep === cat.id}
-              onClick={handleTabChange}
-            />
+            <div key={cat.id} className="category-tab">
+              <SkillTab 
+                id={cat.id}
+                label={cat.label}
+                icon={cat.icon}
+                active={activeCategory === cat.id}
+                locked={guidedMode && !unlockedTabs.includes(cat.id)}
+                isComposingActive={composingStep === cat.id}
+                onClick={handleTabChange}
+              />
+            </div>
           ))}
         </div>
 
@@ -526,16 +536,15 @@ const SkillsBuilderToolkit = () => {
                 className="grid grid-cols-2 gap-6 relative z-10"
               >
                 {visibleModules.map((skill) => (
-                  <div key={skill.id} className="skill-module-card">
-                    <SkillModule 
-                      skill={skill}
-                      active={selectedModule?.id === skill.id}
-                      isComposingActive={composingStep === activeCategory}
-                      onClick={handleModuleClick}
-                      onHover={setHoveredSkillId}
-                      onDragStart={onDragStart}
-                    />
-                  </div>
+                  <SkillModule 
+                    key={skill.id}
+                    skill={skill}
+                    active={selectedModule?.id === skill.id}
+                    isComposingActive={composingStep === activeCategory}
+                    onClick={handleModuleClick}
+                    onHover={setHoveredSkillId}
+                    onDragStart={onDragStart}
+                  />
                 ))}
               </motion.div>
             </AnimatePresence>
@@ -611,7 +620,7 @@ const SkillsBuilderToolkit = () => {
       </div>
 
       {/* 3. BOTTOM: Terminal Dock */}
-      <div ref={dockContainerRef} className="relative z-30">
+      <div ref={dockContainerRef} className="relative z-30 mt-auto">
         <AnimatePresence>
           {dockOpen && (
             <ProofDock 
@@ -622,6 +631,10 @@ const SkillsBuilderToolkit = () => {
               onClose={() => {
                 setDockOpen(false);
                 setSelectedModule(null);
+                // Also clear scenario if that was the mode, to stay consistent with user expectations
+                if (dockMode === 'scenario') {
+                  setActiveScenarioId(null);
+                }
               }}
             />
           )}
