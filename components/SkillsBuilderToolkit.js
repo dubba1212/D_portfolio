@@ -35,7 +35,7 @@ const SkillTab = ({ id, label, icon: Icon, active, locked, onClick, isComposingA
   </motion.button>
 );
 
-const SkillModule = ({ skill, active, onClick, isComposingActive, onHover, onDragStart, id }) => {
+const SkillModule = ({ skill, active, onClick, isComposingActive, onHover, onDragStart, id, small }) => {
   const [isPulsing, setIsPulsing] = useState(false);
   const Icon = skill.icon || SiReact;
   const x = useMotionValue(0);
@@ -53,7 +53,7 @@ const SkillModule = ({ skill, active, onClick, isComposingActive, onHover, onDra
 
   const handleMouseLeave = () => {
     x.set(0); y.set(0);
-    onHover(null);
+    onHover?.(null);
   };
 
   return (
@@ -62,23 +62,25 @@ const SkillModule = ({ skill, active, onClick, isComposingActive, onHover, onDra
       style={{ x: springX, y: springY, perspective: '1000px' }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      onMouseEnter={() => onHover(skill.id)}
-      onPointerDown={(e) => onDragStart(e, skill.id)}
+      onMouseEnter={() => onHover?.(skill.id)}
+      onPointerDown={(e) => onDragStart?.(e, skill.id)}
       onClick={() => {
         setIsPulsing(true);
         setTimeout(() => setIsPulsing(false), 800);
         onClick(skill);
       }}
-      className={`relative group p-4 rounded-xl border bg-secondary/40 backdrop-blur-md transition-all duration-300 text-left holo-card touch-none ${
+      className={`relative group rounded-xl border bg-secondary/40 backdrop-blur-md transition-all duration-300 text-left holo-card touch-none ${
+        small ? 'p-2' : 'p-4'
+      } ${
         active || isComposingActive
         ? 'border-accent/50 shadow-[0_0_30px_rgba(241,48,36,0.2)]' 
         : 'border-white/5 hover:border-accent/30'
       }`}
     >
       <div className="absolute top-2 right-2 w-1 h-1 rounded-full bg-accent led-blink" />
-      <div className="relative z-10 flex flex-col gap-3">
+      <div className={`relative z-10 flex flex-col ${small ? 'gap-1' : 'gap-3'}`}>
         <div className="relative w-fit">
-          <div className={`text-2xl ${active || isComposingActive ? 'text-accent' : 'text-white/40 group-hover:text-accent'} transition-colors`}>
+          <div className={`${small ? 'text-lg' : 'text-2xl'} ${active || isComposingActive ? 'text-accent' : 'text-white/40 group-hover:text-accent'} transition-colors`}>
             <Icon />
           </div>
           {(isPulsing || active || isComposingActive) && (
@@ -86,7 +88,7 @@ const SkillModule = ({ skill, active, onClick, isComposingActive, onHover, onDra
           )}
         </div>
         <div>
-          <h4 className="text-[11px] font-black text-white/90 uppercase tracking-tighter mb-1">{skill.label}</h4>
+          <h4 className={`${small ? 'text-[9px]' : 'text-[11px]'} font-black text-white/90 uppercase tracking-tighter mb-1`}>{skill.label}</h4>
           <div className="w-6 h-[1px] bg-accent/30 group-hover:w-full transition-all duration-500" />
         </div>
       </div>
@@ -339,6 +341,15 @@ const SkillsBuilderToolkit = () => {
   };
 
   const handleScenario = async (scenarioId) => {
+    if (activeScenarioId === scenarioId) {
+      setActiveScenarioId(null);
+      setSelectedModule(null);
+      setDockOpen(false);
+      setDockMode(null);
+      setConnections([]);
+      return;
+    }
+
     const scenario = scenarios.find(s => s.id === scenarioId);
     setActiveScenarioId(scenarioId);
     setSelectedModule(null);
@@ -446,6 +457,20 @@ const SkillsBuilderToolkit = () => {
               <s.icon className="text-xs" /> {s.label}
             </button>
           ))}
+          {activeScenarioId && (
+            <button 
+              onClick={() => {
+                setActiveScenarioId(null);
+                setSelectedModule(null);
+                setDockOpen(false);
+                setDockMode(null);
+                setConnections([]);
+              }}
+              className="px-4 py-2 bg-accent/10 border border-accent/20 rounded-full text-[10px] font-black uppercase tracking-widest text-accent hover:bg-accent/20 transition-all"
+            >
+              Clear Scenario
+            </button>
+          )}
         </div>
         <div className="flex items-center gap-3 bg-black/40 px-4 py-2 rounded-full border border-white/5">
           <span className="text-[9px] font-black uppercase tracking-widest text-white/40">Guided Mode</span>
@@ -489,26 +514,71 @@ const SkillsBuilderToolkit = () => {
         <div className="lg:col-span-6 flex flex-col min-h-[550px] relative">
           <div className="flex-1 bg-[#0d0d0f]/60 border border-white/5 rounded-[40px] p-8 backdrop-blur-md holo-card neural-grid relative overflow-hidden">
             <AnimatePresence mode="wait">
-              <motion.div
-                key={activeCategory + (activeScenarioId || '')}
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 1.02 }}
-                className="grid grid-cols-2 gap-6 relative z-10"
-              >
-                {visibleModules.map((skill) => (
-                  <div key={skill.id} className="skill-module-card">
-                    <SkillModule 
-                      skill={skill}
-                      active={selectedModule?.id === skill.id}
-                      isComposingActive={composingStep === activeCategory}
-                      onClick={handleModuleClick}
-                      onHover={setHoveredSkillId}
-                      onDragStart={onDragStart}
-                    />
-                  </div>
-                ))}
-              </motion.div>
+              {activeScenarioId ? (
+                <motion.div
+                  key="scenario-board"
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 1.02 }}
+                  className="grid grid-cols-2 gap-x-8 gap-y-10 h-full overflow-y-auto no-scrollbar pb-24"
+                >
+                  {['frontend', 'backend', 'infrastructure', 'ai'].map((catId, idx) => {
+                    const cat = categories.find(c => c.id === catId);
+                    const scenarioMods = activeScenario.required[catId] || [];
+                    if (scenarioMods.length === 0) return null;
+                    
+                    return (
+                      <motion.div 
+                        key={catId}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: idx * 0.1 }}
+                        className="space-y-3"
+                      >
+                        <h5 className="text-[9px] font-black text-accent/60 uppercase tracking-[0.3em] pl-1 border-l border-accent/30">
+                          {cat.label === 'AI / LLM' ? 'AI / LLM' : cat.label.toUpperCase()}
+                        </h5>
+                        <div className="grid grid-cols-1 gap-3">
+                          {scenarioMods.map(modId => {
+                            const mod = toolkitData[catId].modules.find(m => m.id === modId);
+                            return (
+                              <div key={modId} className="skill-module-card">
+                                <SkillModule 
+                                  skill={mod}
+                                  active={selectedModule?.id === mod.id}
+                                  onClick={handleModuleClick}
+                                  small={true}
+                                />
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </motion.div>
+              ) : (
+                <motion.div
+                  key={activeCategory}
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 1.02 }}
+                  className="grid grid-cols-2 gap-6 relative z-10"
+                >
+                  {toolkitData[activeCategory].modules.map((skill) => (
+                    <div key={skill.id} className="skill-module-card">
+                      <SkillModule 
+                        skill={skill}
+                        active={selectedModule?.id === skill.id}
+                        isComposingActive={composingStep === activeCategory}
+                        onClick={handleModuleClick}
+                        onHover={setHoveredSkillId}
+                        onDragStart={onDragStart}
+                      />
+                    </div>
+                  ))}
+                </motion.div>
+              )}
             </AnimatePresence>
 
             <svg className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-visible">
