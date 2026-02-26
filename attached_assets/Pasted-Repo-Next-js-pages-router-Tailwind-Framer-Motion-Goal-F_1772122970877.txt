@@ -1,0 +1,40 @@
+Repo: Next.js (pages router) + Tailwind + Framer Motion.
+Goal: Fix the Skills Playground layout so the bottom terminal NEVER overlaps scenario skills.
+
+PROBLEM
+- When a scenario is active, the center board shows grouped skills (Frontend/Backend/Infra/AI).
+- The bottom black terminal (dock) appears and overlaps the center board, hiding some skill cards.
+- I don’t want users to close terminal just to view skills.
+
+TARGET UX
+- The center board must ALWAYS show all required scenario skills fully visible.
+- The terminal dock must appear BELOW the center board (stacked layout), not floating/overlapping.
+- Keep existing animations and styles, only fix layout/structure.
+
+IMPLEMENTATION REQUIREMENTS
+1) Find the Skills Playground section/component (SkillsPlayground / Skills section page).
+2) Identify how the terminal dock is currently positioned (likely absolute/fixed inside the board wrapper).
+3) Refactor layout to a stacked structure:
+   - Top: Scenario selector pills
+   - Middle: Skills content (left tabs + center board + right outputs)
+   - Bottom: Terminal dock (rendered as a sibling below the skills content)
+
+4) CSS/Tailwind rules:
+   - Remove any absolute positioning of the terminal that places it over the board.
+   - The terminal must be `relative` and appear under the board with margin/padding.
+   - Ensure center board has enough min-height when scenario mode is active.
+   - Make the full Skills section responsive (desktop/tablet/mobile).
+   - Ensure no horizontal overflow. Keep background animations intact.
+
+5) State behavior:
+   - Do not change terminal logic or scenario logic beyond what is needed for layout.
+   - Terminal can still open/close the same way, just render it below.
+
+CHECKS
+- In scenario mode, all skill cards should be clickable and not hidden.
+- Terminal visible at the same time, no overlap.
+- On smaller screens, terminal stacks below correctly and remains readable.
+
+DELIVER
+- Implement changes directly in the codebase.
+- List files modified and what changed.

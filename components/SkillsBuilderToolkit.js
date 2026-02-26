@@ -109,12 +109,12 @@ const ProofDock = ({ mode, skill, scenario, githubRepo, onClose }) => {
   return (
     <motion.div
       ref={dockRef}
-      initial={{ y: 100, opacity: 0 }}
+      initial={{ y: 20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      exit={{ y: 100, opacity: 0 }}
-      className="absolute bottom-0 left-0 w-full z-50 p-4"
+      exit={{ y: 20, opacity: 0 }}
+      className="w-full mt-8"
     >
-      <div className="bg-[#0a0a0c]/95 backdrop-blur-2xl border border-accent/30 rounded-2xl shadow-[0_-20px_50px_rgba(0,0,0,0.5)] overflow-hidden">
+      <div className="bg-[#0a0a0c]/95 backdrop-blur-2xl border border-accent/30 rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden">
         <div className="flex items-center justify-between p-4 border-b border-white/5 bg-white/5">
           <div className="text-accent animate-pulse font-mono text-[10px] tracking-tighter">
             {title}
@@ -138,7 +138,7 @@ const ProofDock = ({ mode, skill, scenario, githubRepo, onClose }) => {
             </button>
           </div>
         </div>
-        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 max-h-[250px] overflow-y-auto no-scrollbar">
+        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 max-h-[300px] overflow-y-auto no-scrollbar">
           <div className="space-y-4">
             <ul className="space-y-2">
               {bullets?.map((bullet, i) => (
@@ -187,7 +187,7 @@ const SkillsBuilderToolkit = () => {
   const [activeDropTarget, setActiveDropTarget] = useState(null);
 
   const boardRef = useRef(null);
-  const dockRef = useRef(null);
+  const dockContainerRef = useRef(null);
 
   const categories = [
     { id: 'frontend', label: 'Frontend', icon: FaCode },
@@ -376,7 +376,7 @@ const SkillsBuilderToolkit = () => {
 
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (dockRef.current && !dockRef.current.contains(e.target)) {
+      if (dockContainerRef.current && !dockContainerRef.current.contains(e.target)) {
         const isModuleCard = e.target.closest('.skill-module-card');
         const isScenarioPill = e.target.closest('.scenario-pill');
         if (!isModuleCard && !isScenarioPill) {
@@ -442,6 +442,7 @@ const SkillsBuilderToolkit = () => {
     <div className="relative w-full py-12 px-4 max-w-7xl mx-auto min-h-[900px] select-none" ref={boardRef}>
       <div className="scanline-overlay opacity-10" />
       
+      {/* 1. TOP: Scenario Selector */}
       <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-6 relative z-20">
         <div className="flex flex-wrap justify-center md:justify-start gap-3">
           {scenarios.map(s => (
@@ -489,7 +490,9 @@ const SkillsBuilderToolkit = () => {
         </div>
       </div>
 
+      {/* 2. MIDDLE: Skills Content */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10 h-full">
+        {/* Left Side: Category Tabs */}
         <div className="lg:col-span-3 space-y-4">
           <div className="mb-4">
             <h3 className="text-white/30 text-[9px] font-black uppercase tracking-[0.4em] mb-3">SYSTEM_NODES</h3>
@@ -511,80 +514,40 @@ const SkillsBuilderToolkit = () => {
           ))}
         </div>
 
-        <div className="lg:col-span-6 flex flex-col min-h-[550px] relative">
+        {/* Center Side: Board */}
+        <div className="lg:col-span-6 flex flex-col min-h-[500px] relative">
           <div className="flex-1 bg-[#0d0d0f]/60 border border-white/5 rounded-[40px] p-8 backdrop-blur-md holo-card neural-grid relative overflow-hidden">
             <AnimatePresence mode="wait">
-              {activeScenarioId ? (
-                <motion.div
-                  key="scenario-board"
-                  initial={{ opacity: 0, scale: 0.98 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 1.02 }}
-                  className="grid grid-cols-2 gap-x-8 gap-y-10 h-full overflow-y-auto no-scrollbar pb-24"
-                >
-                  {['frontend', 'backend', 'infrastructure', 'ai'].map((catId, idx) => {
-                    const cat = categories.find(c => c.id === catId);
-                    const scenarioMods = activeScenario.required[catId] || [];
-                    if (scenarioMods.length === 0) return null;
-                    
-                    return (
-                      <motion.div 
-                        key={catId}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: idx * 0.1 }}
-                        className="space-y-3"
-                      >
-                        <h5 className="text-[9px] font-black text-accent/60 uppercase tracking-[0.3em] pl-1 border-l border-accent/30">
-                          {cat.label === 'AI / LLM' ? 'AI / LLM' : cat.label.toUpperCase()}
-                        </h5>
-                        <div className="grid grid-cols-1 gap-3">
-                          {scenarioMods.map(modId => {
-                            const mod = toolkitData[catId].modules.find(m => m.id === modId);
-                            return (
-                              <div key={modId} className="skill-module-card">
-                                <SkillModule 
-                                  skill={mod}
-                                  active={selectedModule?.id === mod.id}
-                                  onClick={handleModuleClick}
-                                  small={true}
-                                />
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </motion.div>
-              ) : (
-                <motion.div
-                  key={activeCategory}
-                  initial={{ opacity: 0, scale: 0.98 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 1.02 }}
-                  className="grid grid-cols-2 gap-6 relative z-10"
-                >
-                  {toolkitData[activeCategory].modules.map((skill) => (
-                    <div key={skill.id} className="skill-module-card">
-                      <SkillModule 
-                        skill={skill}
-                        active={selectedModule?.id === skill.id}
-                        isComposingActive={composingStep === activeCategory}
-                        onClick={handleModuleClick}
-                        onHover={setHoveredSkillId}
-                        onDragStart={onDragStart}
-                      />
-                    </div>
-                  ))}
-                </motion.div>
-              )}
+              <motion.div
+                key={activeCategory + (activeScenarioId || 'none')}
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.02 }}
+                className="grid grid-cols-2 gap-6 relative z-10"
+              >
+                {visibleModules.map((skill) => (
+                  <div key={skill.id} className="skill-module-card">
+                    <SkillModule 
+                      skill={skill}
+                      active={selectedModule?.id === skill.id}
+                      isComposingActive={composingStep === activeCategory}
+                      onClick={handleModuleClick}
+                      onHover={setHoveredSkillId}
+                      onDragStart={onDragStart}
+                    />
+                  </div>
+                ))}
+              </motion.div>
             </AnimatePresence>
 
+            {/* Neural Wiring SVG Overlay */}
             <svg className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-visible">
               <defs>
                 <filter id="glow">
-                  <feGaussianBlur stdDeviation="2" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                  <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                  <feMerge>
+                    <feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/>
+                  </feMerge>
                 </filter>
               </defs>
               {dragging && (
@@ -615,23 +578,10 @@ const SkillsBuilderToolkit = () => {
                 );
               })}
             </svg>
-
-            <AnimatePresence>
-              {dockOpen && (
-                <div ref={dockRef}>
-                  <ProofDock 
-                    mode={dockMode}
-                    skill={selectedModule} 
-                    scenario={activeScenario}
-                    githubRepo={githubRepo}
-                    onClose={() => { setDockOpen(false); setSelectedModule(null); }}
-                  />
-                </div>
-              )}
-            </AnimatePresence>
           </div>
         </div>
 
+        {/* Right Side: Output Streams */}
         <div className="lg:col-span-3 flex flex-col space-y-3">
           <h3 className="text-white/30 text-[9px] font-black uppercase tracking-[0.4em] mb-3">OUTPUT_STREAMS</h3>
           {visibleOutputs.map((out) => {
@@ -651,10 +601,31 @@ const SkillsBuilderToolkit = () => {
                   </span>
                   {isConnected && <FaCheck className="ml-auto text-accent text-[8px]" />}
                 </div>
+                {isConnected && (
+                  <div className="absolute top-1 right-2 text-[6px] text-accent font-black uppercase tracking-tighter">Connected</div>
+                )}
               </div>
             );
           })}
         </div>
+      </div>
+
+      {/* 3. BOTTOM: Terminal Dock */}
+      <div ref={dockContainerRef} className="relative z-30">
+        <AnimatePresence>
+          {dockOpen && (
+            <ProofDock 
+              mode={dockMode}
+              skill={selectedModule} 
+              scenario={activeScenario}
+              githubRepo={githubRepo}
+              onClose={() => {
+                setDockOpen(false);
+                setSelectedModule(null);
+              }}
+            />
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
