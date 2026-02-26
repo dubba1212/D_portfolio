@@ -1,0 +1,67 @@
+Repo: Next.js (pages router) + Tailwind + Framer Motion.
+Goal: Keep GUIDED MODE unchanged. Only improve SCENARIO behavior.
+
+DO NOT:
+- Do not remove or change Guided Mode UI/state/logic.
+- Do not refactor the entire skills section.
+- Do not change existing animations except what is needed for scenario display.
+
+CHANGES TO MAKE (ONLY THESE):
+
+1) Scenario → show required skills inside the CENTER BOARD (middle space)
+Currently, when I click a scenario (Build AI Chatbot / Build Microservices / etc.), the bottom terminal shows the scenario plan. Keep that.
+But also render the scenario-required skills visually in the CENTER BOARD ABOVE the terminal.
+
+Required layout inside the center board when a scenario is ACTIVE:
+- Show 4 grouped lanes/cards (keep same style as existing skill cards):
+  - FRONTEND
+  - BACKEND
+  - INFRASTRUCTURE
+  - AI / LLM
+- Each lane contains only the modules required for that scenario.
+- Use the same existing module card UI (icon, label, glow/hover) but grouped.
+- Animate in with Framer Motion: fade + slide + stagger (subtle, premium).
+
+Implementation approach:
+- Add a scenario config object (can be in the same file at first, no major refactor required):
+  const SCENARIOS = {
+    ai_chatbot: { label, modules: { frontend:[...], backend:[...], infra:[...], ai:[...] } },
+    microservices: { ... },
+    saas_dashboard: { ... },
+    cicd_pipeline: { ... },
+    data_pipeline: { ... },
+    ai_search_rag: { ... }
+  }
+
+- The “center board” should render:
+  IF activeScenarioId exists:
+     renderScenarioBoard(SCENARIOS[activeScenarioId].modules)
+  ELSE:
+     renderNormalBoard() (whatever current behavior is)
+
+Important:
+- Clicking any module card inside the scenario board should still behave like normal module clicks:
+  it should open the bottom terminal “module proof” content if that exists in your app already.
+
+2) Scenario toggle/deselect behavior (double-click or second click)
+Fix: If user clicks the same selected scenario again, it must deselect.
+Behavior:
+- If activeScenarioId === clickedScenarioId:
+    set activeScenarioId to null
+    close scenario mode view (center board returns to normal)
+    hide/close the scenario terminal if it was open
+- If clicking a different scenario:
+    switch scenario and update center board + terminal accordingly.
+
+3) State reset on scenario deselect
+When scenario is cleared:
+- activeScenarioId = null
+- scenarioPlan data cleared
+- terminal/dock should close OR return to default (choose whichever is already used in the app)
+- selected module should be cleared ONLY if it was part of scenario mode
+Goal: no leftover scenario text/cards after deselect.
+
+DELIVER:
+- Implement only these scenario-related changes.
+- List the exact files modified.
+- Mention where the center board rendering logic was updated.
