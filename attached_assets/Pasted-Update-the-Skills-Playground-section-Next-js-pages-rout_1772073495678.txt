@@ -1,0 +1,151 @@
+Update the Skills Playground section (Next.js pages router + Tailwind + Framer Motion).
+
+GOALS (based on my screenshots):
+1) Remove “GUIDED MODE” completely from the Skills section UI + logic.
+2) When a Scenario is selected (e.g., Build AI Chatbot / Build Microservices), show the scenario-required skills as visible “module cards” inside the CENTER BOARD (middle space), not only in the bottom terminal.
+   - The bottom terminal should still show the scenario plan summary + matching repo button (as it does now).
+   - But ABOVE the terminal, inside the big center board, render the chosen modules grouped by category (Frontend / Backend / Infrastructure / AI).
+3) Add an “Undo / Clear Scenario” capability so I can deselect a scenario and return to normal browsing.
+4) Make it easy to add more scenarios (data-driven config).
+
+========================================================
+A) REMOVE GUIDED MODE (UI + STATE)
+========================================================
+- Delete the “GUIDED MODE” toggle from the Skills section header/top-right.
+- Remove any state such as:
+  - guidedMode, isGuided, guided, lockUI, guidedStep, guidedIndex
+- Remove any conditionals that freeze navigation when guided mode is ON.
+- Ensure all tabs (Frontend/Backend/Infrastructure/AI) always remain clickable.
+
+FILES:
+- SkillsPlayground / NeuralBoard component (where scenarios + toggle exist)
+- Any shared state store/hook if guidedMode is in context
+
+EXPECTED RESULT:
+✅ No guided mode toggle visible
+✅ No “stuck” behavior when switching tabs or scenarios
+
+========================================================
+B) SHOW SCENARIO MODULES IN THE CENTER BOARD
+========================================================
+Current behavior:
+- Scenario click updates terminal dock showing:
+  “SCENARIO_PLAN: BUILD …”
+  bullets like FRONTEND/BACKEND/INFRA/AI and matching repo button.
+- BUT center board only shows a couple modules or stays mostly empty.
+
+New behavior (must implement):
+When activeScenarioId is set:
+1) The CENTER BOARD renders scenario-selected modules as cards (same card style you already use).
+2) Group them visually by lane headers:
+   - FRONTEND
+   - BACKEND
+   - INFRASTRUCTURE
+   - AI / LLM
+3) Each group shows cards for only the skills required by that scenario.
+4) Clicking any module card still opens Module Proof terminal mode (dockMode='module').
+
+Implementation detail:
+- Create a derived list from scenario definition:
+  scenario.modules = {
+    frontend: ['react_ts', 'ui_perf', ...],
+    backend: ['node_express', 'springboot', ...],
+    infrastructure: ['docker', 'kubernetes', 'jenkins', ...],
+    ai: ['openai_api', 'rag', ...]
+  }
+
+CENTER BOARD LAYOUT (keep futuristic style):
+- Use a 2x2 grid inside the board:
+  Top-left: Frontend lane
+  Top-right: Backend lane
+  Bottom-left: Infra lane
+  Bottom-right: AI lane
+- Each lane has:
+  - small label (uppercase)
+  - a tight card list/grid inside
+- Animate cards in with Framer Motion (fade+slide, stagger).
+
+IMPORTANT:
+- Do NOT change the outer structure of the Skills section.
+- Only change the center board content when scenario is active.
+
+========================================================
+C) ADD “UNDO / CLEAR SCENARIO”
+========================================================
+Problem:
+- Once scenario is selected, there is no way to revert.
+
+Fix:
+1) Clicking the ACTIVE scenario pill again should toggle it OFF.
+   - If activeScenarioId === clickedId => clear scenario
+2) Also add a small “Clear Scenario” button near the scenario pills (right side).
+   - Only visible when a scenario is active
+3) On scenario clear:
+   - activeScenarioId = null
+   - dockMode = null
+   - dockOpen = false
+   - selectedModuleId = null
+   - center board returns to normal (category browsing state)
+
+========================================================
+D) ADD MORE SCENARIOS (DATA-DRIVEN)
+========================================================
+Refactor scenarios into a single config file so adding new ones is easy.
+
+Create:
+- data/scenarios.js (or /constants/scenarios.js)
+
+Format:
+const scenarios = [
+  {
+    id: 'ai_chatbot',
+    label: 'Build AI Chatbot',
+    planTitle: 'BUILD AI CHATBOT',
+    modules: {
+      frontend: ['react_ts', 'state_mgmt'],
+      backend: ['node_express', 'auth_jwt'],
+      infrastructure: ['docker', 'aws'],
+      ai: ['openai_api', 'rag']
+    },
+    repoKeywords: ['chatbot','openai','rag','llm','bot']
+  },
+  ...
+]
+
+Then in the UI:
+- Map scenarios config to pills
+- Selecting scenario uses config to populate:
+  - terminal plan bullets
+  - center board module cards
+  - repo matching (optional)
+
+Add these new scenarios (at least 3):
+- Build AI Chatbot
+- Build Microservices
+- Build SaaS Dashboard
+- Build CI/CD Pipeline
+- Build Data Pipeline
+- Build AI Search (RAG)
+
+========================================================
+E) KEEP MATCHING REPO BEHAVIOR (NO CHANGE)
+========================================================
+Keep current rule:
+- Only show “VIEW MATCHING REPO” in SCENARIO mode if repo match found via GitHub API.
+- Do not show GitHub links in module proof mode.
+
+========================================================
+F) ACCEPTANCE TESTS
+========================================================
+1) Guided Mode toggle is gone entirely.
+2) Click “Build Microservices”:
+   - Terminal shows scenario plan + matching repo button (as before)
+   - Center board displays module cards grouped into Frontend/Backend/Infra/AI required for that scenario.
+3) Click the same scenario pill again:
+   - Scenario deselects
+   - Center board returns to normal browsing
+   - Terminal closes
+4) Add a new scenario in scenarios config:
+   - It automatically shows as a pill and works without extra wiring.
+
+Implement these changes now in the codebase and list the modified files.
