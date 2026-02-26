@@ -1,0 +1,44 @@
+Repo: Next.js (pages router) + Tailwind + Framer Motion.
+Goal: Improve GUIDED MODE so it is understandable + not trapping users. Keep the toggle.
+
+CONTEXT (WHAT’S WRONG NOW):
+- When I turn ON Guided Mode, it looks like it LOCKS categories and I don’t know what to do next.
+- It feels broken because there’s no instruction/hint explaining the next step.
+- I want Guided Mode to feel intentional, like a “System Simulation Mode”.
+
+TARGET UX (MUST):
+1) Add a small “?” icon next to the Guided Mode toggle.
+- On click: open a compact tooltip / popover (NOT long) that explains in 3-5 bullets:
+  - What Guided Mode does
+  - What user should do next
+  - How to exit/reset
+- Must close when clicking outside or pressing Esc.
+
+2) Guided Mode behavior rules:
+- When Guided Mode turns ON:
+  - Show a subtle “Step hint” text near the center board header:
+    “Step 1: Select a System Node” -> “Step 2: Select a Module” -> “Step 3: Connect to an Output”
+  - If your current implementation locks categories, make it clear WHY they are locked:
+    - locked state should show a small label like “LOCKED — connect current module to proceed”
+- Guided Mode should NEVER trap the user:
+  - Provide a “Reset Guided Mode” small button/link near the toggle OR inside the help popover.
+  - Reset should unlock all and clear guided progress.
+
+3) Visual feedback:
+- When in Guided Mode:
+  - highlight the expected next action (subtle pulsing border/glow on the correct section)
+  - example:
+    - if no system node selected -> highlight System Nodes column
+    - if node selected but no module selected -> highlight module cards in center
+    - if module selected but no output chosen -> highlight Output Streams column
+- Keep animations premium and subtle (no flashy).
+
+4) Keep everything on the same page.
+- No navigation.
+- No full-page modal.
+- Just popover + inline hints.
+
+DELIVERABLES:
+- List files modified
+- Implement the “?” help popover + reset action + step hints + anti-trap logic
+- Maintain existing styling (glassmorphism / neon red accents) + Framer Motion smoothness

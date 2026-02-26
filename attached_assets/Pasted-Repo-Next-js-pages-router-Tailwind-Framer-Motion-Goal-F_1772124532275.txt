@@ -1,0 +1,79 @@
+Repo: Next.js (pages router) + Tailwind + Framer Motion.
+Goal: FIX Skills Playground scenario behavior + restore correct category skills + move Scenario Plan into CENTER board (NOT bottom dock). Keep current UI style.
+
+CONTEXT (CURRENT PROBLEMS):
+- When I click any System Node (Frontend/Backend/Infrastructure/AI), it shows the SAME skills for all categories (wrong).
+- When I click a scenario, it does NOT show the required skills for that scenario (wrong).
+- Scenario Plan terminal auto-opens in the bottom dock and overlaps / hides skills. I DON’T want this behavior.
+- I want the PREVIOUS pattern: center board shows the scenario skills + a small inline terminal inside the center board (no overlap), while the bottom dock should NOT auto-open for scenarios.
+- I want scenario toggle behavior: clicking the same scenario again should deselect it (or CLEAR SCENARIO does it).
+
+TARGET UX (MUST MATCH):
+A) Normal mode (NO scenario active):
+- Left: System Nodes (Frontend/Backend/Infrastructure/AI) work normally.
+- Center: shows ONLY the selected category’s modules (correct modules for that category).
+- Bottom terminal: appears ONLY when user clicks a specific module skill (not on category click, not on scenario click).
+
+B) Scenario mode (scenario active):
+- Center board switches into a 2x2 grouped layout inside the board:
+  - FRONTEND group (top-left)
+  - BACKEND group (top-right)
+  - INFRASTRUCTURE group (bottom-left)
+  - AI/LLM group (bottom-right)
+- In each group show the specific modules required by that scenario (only those modules).
+- BELOW those grouped modules (still inside the center board), show a SMALL inline “Scenario Plan Terminal” panel (like your current terminal styling but smaller) with:
+  - SCENARIO_PLAN: <scenario name>
+  - bullet list of FRONTEND/BACKEND/INFRA/AI selected skills
+  - optional “VIEW MATCHING REPO” button (ONLY if scenario has a matched repo link)
+- DO NOT open the large bottom terminal dock for scenario clicks.
+- Bottom dock should stay closed unless user clicks a module skill card.
+
+C) Scenario toggle / clear:
+- If user clicks the currently active scenario again => DESELECT scenario and return to normal mode.
+- Clicking CLEAR SCENARIO button also does the same reset.
+- When scenario deselects:
+  - activeScenarioId = null
+  - scenarioPlan cleared
+  - center board returns to normal category view
+  - scenario inline terminal disappears
+  - module-selected bottom dock closes IF it was opened by scenario context
+
+IMPLEMENTATION REQUIREMENTS:
+1) FIX DATA STRUCTURE:
+- Create / use a single source of truth for skills per category:
+  - categories: frontend, backend, infrastructure, ai
+  - each category has its own module list (NO CROSS-CATEGORY duplication)
+- Ensure system node click reads only from the correct category list.
+
+2) FIX SCENARIO SYSTEM:
+- Store scenarios in a dedicated file:
+  - /data/scenarios.js (or /data/scenarios.ts)
+  - Each scenario includes:
+    - id, label
+    - requiredModules: { frontend: [], backend: [], infrastructure: [], ai: [] }
+    - outputs: [] (optional)
+    - matchingRepoUrl: "" (optional)
+- When scenario active, the center board uses requiredModules, not the normal category list.
+
+3) UI LAYOUT (NO OVERLAP):
+- The scenario plan terminal must be INSIDE the center board container and must not cover the modules:
+  - Use a board layout like:
+    - top: grouped modules grid
+    - bottom: inline terminal area
+  - Ensure scroll inside board if content exceeds height (no overlap).
+- Maintain the premium glassmorphism style.
+
+4) TERMINAL DOCK LOGIC:
+- Keep the bottom terminal dock ONLY for module click (existing behavior).
+- Scenario click should NOT open bottom dock.
+
+5) ANIMATIONS:
+- Keep existing animations and style.
+- Add subtle Framer Motion transitions for switching between normal mode <-> scenario mode:
+  - fade + slide in grouped modules
+  - inline scenario terminal fade in
+
+DELIVERABLES:
+- List all files modified.
+- Provide the exact code changes.
+- Ensure no regressions: category click shows correct skills; scenario click shows correct scenario skills; no overlapping; scenario plan is centered.
