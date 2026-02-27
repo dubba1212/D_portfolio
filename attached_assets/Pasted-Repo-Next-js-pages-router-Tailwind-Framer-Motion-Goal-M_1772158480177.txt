@@ -1,0 +1,56 @@
+Repo: Next.js (pages router) + Tailwind + Framer Motion.
+Goal: Move the MODULE_DATA_STREAM terminal (normal mode) from bottom dock into the CENTER board — same UX style as Scenario Plan terminal. Keep scenario mode exactly as it is.
+
+CURRENT ISSUE:
+- In normal mode (System Nodes: Frontend/Backend/Infrastructure/AI), when I click a module skill (ex: Terraform), the terminal opens at the bottom of the page as a dock.
+- I do NOT want the bottom dock behavior in normal mode.
+- I want the terminal to appear like the Scenario session: visually attached to the center board and not “below everything”.
+
+TARGET UX:
+A) Scenario mode:
+- Do NOT change anything. Scenario plan + scenario modules are already perfect.
+
+B) Normal mode:
+- When user selects a System Node -> center board shows that category’s module cards (unchanged).
+- When user clicks a module card -> show MODULE_DATA_STREAM terminal INSIDE the center board container (embedded panel), not as a full width bottom dock.
+- The embedded terminal should match the “Scenario Plan terminal” layout style:
+  - anchored inside the board at the bottom area
+  - no overlap with modules
+  - board becomes a 2-row layout:
+    1) module grid area
+    2) embedded terminal panel area
+- If no module selected -> embedded terminal is hidden and board returns to full height modules grid.
+
+LAYOUT REQUIREMENTS (NO OVERLAP):
+- Use a flex/column layout inside the board:
+  - top: modules list/grid (scrollable if needed)
+  - bottom: terminal panel (fixed height)
+- Ensure module cards remain visible and not hidden behind the terminal.
+- If content overflows, only the modules area scrolls (terminal stays visible).
+
+STATE / LOGIC REQUIREMENTS:
+- Keep existing selectedCategory behavior.
+- Keep existing selectedModule behavior.
+- Terminal should open ONLY when selectedModule is set.
+- Terminal should close when:
+  - user clicks “X”
+  - user switches category (Frontend -> Backend etc)
+  - user clears scenario (if scenario impacts module selection)
+- Scenario terminal logic remains separate and unchanged.
+
+ANIMATION:
+- Add Framer Motion smooth transitions for the embedded module terminal:
+  - slide up + fade in when a module is clicked
+  - slide down + fade out on close
+- Maintain the same premium glassmorphism style.
+
+IMPLEMENTATION DETAILS:
+1) Identify current bottom dock component (likely a fixed positioned terminal container).
+2) Refactor so normal-mode module terminal renders inside the center board component instead of fixed bottom.
+3) Keep scenario terminal logic as-is.
+4) Ensure no horizontal overflow and responsiveness stays intact.
+
+DELIVERABLE:
+- List files changed.
+- Provide exact code edits.
+- Confirm: Normal mode terminal is embedded into board; scenario mode unchanged.
