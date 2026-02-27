@@ -96,15 +96,39 @@ const SkillModule = ({ skill, active, onClick, isComposingActive, onHover, onDra
   );
 };
 
-const ProofDock = ({ mode, skill, scenario, githubRepo, onClose }) => {
+const ProofDock = ({ mode, skill, scenario, githubRepo, onClose, connections, toolkitData }) => {
   const [copied, setCopied] = useState(false);
   const dockRef = useRef(null);
 
-  if (!skill && !scenario) return null;
+  if (!skill && !scenario && mode !== 'guided') return null;
 
-  const title = mode === 'module' ? `MODULE_DATA_STREAM: ${skill.label.toUpperCase()}` : `SCENARIO_PLAN: ${scenario.label.toUpperCase()}`;
-  const bullets = mode === 'module' ? skill.bullets : (scenario.plan || []);
-  const description = mode === 'module' ? skill.description : scenario.description;
+  let title = "";
+  let bullets = [];
+  let description = "";
+
+  if (mode === 'module') {
+    title = `MODULE_DATA_STREAM: ${skill.label.toUpperCase()}`;
+    bullets = skill.bullets || [];
+    description = skill.description;
+  } else if (mode === 'scenario') {
+    title = `SCENARIO_PLAN: ${scenario.label.toUpperCase()}`;
+    bullets = scenario.plan || [];
+    description = scenario.description;
+  } else if (mode === 'guided') {
+    title = "SIMULATION COMPLETE: SYSTEM ASSEMBLED";
+    const getMod = (cat) => {
+      const conn = connections.find(c => toolkitData[cat].modules.some(m => m.id === c.moduleId));
+      return toolkitData[cat].modules.find(m => m.id === conn?.moduleId)?.label || "NONE";
+    };
+    bullets = [
+      `FRONTEND: ${getMod('frontend')}`,
+      `BACKEND: ${getMod('backend')}`,
+      `INFRA: ${getMod('infrastructure')}`,
+      `AI/LLM: ${getMod('ai')}`,
+      `OUTPUT: ${connections[connections.length - 1]?.outputId.toUpperCase() || "NONE"}`
+    ];
+    description = "This stack can ship an AI-enabled app with secure APIs, containerized deployment, and scalable inference.";
+  }
 
   return (
     <motion.div
@@ -317,6 +341,35 @@ const SkillsBuilderToolkit = () => {
     }
   ];
 
+  const [showHelp, setShowHelp] = useState(false);
+  const [guidedCompleted, setGuidedCompleted] = useState(false);
+
+  const getGuidedSummary = () => {
+    const summary = {
+      frontend: connections.find(c => toolkitData.frontend.modules.some(m => m.id === c.moduleId))?.moduleId,
+      backend: connections.find(c => toolkitData.backend.modules.some(m => m.id === c.moduleId))?.moduleId,
+      infra: connections.find(c => toolkitData.infrastructure.modules.some(m => m.id === c.moduleId))?.moduleId,
+      ai: connections.find(c => toolkitData.ai.modules.some(m => m.id === c.moduleId))?.moduleId,
+      output: connections[connections.length - 1]?.outputId
+    };
+    return summary;
+  };
+
+  const isGuidedFinished = () => {
+    const cats = ['frontend', 'backend', 'infrastructure', 'ai'];
+    return cats.every(cat => connections.some(c => toolkitData[cat].modules.some(m => m.id === c.moduleId)));
+  };
+
+  useEffect(() => {
+    if (guidedMode && isGuidedFinished()) {
+      setGuidedCompleted(true);
+      setDockMode('guided');
+      setDockOpen(true);
+    } else if (guidedMode) {
+      setGuidedCompleted(false);
+    }
+  }, [connections, guidedMode]);
+
   const fetchGithubRepo = async (scenario) => {
     try {
       const cached = sessionStorage.getItem(`gh-repo-${scenario.id}`);
@@ -416,7 +469,21 @@ const SkillsBuilderToolkit = () => {
     };
     const handleUp = () => {
       if (activeDropTarget && dragSourceId) {
-        setConnections(prev => [...prev, { moduleId: dragSourceId, outputId: activeDropTarget }]);
+        setConnections(prev => {
+          const exists = prev.some(c => c.outputId === activeDropTarget);
+          if (exists) return prev;
+          
+          const next = [...prev, { moduleId: dragSourceId, outputId: activeDropTarget }];
+          
+          if (guidedMode) {
+            const cats = ['frontend', 'backend', 'infrastructure', 'ai'];
+            const connectedCats = cats.filter(cat => 
+              next.some(c => toolkitData[cat].modules.some(m => m.id === c.moduleId))
+            );
+            setUnlockedTabs(['frontend', ...connectedCats.map((_, i) => cats[i + 1]).filter(Boolean)]);
+          }
+          return next;
+        });
       }
       setDragging(false);
       setDragSourceId(null);
@@ -473,6 +540,31 @@ const SkillsBuilderToolkit = () => {
           )}
         </div>
         <div className="flex items-center gap-3 bg-black/40 px-3 py-1.5 rounded-full border border-white/5">
+          <div className="relative">
+            <button 
+              onMouseEnter={() => setShowHelp(true)}
+              onMouseLeave={() => setShowHelp(false)}
+              className="w-4 h-4 rounded-full border border-white/20 flex items-center justify-center text-[10px] text-white/40 hover:text-accent hover:border-accent/40 transition-all"
+            >
+              ?
+            </button>
+            <AnimatePresence>
+              {showHelp && (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                  className="absolute bottom-full mb-2 left-0 w-48 p-3 bg-secondary/90 backdrop-blur-xl border border-white/10 rounded-xl text-[9px] text-white/70 space-y-2 z-[60] shadow-2xl"
+                >
+                  <p>1. Select a System Node</p>
+                  <p>2. Connect a module to an Output Stream</p>
+                  <p>3. Each valid connect unlocks next stage</p>
+                  <p>4. Click a CONNECTED output to undo</p>
+                  <p>5. Finish all stages to generate build summary</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
           <span className="text-[9px] font-black uppercase tracking-widest text-white/40">Guided Mode</span>
           <button 
             onClick={() => {
@@ -592,6 +684,8 @@ const SkillsBuilderToolkit = () => {
                     scenario={activeScenario}
                     githubRepo={githubRepo}
                     onClose={() => { setDockOpen(false); setSelectedModule(null); }}
+                    connections={connections}
+                    toolkitData={toolkitData}
                   />
                 )}
               </AnimatePresence>
@@ -642,7 +736,22 @@ const SkillsBuilderToolkit = () => {
               <div
                 key={out.id}
                 data-output-id={out.id}
-                className={`p-3 bg-secondary/30 border rounded-xl transition-all duration-300 relative group holo-card ${
+                onClick={() => {
+                  if (isConnected) {
+                    setConnections(prev => {
+                      const next = prev.filter(c => c.outputId !== out.id);
+                      if (guidedMode) {
+                        const cats = ['frontend', 'backend', 'infrastructure', 'ai'];
+                        const connectedCats = cats.filter(cat => 
+                          next.some(c => toolkitData[cat].modules.some(m => m.id === c.moduleId))
+                        );
+                        setUnlockedTabs(['frontend', ...connectedCats.map((_, i) => cats[i + 1]).filter(Boolean)]);
+                      }
+                      return next;
+                    });
+                  }
+                }}
+                className={`p-3 bg-secondary/30 border rounded-xl transition-all duration-300 relative group holo-card cursor-pointer ${
                   activeDropTarget === out.id ? 'drop-target-active' : isConnected ? 'border-accent/40 bg-accent/5' : 'border-white/5'
                 }`}
               >

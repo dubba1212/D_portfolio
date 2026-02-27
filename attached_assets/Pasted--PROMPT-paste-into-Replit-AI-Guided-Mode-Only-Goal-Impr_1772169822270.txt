@@ -1,0 +1,94 @@
+**PROMPT (paste into Replit AI) — Guided Mode Only**
+
+**Goal:** Improve **GUIDED MODE** in the Skills Playground so it feels complete and premium.
+**Important:** Do **NOT** remove Guided Mode. Keep the current UI style and layout; only fix guided-mode behavior + add small UX helpers.
+
+---
+
+## 1) FIX THE CRASH (CRITICAL)
+
+**Bug:** In the last stage, when making a connection, the app throws:
+
+`Unhandled Runtime Error: ReferenceError: prev is not defined`
+in `components/SkillsBuilderToolkit.js` around the connection logic (near line ~494) where code uses `new Set(prev.map(...))`.
+
+**Fix requirement:**
+
+* Ensure any logic that references `prev` happens **inside** a React functional state setter callback only:
+
+  * `setConnections(prev => { ... use prev safely ... return next })`
+* Remove any usage of `prev` outside the callback scope.
+* After fix, the last-stage connection must never crash.
+
+---
+
+## 2) ADD DESELECT / UNDO CONNECTION (GUIDED MODE)
+
+**Problem:** Once a user connects a module → output stream, there is no way to undo.
+**Required behavior:**
+
+* If the user clicks a **CONNECTED** output stream item:
+
+  * It should **disconnect/unlink** that connection.
+  * The module becomes available again.
+  * If that disconnect breaks the guided step, the step becomes incomplete again.
+* Prefer **single-click toggle** (best UX). Double-click is optional, but single-click is cleaner.
+* Visually confirm disconnect (CONNECTED badge disappears, glow reduces, etc.).
+
+---
+
+## 3) AFTER FINAL STEP → SHOW “SIMULATION COMPLETE” TERMINAL SUMMARY
+
+**Problem:** After completing the last guided stage, nothing meaningful happens.
+**Required behavior:**
+
+* When all guided stages are completed (at least one valid connection for each required category), show a terminal dock summary like scenario mode.
+
+**Terminal header:**
+`SIMULATION COMPLETE: SYSTEM ASSEMBLED`
+
+**Terminal content (dynamic from user’s actual guided selections):**
+
+* FRONTEND: (selected module)
+* BACKEND: (selected module)
+* INFRA: (selected module)
+* AI/LLM: (selected module)
+* OUTPUT: (final connected output stream)
+
+**Terminal footer:**
+
+* 1–2 lines describing what this stack enables, e.g.
+  “This stack can ship an AI-enabled app with secure APIs, containerized deployment, and scalable inference.”
+
+**Rules:**
+
+* The summary terminal appears only when guided completion is reached (or user clicks “View Summary”).
+* If user disconnects any required connection after completion, the terminal should revert back to “step mode” and remove the “complete” summary.
+
+---
+
+## 4) ADD A SMALL HELP “?” NEXT TO GUIDED MODE TO EXPLAIN HOW TO USE IT
+
+**Requirement:**
+
+* Add a small `?` icon beside the Guided Mode toggle.
+* Clicking it opens a small tooltip/popover (no navigation, no new page) with **short steps** (max 5 lines):
+
+Example:
+
+1. Select a System Node
+2. Connect a module to an Output Stream
+3. Each valid connect unlocks the next stage
+4. Click a CONNECTED output to undo
+5. Finish all stages to generate the build summary
+
+Keep it compact and readable.
+
+---
+
+## 5) ACCEPTANCE CHECK
+
+* Guided Mode last-stage connection **never crashes**.
+* User can **disconnect** a connection by clicking the CONNECTED output.
+* After finishing all guided stages, user sees a clear **Build Summary** in the terminal.
+* `?` help tooltip explains Guided Mode quickly and reduces confusion.
