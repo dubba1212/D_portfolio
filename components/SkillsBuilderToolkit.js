@@ -5,10 +5,9 @@ import {
   SiAmazonaws, SiOpenai, SiTypescript, SiSpringboot, SiTerraform, 
   SiRedis, SiJenkins, SiMysql, SiPython, SiDjango, SiDotnet, SiMongodb, SiApachespark, SiNumpy
 } from 'react-icons/si';
-import { FaCode, FaServer, FaCogs, FaBrain, FaExternalLinkAlt, FaTimes, FaCopy, FaCheck, FaLock, FaRocket, FaFlask, FaSearch, FaDatabase, FaChartLine, FaEye, FaQuestionCircle } from 'react-icons/fa';
-import { scenariosData } from '../data/scenarios';
+import { FaCode, FaServer, FaCogs, FaBrain, FaExternalLinkAlt, FaTimes, FaCopy, FaCheck, FaLock, FaRocket, FaFlask, FaSearch, FaDatabase, FaChartLine, FaEye } from 'react-icons/fa';
 
-const SkillTab = ({ id, label, icon: Icon, active, locked, onClick, isComposingActive, guidedMode }) => (
+const SkillTab = ({ id, label, icon: Icon, active, locked, onClick, isComposingActive }) => (
   <motion.button
     onClick={() => !locked && onClick(id)}
     whileHover={!locked ? { x: 5 } : {}}
@@ -19,16 +18,14 @@ const SkillTab = ({ id, label, icon: Icon, active, locked, onClick, isComposingA
       : locked 
       ? 'bg-black/40 border-white/5 text-white/20 cursor-not-allowed opacity-50'
       : 'bg-secondary/20 border-white/5 text-white/50 hover:border-white/20 hover:text-white'
-    } ${active ? 'scanning-border' : ''} ${guidedMode && !locked && !active ? 'animate-pulse border-accent/30' : ''}`}
+    } ${active ? 'scanning-border' : ''}`}
   >
     <div className="holo-sweep group-hover:animate-holo-sweep" />
     <div className={`relative z-10 text-xl ${active || isComposingActive ? 'text-accent' : ''}`}>
       {locked ? <FaLock className="text-sm" /> : <Icon />}
     </div>
-    <div className="flex flex-col items-start relative z-10">
-      <span className="text-xs font-black uppercase tracking-widest">{label}</span>
-      {locked && <span className="text-[7px] font-bold text-accent/60 uppercase tracking-tighter">LOCKED — CONNECT TO PROCEED</span>}
-    </div>
+    <span className="relative z-10 text-xs font-black uppercase tracking-widest">{label}</span>
+    {locked && <span className="ml-auto text-[8px] font-bold text-white/20 uppercase tracking-tighter">LOCKED</span>}
     {(active || isComposingActive) && (
       <motion.div 
         layoutId="activeTabDot"
@@ -38,7 +35,7 @@ const SkillTab = ({ id, label, icon: Icon, active, locked, onClick, isComposingA
   </motion.button>
 );
 
-const SkillModule = ({ skill, active, onClick, isComposingActive, onHover, onDragStart, id, small, guidedMode }) => {
+const SkillModule = ({ skill, active, onClick, isComposingActive, onHover, onDragStart, id, small }) => {
   const [isPulsing, setIsPulsing] = useState(false);
   const Icon = skill.icon || SiReact;
   const x = useMotionValue(0);
@@ -66,7 +63,7 @@ const SkillModule = ({ skill, active, onClick, isComposingActive, onHover, onDra
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       onMouseEnter={() => onHover?.(skill.id)}
-      onPointerDown={(e) => onDragStart?.(e, skill.id)}
+      onPointerDown={(e) => onDragStart?.(skill.id)}
       onClick={() => {
         setIsPulsing(true);
         setTimeout(() => setIsPulsing(false), 800);
@@ -78,7 +75,7 @@ const SkillModule = ({ skill, active, onClick, isComposingActive, onHover, onDra
         active || isComposingActive
         ? 'border-accent/50 shadow-[0_0_30px_rgba(241,48,36,0.2)]' 
         : 'border-white/5 hover:border-accent/30'
-      } ${guidedMode && !active ? 'animate-pulse border-accent/20' : ''}`}
+      }`}
     >
       <div className="absolute top-2 right-2 w-1 h-1 rounded-full bg-accent led-blink" />
       <div className={`relative z-10 flex flex-col ${small ? 'gap-1' : 'gap-3'}`}>
@@ -99,191 +96,71 @@ const SkillModule = ({ skill, active, onClick, isComposingActive, onHover, onDra
   );
 };
 
-const ModuleTerminal = ({ skill, onClose }) => {
+const ProofDock = ({ mode, skill, scenario, githubRepo, onClose }) => {
   const [copied, setCopied] = useState(false);
-  if (!skill) return null;
+  const dockRef = useRef(null);
 
-  const title = `MODULE_DATA_STREAM: ${skill.label.toUpperCase()}`;
-  const bullets = skill.bullets || [];
-  const description = skill.description;
+  if (!skill && !scenario) return null;
+
+  const title = mode === 'module' ? `MODULE_DATA_STREAM: ${skill.label.toUpperCase()}` : `SCENARIO_PLAN: ${scenario.label.toUpperCase()}`;
+  const bullets = mode === 'module' ? skill.bullets : (scenario.plan || []);
+  const description = mode === 'module' ? skill.description : scenario.description;
 
   return (
     <motion.div
+      ref={dockRef}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 10 }}
-      className="mt-auto pt-6 border-t border-white/5"
+      className="mt-4 relative z-50 shrink-0"
     >
-      <div className="bg-black/60 rounded-xl border border-accent/30 p-4 font-mono shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden">
-        <div className="flex items-center justify-between mb-3">
-          <div className="text-accent animate-pulse font-mono text-[10px] tracking-tighter">
+      <div className="bg-[#0a0a0c]/95 backdrop-blur-2xl border border-accent/30 rounded-2xl shadow-[0_-20px_50px_rgba(0,0,0,0.5)] overflow-hidden">
+        <div className="flex items-center justify-between p-3 border-b border-white/5 bg-white/5">
+          <div className="text-accent animate-pulse font-mono text-[9px] tracking-tighter">
             {title}
             <span className="cursor-blink">_</span>
           </div>
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={() => {
-                navigator.clipboard.writeText(bullets.join('\n'));
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2000);
-              }}
-              className="text-[10px] text-white/40 hover:text-white flex items-center gap-1 uppercase font-bold"
-            >
-              {copied ? <FaCheck className="text-green-500" /> : <FaCopy />} {copied ? 'COPIED' : 'COPY'}
-            </button>
+          <div className="flex items-center gap-3">
+            {mode === 'module' && (
+              <button 
+                onClick={() => {
+                  navigator.clipboard.writeText(bullets.join('\n'));
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+                className="text-[9px] text-white/40 hover:text-white flex items-center gap-1 uppercase font-bold"
+              >
+                {copied ? <FaCheck className="text-green-500 text-[8px]" /> : <FaCopy className="text-[8px]" />} {copied ? 'COPIED' : 'COPY'}
+              </button>
+            )}
             <button onClick={onClose} className="text-white/30 hover:text-white text-xs">
               <FaTimes />
             </button>
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <ul className="space-y-1">
-            {bullets?.map((bullet, i) => (
-              <li key={i} className="text-[10px] text-white/60 flex gap-2 font-mono">
-                <span className="text-accent">{'>'}</span>
-                <span>{bullet}</span>
-              </li>
-            ))}
-          </ul>
-          <div className="flex flex-col justify-between items-end text-right">
-            <p className="text-[9px] text-white/40 italic mb-3 max-w-[200px]">{description}</p>
+        <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[160px] overflow-y-auto no-scrollbar">
+          <div className="space-y-2">
+            <ul className="space-y-1">
+              {bullets?.map((bullet, i) => (
+                <li key={i} className="flex gap-2 text-[10px] text-white/70 font-mono">
+                  <span className="text-accent shrink-0">{'>'}</span>
+                  <span>{bullet}</span>
+                </li>
+              ))}
+            </ul>
           </div>
-        </div>
-      </div>
-    </motion.div>
-  );
-};
-
-const ScenarioTerminal = ({ scenario, githubRepo, onClose }) => {
-  if (!scenario) return null;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 10 }}
-      className="mt-auto pt-6 border-t border-white/5"
-    >
-      <div className="bg-black/60 rounded-xl border border-accent/30 p-4 font-mono shadow-[0_0_50px_rgba(0,0,0,0.3)]">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-accent text-[10px] font-black uppercase tracking-tighter">
-            SCENARIO_PLAN: {scenario.label.toUpperCase()}
-          </span>
-          <button onClick={onClose} className="text-white/30 hover:text-white text-xs">
-            <FaTimes />
-          </button>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <ul className="space-y-1">
-            {(scenario.plan || []).map((step, i) => (
-              <li key={i} className="text-[10px] text-white/60 flex gap-2">
-                <span className="text-accent">{'>'}</span> {step}
-              </li>
-            ))}
-          </ul>
-          <div className="flex flex-col justify-between items-end">
-            <p className="text-[9px] text-white/40 italic mb-3 text-right max-w-[200px]">{scenario.description}</p>
-            {githubRepo && (
-              <button 
+          <div className="flex flex-col justify-between items-end text-right">
+            <p className="text-[9px] text-white/40 italic mb-2">{description}</p>
+            {mode === 'scenario' && githubRepo && (
+              <motion.button 
+                whileHover={{ x: 5 }}
                 onClick={() => window.open(githubRepo.html_url, '_blank')}
-                className="flex items-center gap-2 text-[8px] font-black uppercase tracking-widest text-accent border border-accent/20 px-3 py-1.5 rounded-lg hover:bg-accent/10 transition-all"
+                className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] text-accent border border-accent/20 px-3 py-1.5 rounded-lg hover:bg-accent/10"
               >
-                <FaExternalLinkAlt /> View matching repo
-              </button>
+                <FaExternalLinkAlt className="text-[8px]" /> View matching repo
+              </motion.button>
             )}
           </div>
-        </div>
-      </div>
-    </motion.div>
-  );
-};
-
-const GuidedCompletionTerminal = ({ connections, activeScenario, onReset, onClose }) => {
-  const [copied, setCopied] = useState(false);
-  
-  const connectedByCategory = {
-    frontend: connections.filter(c => ['react', 'ui-perf', 'state'].includes(c.moduleId)).map(c => c.moduleId),
-    backend: connections.filter(c => ['node', 'springboot', 'auth', 'python'].includes(c.moduleId)).map(c => c.moduleId),
-    infrastructure: connections.filter(c => ['docker', 'k8s', 'terraform', 'jenkins', 'aws'].includes(c.moduleId)).map(c => c.moduleId),
-    ai: connections.filter(c => ['openai', 'bedrock', 'rag', 'nlp'].includes(c.moduleId)).map(c => c.moduleId),
-  };
-
-  const inferBuildResult = () => {
-    if (activeScenario) return { label: activeScenario.label, desc: activeScenario.description };
-    
-    const outputs = connections.map(c => c.outputId);
-    if (outputs.includes('out-gpt') || outputs.includes('out-bed')) 
-      return { label: "AI Chatbot", desc: "Conversational AI with LLM integration." };
-    if (outputs.includes('out-rag')) 
-      return { label: "AI Search (RAG)", desc: "Knowledge-augmented retrieval system." };
-    if (outputs.includes('out-dash') || outputs.includes('out-perf')) 
-      return { label: "SaaS Dashboard", desc: "High-performance enterprise portal." };
-    if (outputs.includes('out-micro') || outputs.includes('out-api')) 
-      return { label: "Microservices Platform", desc: "Distributed scalable architecture." };
-    if (outputs.includes('out-cicd') || outputs.includes('out-iac')) 
-      return { label: "CI/CD Pipeline", desc: "Automated delivery & orchestration." };
-    
-    return { label: "Full-Stack Application", desc: "End-to-end production-ready system." };
-  };
-
-  const result = inferBuildResult();
-  const summaryText = Object.entries(connectedByCategory)
-    .map(([cat, mods]) => `${cat.toUpperCase()}: ${mods.join(', ')}`)
-    .join('\n') + `\n\nRESULT: You can build → ${result.label}`;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 10 }}
-      className="mt-auto pt-6 border-t border-white/5"
-    >
-      <div className="bg-black/80 rounded-xl border border-accent/50 p-5 font-mono shadow-[0_0_50px_rgba(241,48,36,0.2)] relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-accent to-transparent animate-pulse" />
-        
-        <div className="flex items-center justify-between mb-4">
-          <span className="text-accent text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-accent animate-ping" />
-            GUIDED MODE: SYSTEM BUILD COMPLETE
-          </span>
-          <button onClick={onClose} className="text-white/30 hover:text-white text-xs">
-            <FaTimes />
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <div className="space-y-3">
-            {Object.entries(connectedByCategory).map(([cat, mods]) => mods.length > 0 && (
-              <div key={cat} className="flex gap-3 text-[10px]">
-                <span className="text-accent font-bold w-20 shrink-0">{cat.toUpperCase()}:</span>
-                <span className="text-white/70 uppercase">{mods.join(', ')}</span>
-              </div>
-            ))}
-          </div>
-          <div className="bg-white/5 rounded-lg p-4 border border-white/5">
-            <div className="text-accent text-[9px] font-black uppercase mb-1">Inferred Result</div>
-            <div className="text-white text-sm font-bold mb-1 tracking-tight">You can build → {result.label}</div>
-            <p className="text-[10px] text-white/40 italic">{result.desc}</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3 pt-4 border-t border-white/5">
-          <button 
-            onClick={() => {
-              navigator.clipboard.writeText(summaryText);
-              setCopied(true);
-              setTimeout(() => setCopied(false), 2000);
-            }}
-            className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-white/50 hover:text-white transition-all"
-          >
-            {copied ? <FaCheck className="text-green-500" /> : <FaCopy />} {copied ? 'Summary Copied' : 'Copy Summary'}
-          </button>
-          <button 
-            onClick={onReset}
-            className="ml-auto flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-accent border border-accent/20 px-4 py-2 rounded-lg hover:bg-accent/10 transition-all"
-          >
-            Reset Guided Mode
-          </button>
         </div>
       </div>
     </motion.div>
@@ -294,8 +171,12 @@ const SkillsBuilderToolkit = () => {
   const [activeCategory, setActiveCategory] = useState('frontend');
   const [selectedModule, setSelectedModule] = useState(null);
   const [activeScenarioId, setActiveScenarioId] = useState(null);
+  const [dockOpen, setDockOpen] = useState(false);
+  const [dockMode, setDockMode] = useState(null);
   const [githubRepo, setGithubRepo] = useState(null);
   const [hoveredSkillId, setHoveredSkillId] = useState(null);
+  const [isComposing, setIsComposing] = useState(false);
+  const [composingStep, setComposingStep] = useState(null);
   const [guidedMode, setGuidedMode] = useState(false);
   const [unlockedTabs, setUnlockedTabs] = useState(['frontend', 'backend', 'infrastructure', 'ai']);
   const [connections, setConnections] = useState([]);
@@ -304,9 +185,6 @@ const SkillsBuilderToolkit = () => {
   const [dragCurrentPos, setDragCurrentPos] = useState({ x: 0, y: 0 });
   const [dragSourceId, setDragSourceId] = useState(null);
   const [activeDropTarget, setActiveDropTarget] = useState(null);
-  const [showHelp, setShowHelp] = useState(false);
-  const [guidedCompleted, setGuidedCompleted] = useState(false);
-  const [showGuidedSummary, setShowGuidedSummary] = useState(false);
 
   const boardRef = useRef(null);
   const dockContainerRef = useRef(null);
@@ -376,6 +254,69 @@ const SkillsBuilderToolkit = () => {
     }
   };
 
+  const scenarios = [
+    { 
+      id: 'chatbot', 
+      label: 'Build AI Chatbot', 
+      icon: FaFlask, 
+      keywords: ["chat", "bot", "llm", "openai", "assistant"],
+      description: "Convergent AI architecture for conversational interfaces.",
+      plan: ["FRONTEND: React/TS UI", "BACKEND: Node API", "INFRA: Docker", "AI: OpenAI / Bedrock"],
+      required: { frontend: ['react'], backend: ['node'], infrastructure: ['docker'], ai: ['openai', 'bedrock'] },
+      outputs: ['out-dash', 'out-api', 'out-cicd', 'out-gpt']
+    },
+    { 
+      id: 'saas', 
+      label: 'Build SaaS Dashboard', 
+      icon: FaRocket, 
+      keywords: ["dashboard", "admin", "portal", "ui"],
+      description: "Scale-ready SaaS architecture with secure multitenancy.",
+      plan: ["FRONTEND: Dashboard UI", "BACKEND: Auth/JWT", "INFRA: AWS/GCP", "DATA: Postgres"],
+      required: { frontend: ['react', 'ui-perf'], backend: ['auth'], infrastructure: ['aws'], ai: [] },
+      outputs: ['out-dash', 'out-perf', 'out-auth', 'out-cloud']
+    },
+    { 
+      id: 'micro', 
+      label: 'Build Microservices', 
+      icon: FaCogs, 
+      keywords: ["microservice", "spring", "services"],
+      description: "Distributed systems architecture for enterprise scale.",
+      plan: ["BACKEND: Spring Boot", "INFRA: K8s / Jenkins", "DATA: Redis"],
+      required: { frontend: [], backend: ['springboot'], infrastructure: ['k8s', 'jenkins'], ai: [] },
+      outputs: ['out-micro', 'out-k8s', 'out-cicd']
+    },
+    { 
+      id: 'cicd', 
+      label: 'Build CI/CD Pipeline', 
+      icon: FaCogs, 
+      keywords: ["devops", "ci", "cd", "jenkins", "kubernetes", "docker", "terraform"],
+      description: "Automated delivery pipeline with full orchestration.",
+      plan: ["INFRA: Git / Jenkins / Docker / K8s / Terraform"],
+      required: { frontend: [], backend: [], infrastructure: ['jenkins', 'docker', 'k8s', 'terraform'], ai: [] },
+      outputs: ['out-cicd', 'out-k8s', 'out-iac']
+    },
+    { 
+      id: 'data', 
+      label: 'Build Data Pipeline', 
+      icon: FaDatabase, 
+      keywords: ["data", "pipeline", "stream", "etl", "spark", "kafka"],
+      description: "Real-time data processing and analytics architecture.",
+      plan: ["BACKEND: Python / Node", "DATA: SQL / Redis", "INFRA: AWS"],
+      required: { frontend: [], backend: ['python'], infrastructure: ['aws'], ai: [] },
+      outputs: ['out-data', 'out-cloud']
+    },
+    { 
+      id: 'rag', 
+      label: 'Build AI Search (RAG)', 
+      icon: FaSearch, 
+      keywords: ["rag", "search", "retrieval", "vector", "embedding"],
+      description: "Knowledge-augmented AI search system.",
+      plan: ["BACKEND: Node / Python", "AI: RAG / OpenAI", "DATA: Vector DB"],
+      required: { frontend: [], backend: ['node'], infrastructure: ['docker'], ai: ['rag', 'openai'] },
+      outputs: ['out-rag', 'out-gpt']
+    }
+  ];
+
   const fetchGithubRepo = async (scenario) => {
     try {
       const cached = sessionStorage.getItem(`gh-repo-${scenario.id}`);
@@ -402,13 +343,19 @@ const SkillsBuilderToolkit = () => {
   const handleScenario = async (scenarioId) => {
     if (activeScenarioId === scenarioId) {
       setActiveScenarioId(null);
-      setGithubRepo(null);
+      setSelectedModule(null);
+      setDockOpen(false);
+      setDockMode(null);
+      setConnections([]);
       return;
     }
 
-    const scenario = scenariosData.find(s => s.id === scenarioId);
+    const scenario = scenarios.find(s => s.id === scenarioId);
     setActiveScenarioId(scenarioId);
     setSelectedModule(null);
+    setDockMode('scenario');
+    setDockOpen(true);
+    setConnections([]);
     
     const repo = await fetchGithubRepo(scenario);
     setGithubRepo(repo);
@@ -416,46 +363,31 @@ const SkillsBuilderToolkit = () => {
 
   const handleModuleClick = (skill) => {
     setSelectedModule(skill);
+    setDockMode('module');
+    setDockOpen(true);
   };
 
   const handleTabChange = (catId) => {
     setActiveCategory(catId);
     setSelectedModule(null);
-  };
-
-  const resetGuidedMode = () => {
-    setGuidedMode(false);
-    setUnlockedTabs(['frontend', 'backend', 'infrastructure', 'ai']);
-    setSelectedModule(null);
-    setConnections([]);
-    setGuidedCompleted(false);
-    setShowGuidedSummary(false);
+    setDockOpen(false);
+    setDockMode(null);
   };
 
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dockContainerRef.current && !dockContainerRef.current.contains(e.target)) {
-        if (!e.target.closest('.skill-module-card') && !e.target.closest('.scenario-pill') && !e.target.closest('.category-tab')) {
+        const isModuleCard = e.target.closest('.skill-module-card');
+        const isScenarioPill = e.target.closest('.scenario-pill');
+        if (!isModuleCard && !isScenarioPill) {
+          setDockOpen(false);
           setSelectedModule(null);
         }
       }
-      if (showHelp && !e.target.closest('.help-popover') && !e.target.closest('.help-trigger')) {
-        setShowHelp(false);
-      }
-    };
-    const handleEsc = (e) => {
-      if (e.key === 'Escape') {
-        setShowHelp(false);
-        setSelectedModule(null);
-      }
     };
     document.addEventListener('pointerdown', handleClickOutside);
-    document.addEventListener('keydown', handleEsc);
-    return () => {
-      document.removeEventListener('pointerdown', handleClickOutside);
-      document.removeEventListener('keydown', handleEsc);
-    };
-  }, [showHelp]);
+    return () => document.removeEventListener('pointerdown', handleClickOutside);
+  }, []);
 
   const onDragStart = (e, moduleId) => {
     setDragging(true);
@@ -485,29 +417,6 @@ const SkillsBuilderToolkit = () => {
     const handleUp = () => {
       if (activeDropTarget && dragSourceId) {
         setConnections(prev => [...prev, { moduleId: dragSourceId, outputId: activeDropTarget }]);
-        if (guidedMode) {
-          const currentIdx = categories.findIndex(c => c.id === activeCategory);
-          if (currentIdx < categories.length - 1) {
-            setUnlockedTabs(prev => [...new Set([...prev, categories[currentIdx + 1].id])]);
-          } else {
-            // Check if all categories have at least one connection
-            const connectedCategories = new Set(prev.map(conn => {
-              for (const [cat, data] of Object.entries(toolkitData)) {
-                if (data.modules.some(m => m.id === conn.moduleId)) return cat;
-              }
-              return null;
-            }).filter(Boolean));
-            
-            // Add the current connection category since state hasn't updated yet
-            connectedCategories.add(activeCategory);
-
-            if (connectedCategories.size === categories.length && !guidedCompleted) {
-              setGuidedCompleted(true);
-              setShowGuidedSummary(true);
-              setSelectedModule(null);
-            }
-          }
-        }
       }
       setDragging(false);
       setDragSourceId(null);
@@ -519,171 +428,133 @@ const SkillsBuilderToolkit = () => {
       window.removeEventListener('pointermove', handleMove);
       window.removeEventListener('pointerup', handleUp);
     };
-  }, [dragging, activeDropTarget, dragSourceId, guidedMode, activeCategory]);
+  }, [dragging, activeDropTarget, dragSourceId]);
 
-  const activeScenario = scenariosData.find(s => s.id === activeScenarioId);
-  
-  const getGuidedStepHint = () => {
-    if (!guidedMode) return null;
-    const hasModule = selectedModule !== null;
-    const currentCatConnected = connections.some(c => toolkitData[activeCategory].modules.some(m => m.id === c.moduleId));
-    
-    if (!activeCategory) return "Step 1: Select a System Node";
-    if (!hasModule && !currentCatConnected) return "Step 2: Select a Module from the board";
-    if (hasModule && !currentCatConnected) return "Step 3: Drag the module to an Output Stream";
-    return "Step 4: Select the next unlocked System Node";
-  };
+  const activeScenario = scenarios.find(s => s.id === activeScenarioId);
+  const visibleModules = activeScenario 
+    ? toolkitData[activeCategory].modules.filter(m => activeScenario.required[activeCategory]?.includes(m.id))
+    : toolkitData[activeCategory].modules;
+  const visibleOutputs = activeScenario
+    ? toolkitData[activeCategory].outcomes.filter(o => activeScenario.outputs.includes(o.id))
+    : toolkitData[activeCategory].outcomes;
 
   return (
-    <div className="relative w-full py-12 px-4 max-w-7xl mx-auto min-h-[900px] select-none flex flex-col" ref={boardRef}>
+    <div className="relative w-full py-6 px-4 max-w-7xl mx-auto min-h-[850px] select-none" ref={boardRef}>
       <div className="scanline-overlay opacity-10" />
       
-      {/* 1. TOP: Scenario Selector */}
-      <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-6 relative z-40">
-        <div className="flex flex-wrap justify-center md:justify-start gap-3">
-          {scenariosData.map(s => (
+      <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-6 relative z-20">
+        <div className="flex flex-wrap justify-center md:justify-start gap-2">
+          {scenarios.map(s => (
             <button
               key={s.id}
               onClick={() => handleScenario(s.id)}
-              className={`scenario-pill px-4 py-2 bg-secondary/40 border rounded-full text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
+              className={`scenario-pill px-3 py-1.5 bg-secondary/40 border rounded-full text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
                 activeScenarioId === s.id 
                 ? 'border-accent text-accent shadow-[0_0_15px_rgba(241,48,36,0.3)]' 
                 : 'border-white/5 text-white/40 hover:text-accent hover:border-accent/30'
               }`}
             >
-              <s.icon className="text-xs" /> {s.label}
+              <s.icon className="text-[10px]" /> {s.label}
             </button>
           ))}
           {activeScenarioId && (
             <button 
               onClick={() => {
                 setActiveScenarioId(null);
-                setGithubRepo(null);
+                setSelectedModule(null);
+                setDockOpen(false);
+                setDockMode(null);
+                setConnections([]);
               }}
-              className="px-4 py-2 bg-accent/10 border border-accent/20 rounded-full text-[10px] font-black uppercase tracking-widest text-accent hover:bg-accent/20 transition-all"
+              className="px-3 py-1.5 bg-accent/10 border border-accent/20 rounded-full text-[9px] font-black uppercase tracking-widest text-accent hover:bg-accent/20 transition-all"
             >
               Clear Scenario
             </button>
           )}
         </div>
-        <div className="flex items-center gap-3 bg-black/40 px-4 py-2 rounded-full border border-white/5">
-          <div className="relative">
-            <button 
-              onClick={() => setShowHelp(!showHelp)}
-              className="help-trigger text-white/40 hover:text-white transition-colors"
-            >
-              <FaQuestionCircle className="text-sm" />
-            </button>
-            <AnimatePresence>
-              {showHelp && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9, y: 10 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                  className="help-popover absolute bottom-full mb-4 right-0 w-64 p-4 bg-[#121214] border border-white/10 rounded-2xl backdrop-blur-xl z-50 shadow-2xl"
-                >
-                  <h4 className="text-[10px] font-black uppercase tracking-widest text-accent mb-3">System Simulation Mode</h4>
-                  <ul className="space-y-2 mb-4">
-                    <li className="text-[10px] text-white/60 flex gap-2"><span className="text-accent">•</span> Explore skills step-by-step</li>
-                    <li className="text-[10px] text-white/60 flex gap-2"><span className="text-accent">•</span> Connect modules to unlock nodes</li>
-                    <li className="text-[10px] text-white/60 flex gap-2"><span className="text-accent">•</span> Build complete system flows</li>
-                  </ul>
-                  <button 
-                    onClick={resetGuidedMode}
-                    className="w-full py-2 bg-white/5 border border-white/10 rounded-lg text-[9px] font-black uppercase tracking-widest text-white/40 hover:bg-accent/10 hover:border-accent/30 hover:text-accent transition-all"
-                  >
-                    Reset Guided Mode
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+        <div className="flex items-center gap-3 bg-black/40 px-3 py-1.5 rounded-full border border-white/5">
           <span className="text-[9px] font-black uppercase tracking-widest text-white/40">Guided Mode</span>
           <button 
             onClick={() => {
-              const newState = !guidedMode;
-              setGuidedMode(newState);
-              if (newState) setUnlockedTabs(['frontend']);
+              setGuidedMode(!guidedMode);
+              if (!guidedMode) setUnlockedTabs(['frontend']);
               else setUnlockedTabs(['frontend', 'backend', 'infrastructure', 'ai']);
               setSelectedModule(null);
+              setDockOpen(false);
             }}
-            className={`w-8 h-4 rounded-full relative transition-all ${guidedMode ? 'bg-accent' : 'bg-white/10'}`}
+            className={`w-7 h-3.5 rounded-full relative transition-all ${guidedMode ? 'bg-accent' : 'bg-white/10'}`}
           >
-            <motion.div animate={{ x: guidedMode ? 16 : 2 }} className="absolute top-1 left-0 w-2 h-2 rounded-full bg-white shadow-sm" />
+            <motion.div animate={{ x: guidedMode ? 14 : 2 }} className="absolute top-0.5 left-0 w-2.5 h-2.5 rounded-full bg-white shadow-sm" />
           </button>
         </div>
       </div>
 
-      {/* 2. MIDDLE: Skills Content Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10 flex-1">
-        {/* Left Side: Category Tabs */}
-        <div className="lg:col-span-3 space-y-4">
-          <div className="mb-4">
-            <h3 className="text-white/30 text-[9px] font-black uppercase tracking-[0.4em] mb-3">SYSTEM_NODES</h3>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10 h-full">
+        <div className="lg:col-span-3 space-y-3">
+          <div className="mb-2">
+            <h3 className="text-white/30 text-[8px] font-black uppercase tracking-[0.4em] mb-2">SYSTEM_NODES</h3>
             <div className="flex gap-1">
-              {categories.map((cat, i) => (
-                <div key={i} className={`w-2 h-2 rounded-full ${unlockedTabs.includes(cat.id) ? 'bg-accent shadow-[0_0_8px_#f13024]' : 'bg-white/10'}`} />
+              {categories.map((_, i) => (
+                <div key={i} className={`w-1.5 h-1.5 rounded-full ${unlockedTabs.length > i ? 'bg-accent shadow-[0_0_8px_#f13024]' : 'bg-white/10'}`} />
               ))}
             </div>
           </div>
           {categories.map((cat) => (
-            <div key={cat.id} className="category-tab">
-              <SkillTab 
-                id={cat.id}
-                label={cat.label}
-                icon={cat.icon}
-                active={activeCategory === cat.id}
-                locked={guidedMode && !unlockedTabs.includes(cat.id)}
-                isComposingActive={false}
-                guidedMode={guidedMode && !activeCategory && unlockedTabs.includes(cat.id)}
-                onClick={handleTabChange}
-              />
-            </div>
+            <SkillTab 
+              key={cat.id}
+              {...cat}
+              active={activeCategory === cat.id}
+              locked={guidedMode && !unlockedTabs.includes(cat.id)}
+              isComposingActive={composingStep === cat.id}
+              onClick={handleTabChange}
+            />
           ))}
         </div>
 
-        {/* Center Side: Board */}
-        <div className="lg:col-span-6 flex flex-col min-h-[600px] relative" ref={dockContainerRef}>
-          <div className="flex-1 bg-[#0d0d0f]/60 border border-white/5 rounded-[40px] p-8 backdrop-blur-md holo-card neural-grid relative overflow-hidden flex flex-col">
-            
-            {guidedMode && (
-              <div className="mb-6 flex items-center justify-between">
-                <span className="text-[10px] font-black uppercase tracking-widest text-accent animate-pulse">
-                  {getGuidedStepHint()}
-                </span>
-              </div>
-            )}
-
-            <div className="flex-1 min-h-0 relative overflow-y-auto no-scrollbar pb-4">
+        <div className="lg:col-span-6 flex flex-col relative h-[600px]">
+          <div className="flex-1 bg-[#0d0d0f]/60 border border-white/5 rounded-[40px] p-6 backdrop-blur-md holo-card neural-grid relative overflow-hidden flex flex-col">
+            <div className="flex-1 relative overflow-y-auto no-scrollbar">
               <AnimatePresence mode="wait">
-                {activeScenario ? (
+                {activeScenarioId ? (
                   <motion.div
-                    key="scenario-view"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="grid grid-cols-2 gap-x-8 gap-y-8"
+                    key="scenario-board"
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 1.02 }}
+                    className="grid grid-cols-2 gap-x-6 gap-y-4"
                   >
-                    {categories.map(cat => {
-                      const modules = toolkitData[cat.id].modules.filter(m => activeScenario.requiredModules[cat.id]?.includes(m.id));
-                      if (modules.length === 0) return null;
+                    {['frontend', 'backend', 'infrastructure', 'ai'].map((catId, idx) => {
+                      const cat = categories.find(c => c.id === catId);
+                      const scenarioMods = activeScenario?.required[catId] || [];
+                      if (scenarioMods.length === 0) return null;
+                      
                       return (
-                        <div key={cat.id} className="space-y-3">
-                          <h5 className="text-[9px] font-black uppercase tracking-[0.3em] text-white/30 border-l border-accent/40 pl-3">{cat.label}</h5>
-                          <div className="grid grid-cols-1 gap-3">
-                            {modules.map(skill => (
-                              <SkillModule 
-                                key={skill.id}
-                                skill={skill}
-                                active={selectedModule?.id === skill.id}
-                                onClick={handleModuleClick}
-                                onHover={setHoveredSkillId}
-                                onDragStart={onDragStart}
-                                small
-                              />
-                            ))}
+                        <motion.div 
+                          key={catId}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: idx * 0.1 }}
+                          className="space-y-2"
+                        >
+                          <h5 className="text-[8px] font-black text-accent/60 uppercase tracking-[0.3em] pl-1 border-l border-accent/30">
+                            {cat.label === 'AI / LLM' ? 'AI / LLM' : cat.label.toUpperCase()}
+                          </h5>
+                          <div className="grid grid-cols-1 gap-2">
+                            {scenarioMods.map(modId => {
+                              const mod = toolkitData[catId].modules.find(m => m.id === modId);
+                              return (
+                                <div key={modId} className="skill-module-card">
+                                  <SkillModule 
+                                    skill={mod}
+                                    active={selectedModule?.id === mod.id}
+                                    onClick={handleModuleClick}
+                                    small={true}
+                                  />
+                                </div>
+                              );
+                            })}
                           </div>
-                        </div>
+                        </motion.div>
                       );
                     })}
                   </motion.div>
@@ -693,74 +564,43 @@ const SkillsBuilderToolkit = () => {
                     initial={{ opacity: 0, scale: 0.98 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 1.02 }}
-                    className="grid grid-cols-2 gap-6 relative z-10"
+                    className="grid grid-cols-2 gap-4 relative z-10"
                   >
                     {toolkitData[activeCategory].modules.map((skill) => (
-                      <SkillModule 
-                        key={skill.id}
-                        skill={skill}
-                        active={selectedModule?.id === skill.id}
-                        guidedMode={guidedMode && !selectedModule}
-                        onClick={handleModuleClick}
-                        onHover={setHoveredSkillId}
-                        onDragStart={onDragStart}
-                      />
+                      <div key={skill.id} className="skill-module-card">
+                        <SkillModule 
+                          skill={skill}
+                          active={selectedModule?.id === skill.id}
+                          isComposingActive={composingStep === activeCategory}
+                          onClick={handleModuleClick}
+                          onHover={setHoveredSkillId}
+                          onDragStart={onDragStart}
+                        />
+                      </div>
                     ))}
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
 
-            {/* Inline Scenario Terminal */}
-            <AnimatePresence>
-              {activeScenario && (
-                <div className="flex-none">
-                  <ScenarioTerminal 
-                    scenario={activeScenario} 
-                    githubRepo={githubRepo}
-                    onClose={() => {
-                      setActiveScenarioId(null);
-                      setGithubRepo(null);
-                    }}
-                  />
-                </div>
-              )}
-            </AnimatePresence>
-
-            {/* Inline Module Terminal (Normal Mode) */}
-            <AnimatePresence>
-              {!activeScenario && selectedModule && !showGuidedSummary && (
-                <div className="flex-none">
-                  <ModuleTerminal 
+            <div ref={dockContainerRef} className="relative z-20 shrink-0">
+              <AnimatePresence>
+                {dockOpen && (
+                  <ProofDock 
+                    mode={dockMode}
                     skill={selectedModule} 
-                    onClose={() => setSelectedModule(null)}
+                    scenario={activeScenario}
+                    githubRepo={githubRepo}
+                    onClose={() => { setDockOpen(false); setSelectedModule(null); }}
                   />
-                </div>
-              )}
-            </AnimatePresence>
+                )}
+              </AnimatePresence>
+            </div>
 
-            {/* Guided Completion Summary Terminal */}
-            <AnimatePresence>
-              {guidedMode && showGuidedSummary && (
-                <div className="flex-none">
-                  <GuidedCompletionTerminal 
-                    connections={connections}
-                    activeScenario={activeScenario}
-                    onReset={resetGuidedMode}
-                    onClose={() => setShowGuidedSummary(false)}
-                  />
-                </div>
-              )}
-            </AnimatePresence>
-
-            {/* Neural Wiring SVG Overlay */}
             <svg className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-visible">
               <defs>
                 <filter id="glow">
-                  <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-                  <feMerge>
-                    <feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/>
-                  </feMerge>
+                  <feGaussianBlur stdDeviation="2" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
                 </filter>
               </defs>
               {dragging && (
@@ -794,29 +634,25 @@ const SkillsBuilderToolkit = () => {
           </div>
         </div>
 
-        {/* Right Side: Output Streams */}
-        <div className="lg:col-span-3 flex flex-col space-y-3">
-          <h3 className="text-white/30 text-[9px] font-black uppercase tracking-[0.4em] mb-3">OUTPUT_STREAMS</h3>
-          {(activeScenario ? toolkitData[activeCategory].outcomes.filter(o => activeScenario.outputs.includes(o.id)) : toolkitData[activeCategory].outcomes).map((out) => {
+        <div className="lg:col-span-3 flex flex-col space-y-2">
+          <h3 className="text-white/30 text-[8px] font-black uppercase tracking-[0.4em] mb-2">OUTPUT_STREAMS</h3>
+          {visibleOutputs.map((out) => {
             const isConnected = connections.some(c => c.outputId === out.id);
             return (
               <div
                 key={out.id}
                 data-output-id={out.id}
-                className={`p-4 bg-secondary/30 border rounded-xl transition-all duration-300 relative group holo-card ${
+                className={`p-3 bg-secondary/30 border rounded-xl transition-all duration-300 relative group holo-card ${
                   activeDropTarget === out.id ? 'drop-target-active' : isConnected ? 'border-accent/40 bg-accent/5' : 'border-white/5'
-                } ${guidedMode && selectedModule && !isConnected ? 'animate-pulse border-accent/20' : ''}`}
+                }`}
               >
-                <div className="flex items-center gap-3">
-                  <div className={`w-1 h-3 rounded-full ${isConnected ? 'bg-accent' : 'bg-white/10'}`} />
-                  <span className={`text-[10px] font-black uppercase tracking-widest ${isConnected ? 'text-white' : 'text-white/40'}`}>
+                <div className="flex items-center gap-2">
+                  <div className={`w-1 h-2 rounded-full ${isConnected ? 'bg-accent' : 'bg-white/10'}`} />
+                  <span className={`text-[9px] font-black uppercase tracking-widest ${isConnected ? 'text-white' : 'text-white/40'}`}>
                     {out.label}
                   </span>
                   {isConnected && <FaCheck className="ml-auto text-accent text-[8px]" />}
                 </div>
-                {isConnected && (
-                  <div className="absolute top-1 right-2 text-[6px] text-accent font-black uppercase tracking-tighter">Connected</div>
-                )}
               </div>
             );
           })}

@@ -1,0 +1,70 @@
+Goal: Fix the center board layout spacing so the top skills grid and bottom dock terminal have a tighter gap (less empty space), while ensuring NO overlap in any mode (Scenario mode + normal System Nodes mode).
+Important: Keep the current “Skills Playground” design exactly (same UI style). Only adjust spacing/layout behavior.
+
+CURRENT ISSUE
+
+In the center board, there’s too much vertical gap between the skills cards area and the bottom dock terminal.
+
+If we reduce spacing incorrectly, skills + dock might overlap in scenarios.
+
+Normal System Nodes mode sometimes shows terminal in a different position/behavior than scenario mode — I want it consistent.
+
+TARGET BEHAVIOR
+
+Reduce vertical gap
+
+Make the center board feel tighter and more “connected”.
+
+The skills cards should sit closer to the dock terminal, visually.
+
+But the dock terminal must still have breathing room and never cover skills.
+
+No overlap guarantee
+
+When dock is visible, the skills grid area must shrink or reflow automatically so cards remain fully visible.
+
+Works for:
+
+Scenario selected (scenario plan dock)
+
+Normal clicking Frontend/Backend/Infra/AI module (module proof dock)
+
+Guided mode dock (if it exists)
+
+Dock must not cover cards; cards must not sit behind it.
+
+Make terminal placement consistent
+
+The dock terminal should always be inside the center board region (same placement rules).
+
+Avoid the “terminal below the whole section” look.
+
+Use the same docking system currently used in scenario mode as the standard for all modes.
+
+IMPLEMENTATION REQUIREMENTS (do not redesign)
+
+Keep the board container, background, glow, and style unchanged.
+
+Adjust layout using:
+
+a dedicated board wrapper layout (flex/column or grid)
+
+a “content area” above the dock with a calculated min-height
+
+padding-bottom on the content area equal to dock height (or dynamic measurement)
+
+If using Tailwind:
+
+Apply a consistent pb-[dockHeight] style (static or measured)
+
+Reduce excessive gap, mt, mb, or unused spacing classes
+
+Ensure dock height is stable and doesn’t jump layout.
+
+ACCEPTANCE CHECK
+
+Clicking any Scenario → skills show in center board → dock appears → skills remain visible (no overlap).
+
+Clicking Frontend/Backend/Infra/AI → skills show → clicking a module opens dock → skills remain visible (no overlap).
+
+Overall gap between skills area and dock is visibly reduced (tighter), but not cramped.
