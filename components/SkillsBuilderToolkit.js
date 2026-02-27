@@ -164,7 +164,7 @@ const ScenarioTerminal = ({ scenario, githubRepo, onClose }) => {
       exit={{ opacity: 0, y: 10 }}
       className="mt-auto pt-6 border-t border-white/5"
     >
-      <div className="bg-black/60 rounded-xl border border-accent/30 p-4 font-mono">
+      <div className="bg-black/60 rounded-xl border border-accent/30 p-4 font-mono shadow-[0_0_50px_rgba(0,0,0,0.3)]">
         <div className="flex items-center justify-between mb-3">
           <span className="text-accent text-[10px] font-black uppercase tracking-tighter">
             SCENARIO_PLAN: {scenario.label.toUpperCase()}
@@ -198,6 +198,98 @@ const ScenarioTerminal = ({ scenario, githubRepo, onClose }) => {
   );
 };
 
+const GuidedCompletionTerminal = ({ connections, activeScenario, onReset, onClose }) => {
+  const [copied, setCopied] = useState(false);
+  
+  const connectedByCategory = {
+    frontend: connections.filter(c => ['react', 'ui-perf', 'state'].includes(c.moduleId)).map(c => c.moduleId),
+    backend: connections.filter(c => ['node', 'springboot', 'auth', 'python'].includes(c.moduleId)).map(c => c.moduleId),
+    infrastructure: connections.filter(c => ['docker', 'k8s', 'terraform', 'jenkins', 'aws'].includes(c.moduleId)).map(c => c.moduleId),
+    ai: connections.filter(c => ['openai', 'bedrock', 'rag', 'nlp'].includes(c.moduleId)).map(c => c.moduleId),
+  };
+
+  const inferBuildResult = () => {
+    if (activeScenario) return { label: activeScenario.label, desc: activeScenario.description };
+    
+    const outputs = connections.map(c => c.outputId);
+    if (outputs.includes('out-gpt') || outputs.includes('out-bed')) 
+      return { label: "AI Chatbot", desc: "Conversational AI with LLM integration." };
+    if (outputs.includes('out-rag')) 
+      return { label: "AI Search (RAG)", desc: "Knowledge-augmented retrieval system." };
+    if (outputs.includes('out-dash') || outputs.includes('out-perf')) 
+      return { label: "SaaS Dashboard", desc: "High-performance enterprise portal." };
+    if (outputs.includes('out-micro') || outputs.includes('out-api')) 
+      return { label: "Microservices Platform", desc: "Distributed scalable architecture." };
+    if (outputs.includes('out-cicd') || outputs.includes('out-iac')) 
+      return { label: "CI/CD Pipeline", desc: "Automated delivery & orchestration." };
+    
+    return { label: "Full-Stack Application", desc: "End-to-end production-ready system." };
+  };
+
+  const result = inferBuildResult();
+  const summaryText = Object.entries(connectedByCategory)
+    .map(([cat, mods]) => `${cat.toUpperCase()}: ${mods.join(', ')}`)
+    .join('\n') + `\n\nRESULT: You can build → ${result.label}`;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 10 }}
+      className="mt-auto pt-6 border-t border-white/5"
+    >
+      <div className="bg-black/80 rounded-xl border border-accent/50 p-5 font-mono shadow-[0_0_50px_rgba(241,48,36,0.2)] relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-accent to-transparent animate-pulse" />
+        
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-accent text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-accent animate-ping" />
+            GUIDED MODE: SYSTEM BUILD COMPLETE
+          </span>
+          <button onClick={onClose} className="text-white/30 hover:text-white text-xs">
+            <FaTimes />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div className="space-y-3">
+            {Object.entries(connectedByCategory).map(([cat, mods]) => mods.length > 0 && (
+              <div key={cat} className="flex gap-3 text-[10px]">
+                <span className="text-accent font-bold w-20 shrink-0">{cat.toUpperCase()}:</span>
+                <span className="text-white/70 uppercase">{mods.join(', ')}</span>
+              </div>
+            ))}
+          </div>
+          <div className="bg-white/5 rounded-lg p-4 border border-white/5">
+            <div className="text-accent text-[9px] font-black uppercase mb-1">Inferred Result</div>
+            <div className="text-white text-sm font-bold mb-1 tracking-tight">You can build → {result.label}</div>
+            <p className="text-[10px] text-white/40 italic">{result.desc}</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 pt-4 border-t border-white/5">
+          <button 
+            onClick={() => {
+              navigator.clipboard.writeText(summaryText);
+              setCopied(true);
+              setTimeout(() => setCopied(false), 2000);
+            }}
+            className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-white/50 hover:text-white transition-all"
+          >
+            {copied ? <FaCheck className="text-green-500" /> : <FaCopy />} {copied ? 'Summary Copied' : 'Copy Summary'}
+          </button>
+          <button 
+            onClick={onReset}
+            className="ml-auto flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-accent border border-accent/20 px-4 py-2 rounded-lg hover:bg-accent/10 transition-all"
+          >
+            Reset Guided Mode
+          </button>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
 const SkillsBuilderToolkit = () => {
   const [activeCategory, setActiveCategory] = useState('frontend');
   const [selectedModule, setSelectedModule] = useState(null);
@@ -213,6 +305,8 @@ const SkillsBuilderToolkit = () => {
   const [dragSourceId, setDragSourceId] = useState(null);
   const [activeDropTarget, setActiveDropTarget] = useState(null);
   const [showHelp, setShowHelp] = useState(false);
+  const [guidedCompleted, setGuidedCompleted] = useState(false);
+  const [showGuidedSummary, setShowGuidedSummary] = useState(false);
 
   const boardRef = useRef(null);
   const dockContainerRef = useRef(null);
@@ -334,6 +428,8 @@ const SkillsBuilderToolkit = () => {
     setUnlockedTabs(['frontend', 'backend', 'infrastructure', 'ai']);
     setSelectedModule(null);
     setConnections([]);
+    setGuidedCompleted(false);
+    setShowGuidedSummary(false);
   };
 
   useEffect(() => {
@@ -393,6 +489,23 @@ const SkillsBuilderToolkit = () => {
           const currentIdx = categories.findIndex(c => c.id === activeCategory);
           if (currentIdx < categories.length - 1) {
             setUnlockedTabs(prev => [...new Set([...prev, categories[currentIdx + 1].id])]);
+          } else {
+            // Check if all categories have at least one connection
+            const connectedCategories = new Set(prev.map(conn => {
+              for (const [cat, data] of Object.entries(toolkitData)) {
+                if (data.modules.some(m => m.id === conn.moduleId)) return cat;
+              }
+              return null;
+            }).filter(Boolean));
+            
+            // Add the current connection category since state hasn't updated yet
+            connectedCategories.add(activeCategory);
+
+            if (connectedCategories.size === categories.length && !guidedCompleted) {
+              setGuidedCompleted(true);
+              setShowGuidedSummary(true);
+              setSelectedModule(null);
+            }
           }
         }
       }
@@ -616,11 +729,25 @@ const SkillsBuilderToolkit = () => {
 
             {/* Inline Module Terminal (Normal Mode) */}
             <AnimatePresence>
-              {!activeScenario && selectedModule && (
+              {!activeScenario && selectedModule && !showGuidedSummary && (
                 <div className="flex-none">
                   <ModuleTerminal 
                     skill={selectedModule} 
                     onClose={() => setSelectedModule(null)}
+                  />
+                </div>
+              )}
+            </AnimatePresence>
+
+            {/* Guided Completion Summary Terminal */}
+            <AnimatePresence>
+              {guidedMode && showGuidedSummary && (
+                <div className="flex-none">
+                  <GuidedCompletionTerminal 
+                    connections={connections}
+                    activeScenario={activeScenario}
+                    onReset={resetGuidedMode}
+                    onClose={() => setShowGuidedSummary(false)}
                   />
                 </div>
               )}

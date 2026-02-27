@@ -1,0 +1,82 @@
+Repo: Next.js (pages router) + Tailwind + Framer Motion.
+Goal: In GUIDED MODE, when the user completes the LAST required connection, show an auto “Completion Dock Terminal” summary (like scenario plan terminal) so the user gets a clear payoff: what they connected + what it enables them to build.
+
+CURRENT STATE (problem)
+- Guided Mode works well: connect a module to an Output Stream, next stage unlocks.
+- But after the final stage connection, NOTHING happens (no feedback, no summary).
+- This feels disappointing.
+
+TARGET UX
+- When Guided Mode reaches completion (all required stages connected):
+  1) Automatically open a dock terminal (same style as your existing terminal UI).
+  2) Terminal shows a “GUIDED MODE SUMMARY”:
+     - FRONTEND: connected modules (names)
+     - BACKEND: connected modules (names)
+     - INFRASTRUCTURE: connected modules (names)
+     - AI/LLM: connected modules (names)
+  3) Show a “You can build” line:
+     - Based on the connected outputs, pick ONE suggested build result (ex: “AI Chatbot”, “SaaS Dashboard”, “Microservices Platform”, “RAG Search”, “CI/CD Pipeline”, “Data Pipeline”).
+     - If there is already an active scenario, align the suggestion to it.
+     - If no scenario selected, infer from outputs connected:
+         - ChatGPT Tools / Bedrock Apps => “AI Chatbot”
+         - RAG Pipelines => “AI Search (RAG)”
+         - Dashboards / Performance UI => “SaaS Dashboard”
+         - Microservices / REST APIs => “Microservices Platform”
+         - CI/CD Pipelines / IaC => “CI/CD Pipeline”
+         - Data Pipeline outputs => “Data Pipeline”
+  4) Add a small CTA row (optional but clean):
+     - “Copy Summary” button (copies summary text)
+     - “Reset Guided Mode” button (clears guided progress and closes terminal)
+- Terminal must NOT overlap the center skills cards.
+- Terminal must only appear automatically at guided completion; otherwise it remains as current behavior.
+
+REQUIREMENTS
+1) Detect Guided Mode Completion
+- Identify the guided mode progression state currently used (ex: connectedStages, completedSteps, unlockedIndex, connectionsMap).
+- Completion condition: all required guided steps/stages are connected.
+- Trigger completion only once per run:
+  - if guidedCompleted flag is false -> set true and open terminal
+  - avoid re-triggering on rerenders
+
+2) Capture “Connected Modules” by Category
+- Track connections in a structured way:
+  - connectedByCategory = { frontend: [], backend: [], infrastructure: [], ai: [] }
+- When a module is connected to an output stream, store it under the category it belongs to.
+- If the module already exists, do not duplicate.
+
+3) Completion Terminal (Dock)
+- Use the same terminal component style and layout as your existing dock terminal:
+  - dark glass panel, red accent title, close X, Framer Motion slide/fade.
+- Title example:
+  - “GUIDED MODE: SYSTEM BUILD COMPLETE”
+- Body format:
+  - FRONTEND: React/TS, UI Perf, …
+  - BACKEND: Node API, Spring Boot, Auth/JWT, …
+  - INFRA: Docker, K8s, Terraform, Jenkins, AWS/GCP, …
+  - AI/LLM: OpenAI API, Bedrock, RAG Pipeline, NLP Engine, …
+- Also show:
+  - “RESULT: You can build → <Suggested App>”
+  - 1-line explanation under result (short, not long)
+
+4) Terminal Behavior
+- Auto opens when guided completes.
+- Close X hides terminal but keeps guidedCompleted state true.
+- Reset guided mode clears:
+  - guidedCompleted false
+  - unlocked stage resets to start
+  - all guided connections cleared
+  - terminal closed
+
+5) Layout Guarantee (No overlap)
+- Dock must be inside the center board layout, in a bottom row (grid/flex).
+- Skills/cards grid stays above it and can scroll if needed.
+- Do NOT use absolute bottom positioning for this terminal.
+
+FILES / IMPLEMENTATION
+- Update the guided mode logic where connections are handled (drag-to-connect drop handler).
+- Update the terminal/dock component to support a “guidedSummary” mode view.
+- Add helper function inferBuildResultFromOutputs(connectedOutputs, activeScenario) to choose suggested build.
+
+DELIVER
+- Implement completion detection + summary tracking + guided completion terminal.
+- List files changed and brief notes on what each change did.
