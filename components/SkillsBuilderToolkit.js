@@ -541,7 +541,7 @@ const SkillsBuilderToolkit = () => {
               </div>
             )}
 
-            <div className="flex-1 relative overflow-y-auto no-scrollbar">
+            <div className="flex-1 min-h-0 relative overflow-y-auto no-scrollbar pb-4">
               <AnimatePresence mode="wait">
                 {activeScenario ? (
                   <motion.div
@@ -549,15 +549,15 @@ const SkillsBuilderToolkit = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="grid grid-cols-2 gap-x-8 gap-y-12"
+                    className="grid grid-cols-2 gap-x-8 gap-y-8"
                   >
                     {categories.map(cat => {
                       const modules = toolkitData[cat.id].modules.filter(m => activeScenario.requiredModules[cat.id]?.includes(m.id));
                       if (modules.length === 0) return null;
                       return (
-                        <div key={cat.id} className="space-y-4">
+                        <div key={cat.id} className="space-y-3">
                           <h5 className="text-[9px] font-black uppercase tracking-[0.3em] text-white/30 border-l border-accent/40 pl-3">{cat.label}</h5>
-                          <div className="grid grid-cols-1 gap-4">
+                          <div className="grid grid-cols-1 gap-3">
                             {modules.map(skill => (
                               <SkillModule 
                                 key={skill.id}
@@ -601,24 +601,28 @@ const SkillsBuilderToolkit = () => {
             {/* Inline Scenario Terminal */}
             <AnimatePresence>
               {activeScenario && (
-                <ScenarioTerminal 
-                  scenario={activeScenario} 
-                  githubRepo={githubRepo}
-                  onClose={() => {
-                    setActiveScenarioId(null);
-                    setGithubRepo(null);
-                  }}
-                />
+                <div className="flex-none">
+                  <ScenarioTerminal 
+                    scenario={activeScenario} 
+                    githubRepo={githubRepo}
+                    onClose={() => {
+                      setActiveScenarioId(null);
+                      setGithubRepo(null);
+                    }}
+                  />
+                </div>
               )}
             </AnimatePresence>
 
             {/* Inline Module Terminal (Normal Mode) */}
             <AnimatePresence>
               {!activeScenario && selectedModule && (
-                <ModuleTerminal 
-                  skill={selectedModule} 
-                  onClose={() => setSelectedModule(null)}
-                />
+                <div className="flex-none">
+                  <ModuleTerminal 
+                    skill={selectedModule} 
+                    onClose={() => setSelectedModule(null)}
+                  />
+                </div>
               )}
             </AnimatePresence>
 

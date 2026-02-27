@@ -1,0 +1,48 @@
+Repo: Next.js (pages router) + Tailwind + Framer Motion.
+Goal: Fix center-board layout spacing so the bottom “dock terminal” sits closer to the skills grid/cards, WITHOUT overlapping, and WITHOUT changing animations/behavior.
+
+CONTEXT (current behavior)
+- Scenarios + system modes + skill clicks all work correctly now.
+- The ONLY issue: there is too much empty vertical space between the skills cards in the center board and the dock terminal (inside the center board area).
+- When reduced, dock must still never overlap skills in any viewport.
+
+TARGET
+- Reduce the gap between the center skills area and the bottom dock terminal (make it feel tighter, premium).
+- Keep scenario mode layout working: skills cards remain fully visible above dock.
+- Keep system-mode skill selection working: terminal/dock still behaves like scenario mode (embedded within center board area).
+- No horizontal overflow.
+
+REQUIREMENTS
+1) Center Board Layout
+- The center board should behave like a “2-row layout”:
+  - Top area = skills/cards grid
+  - Bottom area = dock terminal
+- Replace any “absolute bottom terminal” positioning (if used) with a stable layout approach:
+  - Use CSS grid or flex column within the center board container.
+  - Example: grid-rows-[1fr_auto] OR flex-col with justify-between.
+- The dock terminal should be inside the board container and always anchored to the bottom section.
+
+2) Spacing Rules
+- Reduce the vertical gap:
+  - The top skills/cards should end closer to the dock terminal (tightened padding/margins).
+  - Use responsive spacing:
+    - Desktop: small comfortable gap (ex: 12–20px)
+    - Tablet/Mobile: slightly more breathing room (ex: 16–24px)
+- Ensure the skills/cards area has “padding-bottom” equal to dock height only if needed, BUT avoid huge blank areas.
+
+3) Prevent Overlap Always
+- If the skill list becomes tall:
+  - Make ONLY the skills area scrollable inside the board (NOT the whole page).
+  - Dock terminal stays fixed inside the board bottom row.
+- Use: overflow-y-auto on the skills grid container, and keep dock terminal overflow hidden.
+- DO NOT let the dock cover cards.
+- On small screens, dock can collapse slightly in height OR become “expand/collapse” (optional) but default must not overlap.
+
+4) Files / Implementation
+- Apply changes where the Skills Playground center board is built (likely a component like SkillsPlayground / SkillsSection / SkillBoard).
+- Keep the same animations, transitions, colors, glow effects.
+- Only adjust layout + spacing.
+
+DELIVER
+- Implement the fix.
+- List files modified and briefly explain what was changed (layout approach + spacing values).
