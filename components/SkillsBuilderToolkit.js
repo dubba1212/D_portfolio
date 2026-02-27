@@ -35,7 +35,7 @@ const SkillTab = ({ id, label, icon: Icon, active, locked, onClick, isComposingA
   </motion.button>
 );
 
-const SkillModule = ({ skill, active, onClick, isComposingActive, onHover, onDragStart, id, small }) => {
+const SkillModule = ({ skill, active, onClick, isComposingActive, onHover, onPointerDown, id, small }) => {
   const [isPulsing, setIsPulsing] = useState(false);
   const Icon = skill.icon || SiReact;
   const x = useMotionValue(0);
@@ -63,11 +63,9 @@ const SkillModule = ({ skill, active, onClick, isComposingActive, onHover, onDra
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       onMouseEnter={() => onHover?.(skill.id)}
-      onPointerDown={(e) => onDragStart?.(skill.id)}
-      onClick={() => {
-        setIsPulsing(true);
-        setTimeout(() => setIsPulsing(false), 800);
-        onClick(skill);
+      onPointerDown={(e) => {
+        e.preventDefault();
+        onPointerDown?.(skill.id);
       }}
       className={`relative group rounded-xl border bg-secondary/40 backdrop-blur-md transition-all duration-300 text-left holo-card touch-none skill-module-card ${
         small ? 'p-2' : 'p-4'
@@ -212,6 +210,11 @@ const SkillsBuilderToolkit = () => {
 
   const boardRef = useRef(null);
   const dockContainerRef = useRef(null);
+  const moduleRefs = useRef({});
+
+  const registerModuleRef = (id) => (el) => {
+    if (el) moduleRefs.current[id] = el;
+  };
 
   const categories = [
     { id: 'frontend', label: 'Frontend', icon: FaCode },
@@ -442,10 +445,14 @@ const SkillsBuilderToolkit = () => {
     return () => document.removeEventListener('pointerdown', handleClickOutside);
   }, []);
 
-  const onDragStart = (e, moduleId) => {
+  const onDragStart = (moduleId) => {
+    const el = moduleRefs.current[moduleId];
+    if (!el || !boardRef.current) return;
+
     setDragging(true);
     setDragSourceId(moduleId);
-    const rect = e.currentTarget.getBoundingClientRect();
+    
+    const rect = el.getBoundingClientRect();
     const boardRect = boardRef.current.getBoundingClientRect();
     const startX = rect.left + rect.width / 2 - boardRect.left;
     const startY = rect.top + rect.height / 2 - boardRect.top;
@@ -635,11 +642,12 @@ const SkillsBuilderToolkit = () => {
                             {scenarioMods.map(modId => {
                               const mod = toolkitData[catId].modules.find(m => m.id === modId);
                               return (
-                                <div key={modId} className="skill-module-card">
+                                <div key={modId} className="skill-module-card" ref={registerModuleRef(modId)}>
                                   <SkillModule 
                                     skill={mod}
                                     active={selectedModule?.id === mod.id}
                                     onClick={handleModuleClick}
+                                    onPointerDown={onDragStart}
                                     small={true}
                                   />
                                 </div>
@@ -659,14 +667,14 @@ const SkillsBuilderToolkit = () => {
                     className="grid grid-cols-2 gap-4 relative z-10"
                   >
                     {toolkitData[activeCategory].modules.map((skill) => (
-                      <div key={skill.id} className="skill-module-card">
+                      <div key={skill.id} className="skill-module-card" ref={registerModuleRef(skill.id)}>
                         <SkillModule 
                           skill={skill}
                           active={selectedModule?.id === skill.id}
                           isComposingActive={composingStep === activeCategory}
                           onClick={handleModuleClick}
                           onHover={setHoveredSkillId}
-                          onDragStart={onDragStart}
+                          onPointerDown={onDragStart}
                         />
                       </div>
                     ))}
