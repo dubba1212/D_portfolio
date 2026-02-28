@@ -1,0 +1,132 @@
+Fix Guided Mode and Module Terminal behavior inside components/SkillsBuilderToolkit.js. Both Guided Mode completion and normal System Nodes module terminal stopped working. Also prevent runtime crashes like “prev is not defined” and “Cannot read properties of undefined (reading getBoundingClientRect)”.
+
+Goal: Stabilize the component and make terminal behavior deterministic using a single controller.
+
+Step 1: Add a single terminal controller state.
+Create a state variable called terminalMode with values:
+"none" | "module" | "scenario" | "guidedComplete"
+
+Also ensure these states exist:
+selectedModule
+activeScenarioId
+scenarioPlan
+guidedCompletePayload
+
+Rules:
+If scenario is active → terminalMode = "scenario"
+If module is selected and no scenario active → terminalMode = "module"
+If guided mode completes → terminalMode = "guidedComplete"
+Otherwise → terminalMode = "none"
+
+Step 2: Restore System Nodes module terminal.
+When user clicks a module card (React/TS, Terraform, Node/Express, etc.):
+
+setSelectedModule(module)
+
+setTerminalMode("module")
+If user switches category (Frontend, Backend, Infrastructure, AI):
+
+clear selectedModule
+
+if terminalMode is "module", set terminalMode to "none"
+Module terminal must show module data stream content again.
+
+Step 3: Fix “prev is not defined”.
+Search for any usage of prev outside a setState functional callback.
+If you see code like new Set(prev.map(...)) outside setConnections(prev => {}), replace prev with the actual state variable.
+All prev usage must be inside a functional setState callback only.
+
+Step 4: Fix getBoundingClientRect crash.
+In drag start handler, do not rely blindly on e.currentTarget.
+Add guards:
+If e or e.currentTarget is missing, return safely.
+If boardRef.current is missing, return safely.
+Example pattern:
+const el = e.currentTarget || e.target
+if (!el || !el.getBoundingClientRect) return
+if (!boardRef?.current) return
+Then compute rect safely.
+
+Never allow drag start to crash the component.
+If drag initialization fails, reset dragging state safely.
+
+Step 5: Guided Mode completion terminal.
+When guided mode completes (all required categories connected):
+Build a payload object containing:
+frontend
+backend
+infra
+ai
+outputs
+examples
+
+Then:
+setGuidedCompletePayload(payload)
+setTerminalMode("guidedComplete")
+
+Inside the guidedComplete terminal, render:
+FRONTEND:
+BACKEND:
+INFRA:
+AI/LLM:
+OUTPUT:
+
+Then add a section:
+WITH THIS STACK YOU CAN BUILD:
+Show 1 or 2 example apps.
+
+Create a small mapping object for examples based on scenario or outputs:
+AI Chatbot:
+
+AI support chatbot with tool calling and conversation memory
+
+Internal assistant that queries documents and generates summaries
+
+SaaS Dashboard:
+
+Multi-tenant analytics dashboard with role-based access
+
+Admin dashboard with billing and audit logs
+
+Microservices:
+
+Service-based order/payment system with API gateway
+
+Event-driven services with Redis caching and containers
+
+CI/CD Pipeline:
+
+Automated Docker build and Kubernetes deployment pipeline
+
+Infrastructure-as-code provisioning with multi-environment deploy
+
+Data Pipeline:
+
+ETL ingestion pipeline with cloud storage and monitoring
+
+Streaming + batch data processing workflow
+
+AI Search (RAG):
+
+Document search assistant with embeddings and citations
+
+Enterprise knowledge base chatbot with retrieval and reranking
+
+If guided mode has no scenario, infer examples from connected outputs.
+
+Step 6: Terminal rendering must use only terminalMode.
+In JSX:
+If terminalMode === "scenario" → render scenario terminal
+If terminalMode === "module" → render module terminal
+If terminalMode === "guidedComplete" → render guided completion terminal
+If terminalMode === "none" → render nothing
+
+Do not block terminal rendering behind category or guided checks.
+
+Step 7: Add guided disconnect behavior.
+If user clicks a connected Output Stream:
+Remove that connection.
+Update guided stage.
+If guidedCompletePayload exists, clear it and set terminalMode to "none" or "scenario".
+
+Keep UI styling exactly the same. Do not redesign layout. Only fix logic and state flow.

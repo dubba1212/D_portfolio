@@ -67,6 +67,7 @@ const SkillModule = ({ skill, active, onClick, isComposingActive, onHover, onPoi
         e.preventDefault();
         onPointerDown?.(skill.id);
       }}
+      onClick={() => onClick(skill)}
       className={`relative group rounded-xl border bg-secondary/40 backdrop-blur-md transition-all duration-300 text-left holo-card touch-none skill-module-card ${
         small ? 'p-2' : 'p-4'
       } ${
@@ -94,39 +95,66 @@ const SkillModule = ({ skill, active, onClick, isComposingActive, onHover, onPoi
   );
 };
 
-const ProofDock = ({ mode, skill, scenario, githubRepo, onClose, connections, toolkitData }) => {
+const ProofDock = ({ mode, skill, scenario, githubRepo, onClose, connections, toolkitData, guidedPayload }) => {
   const [copied, setCopied] = useState(false);
   const dockRef = useRef(null);
 
-  if (!skill && !scenario && mode !== 'guided') return null;
+  if (mode === 'none') return null;
+
+  const SCENARIO_EXAMPLES = {
+    chatbot: [
+      "AI customer support bot with tool calling and conversation memory",
+      "Internal assistant that queries documents and generates summaries"
+    ],
+    saas: [
+      "Multi-tenant analytics dashboard with role-based access",
+      "Admin dashboard with billing and audit logs"
+    ],
+    micro: [
+      "Service-based order/payment system with API gateway",
+      "Event-driven services with Redis caching and containers"
+    ],
+    cicd: [
+      "Automated Docker build and Kubernetes deployment pipeline",
+      "Infrastructure-as-code provisioning with multi-environment deploy"
+    ],
+    data: [
+      "ETL ingestion pipeline with cloud storage and monitoring",
+      "Streaming + batch data processing workflow"
+    ],
+    rag: [
+      "Document search assistant with embeddings and citations",
+      "Enterprise knowledge base chatbot with retrieval and reranking"
+    ]
+  };
 
   let title = "";
   let bullets = [];
   let description = "";
+  let examples = [];
 
-  if (mode === 'module') {
+  if (mode === 'module' && skill) {
     title = `MODULE_DATA_STREAM: ${skill.label.toUpperCase()}`;
     bullets = skill.bullets || [];
     description = skill.description;
-  } else if (mode === 'scenario') {
+  } else if (mode === 'scenario' && scenario) {
     title = `SCENARIO_PLAN: ${scenario.label.toUpperCase()}`;
     bullets = scenario.plan || [];
     description = scenario.description;
-  } else if (mode === 'guided') {
+  } else if (mode === 'guidedComplete' && guidedPayload) {
     title = "SIMULATION COMPLETE: SYSTEM ASSEMBLED";
-    const getMod = (cat) => {
-      const conn = connections.find(c => toolkitData[cat].modules.some(m => m.id === c.moduleId));
-      return toolkitData[cat].modules.find(m => m.id === conn?.moduleId)?.label || "NONE";
-    };
     bullets = [
-      `FRONTEND: ${getMod('frontend')}`,
-      `BACKEND: ${getMod('backend')}`,
-      `INFRA: ${getMod('infrastructure')}`,
-      `AI/LLM: ${getMod('ai')}`,
-      `OUTPUT: ${connections[connections.length - 1]?.outputId.toUpperCase() || "NONE"}`
+      `FRONTEND: ${guidedPayload.frontend}`,
+      `BACKEND: ${guidedPayload.backend}`,
+      `INFRA: ${guidedPayload.infra}`,
+      `AI/LLM: ${guidedPayload.ai}`,
+      `OUTPUT: ${guidedPayload.outputs.join(', ').toUpperCase()}`
     ];
     description = "This stack can ship an AI-enabled app with secure APIs, containerized deployment, and scalable inference.";
+    examples = guidedPayload.examples || [];
   }
+
+  if (!title) return null;
 
   return (
     <motion.div
@@ -170,6 +198,18 @@ const ProofDock = ({ mode, skill, scenario, githubRepo, onClose, connections, to
                 </li>
               ))}
             </ul>
+            {examples.length > 0 && (
+              <div className="mt-4 pt-2 border-t border-white/5">
+                <div className="text-[8px] font-black text-accent/60 uppercase tracking-widest mb-1">WITH THIS STACK YOU CAN BUILD:</div>
+                <ul className="space-y-1">
+                  {examples.map((ex, i) => (
+                    <li key={i} className="text-[9px] text-white/80 flex gap-2">
+                      <span className="text-accent">•</span> {ex}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
           <div className="flex flex-col justify-between items-end text-right">
             <p className="text-[9px] text-white/40 italic mb-2">{description}</p>
@@ -193,12 +233,10 @@ const SkillsBuilderToolkit = () => {
   const [activeCategory, setActiveCategory] = useState('frontend');
   const [selectedModule, setSelectedModule] = useState(null);
   const [activeScenarioId, setActiveScenarioId] = useState(null);
-  const [dockOpen, setDockOpen] = useState(false);
-  const [dockMode, setDockMode] = useState(null);
+  const [terminalMode, setTerminalMode] = useState('none');
+  const [guidedCompletePayload, setGuidedCompletePayload] = useState(null);
   const [githubRepo, setGithubRepo] = useState(null);
   const [hoveredSkillId, setHoveredSkillId] = useState(null);
-  const [isComposing, setIsComposing] = useState(false);
-  const [composingStep, setComposingStep] = useState(null);
   const [guidedMode, setGuidedMode] = useState(false);
   const [unlockedTabs, setUnlockedTabs] = useState(['frontend', 'backend', 'infrastructure', 'ai']);
   const [connections, setConnections] = useState([]);
@@ -207,6 +245,7 @@ const SkillsBuilderToolkit = () => {
   const [dragCurrentPos, setDragCurrentPos] = useState({ x: 0, y: 0 });
   const [dragSourceId, setDragSourceId] = useState(null);
   const [activeDropTarget, setActiveDropTarget] = useState(null);
+  const [showHelp, setShowHelp] = useState(false);
 
   const boardRef = useRef(null);
   const dockContainerRef = useRef(null);
@@ -290,7 +329,11 @@ const SkillsBuilderToolkit = () => {
       description: "Convergent AI architecture for conversational interfaces.",
       plan: ["FRONTEND: React/TS UI", "BACKEND: Node API", "INFRA: Docker", "AI: OpenAI / Bedrock"],
       required: { frontend: ['react'], backend: ['node'], infrastructure: ['docker'], ai: ['openai', 'bedrock'] },
-      outputs: ['out-dash', 'out-api', 'out-cicd', 'out-gpt']
+      outputs: ['out-dash', 'out-api', 'out-cicd', 'out-gpt'],
+      examples: [
+        "AI customer support chatbot with tool calling and conversation memory",
+        "Internal assistant that queries documents and generates summaries"
+      ]
     },
     { 
       id: 'saas', 
@@ -300,7 +343,11 @@ const SkillsBuilderToolkit = () => {
       description: "Scale-ready SaaS architecture with secure multitenancy.",
       plan: ["FRONTEND: Dashboard UI", "BACKEND: Auth/JWT", "INFRA: AWS/GCP", "DATA: Postgres"],
       required: { frontend: ['react', 'ui-perf'], backend: ['auth'], infrastructure: ['aws'], ai: [] },
-      outputs: ['out-dash', 'out-perf', 'out-auth', 'out-cloud']
+      outputs: ['out-dash', 'out-perf', 'out-auth', 'out-cloud'],
+      examples: [
+        "Multi-tenant analytics dashboard with role-based access",
+        "Admin dashboard with billing and audit logs"
+      ]
     },
     { 
       id: 'micro', 
@@ -310,7 +357,11 @@ const SkillsBuilderToolkit = () => {
       description: "Distributed systems architecture for enterprise scale.",
       plan: ["BACKEND: Spring Boot", "INFRA: K8s / Jenkins", "DATA: Redis"],
       required: { frontend: [], backend: ['springboot'], infrastructure: ['k8s', 'jenkins'], ai: [] },
-      outputs: ['out-micro', 'out-k8s', 'out-cicd']
+      outputs: ['out-micro', 'out-k8s', 'out-cicd'],
+      examples: [
+        "Service-based order/payment system with API gateway",
+        "Event-driven services with Redis caching and containers"
+      ]
     },
     { 
       id: 'cicd', 
@@ -320,7 +371,11 @@ const SkillsBuilderToolkit = () => {
       description: "Automated delivery pipeline with full orchestration.",
       plan: ["INFRA: Git / Jenkins / Docker / K8s / Terraform"],
       required: { frontend: [], backend: [], infrastructure: ['jenkins', 'docker', 'k8s', 'terraform'], ai: [] },
-      outputs: ['out-cicd', 'out-k8s', 'out-iac']
+      outputs: ['out-cicd', 'out-k8s', 'out-iac'],
+      examples: [
+        "Automated Docker build and Kubernetes deployment pipeline",
+        "Infrastructure-as-code provisioning with multi-environment deploy"
+      ]
     },
     { 
       id: 'data', 
@@ -330,7 +385,11 @@ const SkillsBuilderToolkit = () => {
       description: "Real-time data processing and analytics architecture.",
       plan: ["BACKEND: Python / Node", "DATA: SQL / Redis", "INFRA: AWS"],
       required: { frontend: [], backend: ['python'], infrastructure: ['aws'], ai: [] },
-      outputs: ['out-data', 'out-cloud']
+      outputs: ['out-data', 'out-cloud'],
+      examples: [
+        "ETL ingestion pipeline with cloud storage and monitoring",
+        "Streaming + batch data processing workflow"
+      ]
     },
     { 
       id: 'rag', 
@@ -340,38 +399,13 @@ const SkillsBuilderToolkit = () => {
       description: "Knowledge-augmented AI search system.",
       plan: ["BACKEND: Node / Python", "AI: RAG / OpenAI", "DATA: Vector DB"],
       required: { frontend: [], backend: ['node'], infrastructure: ['docker'], ai: ['rag', 'openai'] },
-      outputs: ['out-rag', 'out-gpt']
+      outputs: ['out-rag', 'out-gpt'],
+      examples: [
+        "Document search assistant with embeddings and citations",
+        "Enterprise knowledge base chatbot with retrieval and reranking"
+      ]
     }
   ];
-
-  const [showHelp, setShowHelp] = useState(false);
-  const [guidedCompleted, setGuidedCompleted] = useState(false);
-
-  const getGuidedSummary = () => {
-    const summary = {
-      frontend: connections.find(c => toolkitData.frontend.modules.some(m => m.id === c.moduleId))?.moduleId,
-      backend: connections.find(c => toolkitData.backend.modules.some(m => m.id === c.moduleId))?.moduleId,
-      infra: connections.find(c => toolkitData.infrastructure.modules.some(m => m.id === c.moduleId))?.moduleId,
-      ai: connections.find(c => toolkitData.ai.modules.some(m => m.id === c.moduleId))?.moduleId,
-      output: connections[connections.length - 1]?.outputId
-    };
-    return summary;
-  };
-
-  const isGuidedFinished = () => {
-    const cats = ['frontend', 'backend', 'infrastructure', 'ai'];
-    return cats.every(cat => connections.some(c => toolkitData[cat].modules.some(m => m.id === c.moduleId)));
-  };
-
-  useEffect(() => {
-    if (guidedMode && isGuidedFinished()) {
-      setGuidedCompleted(true);
-      setDockMode('guided');
-      setDockOpen(true);
-    } else if (guidedMode) {
-      setGuidedCompleted(false);
-    }
-  }, [connections, guidedMode]);
 
   const fetchGithubRepo = async (scenario) => {
     try {
@@ -396,12 +430,54 @@ const SkillsBuilderToolkit = () => {
     }
   };
 
+  const checkGuidedCompletion = (currentConnections) => {
+    if (!guidedMode) return;
+    const cats = ['frontend', 'backend', 'infrastructure', 'ai'];
+    const allConnected = cats.every(cat => 
+      currentConnections.some(c => toolkitData[cat].modules.some(m => m.id === c.moduleId))
+    );
+
+    if (allConnected) {
+      const getMod = (cat) => {
+        const conn = currentConnections.find(c => toolkitData[cat].modules.some(m => m.id === c.moduleId));
+        return toolkitData[cat].modules.find(m => m.id === conn?.moduleId)?.label || "NONE";
+      };
+      
+      const scenario = scenarios.find(s => s.id === activeScenarioId);
+      let examples = [];
+      if (scenario) {
+        examples = scenario.examples;
+      } else {
+        const outputs = currentConnections.map(c => c.outputId);
+        if (outputs.includes('out-gpt') || outputs.includes('out-bed')) examples = ["AI customer support chatbot with tool calling", "LLM creative tool"];
+        else if (outputs.includes('out-rag')) examples = ["Document search assistant", "Semantic knowledge base"];
+        else if (outputs.includes('out-dash')) examples = ["SaaS analytics dashboard", "Admin portal"];
+        else if (outputs.includes('out-micro')) examples = ["Scalable order processing", "Payment gateway services"];
+        else examples = ["Full-stack cloud application", "Enterprise software system"];
+      }
+
+      setGuidedCompletePayload({
+        frontend: getMod('frontend'),
+        backend: getMod('backend'),
+        infra: getMod('infrastructure'),
+        ai: getMod('ai'),
+        outputs: currentConnections.map(c => c.outputId),
+        examples: examples
+      });
+      setTerminalMode('guidedComplete');
+    } else {
+      if (terminalMode === 'guidedComplete') {
+        setTerminalMode(activeScenarioId ? 'scenario' : 'none');
+      }
+      setGuidedCompletePayload(null);
+    }
+  };
+
   const handleScenario = async (scenarioId) => {
     if (activeScenarioId === scenarioId) {
       setActiveScenarioId(null);
       setSelectedModule(null);
-      setDockOpen(false);
-      setDockMode(null);
+      setTerminalMode('none');
       setConnections([]);
       return;
     }
@@ -409,8 +485,7 @@ const SkillsBuilderToolkit = () => {
     const scenario = scenarios.find(s => s.id === scenarioId);
     setActiveScenarioId(scenarioId);
     setSelectedModule(null);
-    setDockMode('scenario');
-    setDockOpen(true);
+    setTerminalMode('scenario');
     setConnections([]);
     
     const repo = await fetchGithubRepo(scenario);
@@ -419,15 +494,13 @@ const SkillsBuilderToolkit = () => {
 
   const handleModuleClick = (skill) => {
     setSelectedModule(skill);
-    setDockMode('module');
-    setDockOpen(true);
+    setTerminalMode('module');
   };
 
   const handleTabChange = (catId) => {
     setActiveCategory(catId);
     setSelectedModule(null);
-    setDockOpen(false);
-    setDockMode(null);
+    if (terminalMode === 'module') setTerminalMode('none');
   };
 
   useEffect(() => {
@@ -435,15 +508,18 @@ const SkillsBuilderToolkit = () => {
       if (dockContainerRef.current && !dockContainerRef.current.contains(e.target)) {
         const isModuleCard = e.target.closest('.skill-module-card');
         const isScenarioPill = e.target.closest('.scenario-pill');
-        if (!isModuleCard && !isScenarioPill) {
-          setDockOpen(false);
-          setSelectedModule(null);
+        const isTab = e.target.closest('.category-tab');
+        if (!isModuleCard && !isScenarioPill && !isTab) {
+          if (terminalMode === 'module') {
+            setTerminalMode('none');
+            setSelectedModule(null);
+          }
         }
       }
     };
     document.addEventListener('pointerdown', handleClickOutside);
     return () => document.removeEventListener('pointerdown', handleClickOutside);
-  }, []);
+  }, [terminalMode]);
 
   const onDragStart = (moduleId) => {
     const el = moduleRefs.current[moduleId];
@@ -463,6 +539,7 @@ const SkillsBuilderToolkit = () => {
   useEffect(() => {
     if (!dragging) return;
     const handleMove = (e) => {
+      if (!boardRef.current) return;
       const boardRect = boardRef.current.getBoundingClientRect();
       const clientX = e.clientX || (e.touches && e.touches[0].clientX);
       const clientY = e.clientY || (e.touches && e.touches[0].clientY);
@@ -479,7 +556,6 @@ const SkillsBuilderToolkit = () => {
         setConnections(prev => {
           const exists = prev.some(c => c.outputId === activeDropTarget);
           if (exists) return prev;
-          
           const next = [...prev, { moduleId: dragSourceId, outputId: activeDropTarget }];
           
           if (guidedMode) {
@@ -488,6 +564,7 @@ const SkillsBuilderToolkit = () => {
               next.some(c => toolkitData[cat].modules.some(m => m.id === c.moduleId))
             );
             setUnlockedTabs(['frontend', ...connectedCats.map((_, i) => cats[i + 1]).filter(Boolean)]);
+            checkGuidedCompletion(next);
           }
           return next;
         });
@@ -502,7 +579,7 @@ const SkillsBuilderToolkit = () => {
       window.removeEventListener('pointermove', handleMove);
       window.removeEventListener('pointerup', handleUp);
     };
-  }, [dragging, activeDropTarget, dragSourceId]);
+  }, [dragging, activeDropTarget, dragSourceId, guidedMode]);
 
   const activeScenario = scenarios.find(s => s.id === activeScenarioId);
   const visibleModules = activeScenario 
@@ -536,8 +613,7 @@ const SkillsBuilderToolkit = () => {
               onClick={() => {
                 setActiveScenarioId(null);
                 setSelectedModule(null);
-                setDockOpen(false);
-                setDockMode(null);
+                setTerminalMode('none');
                 setConnections([]);
               }}
               className="px-3 py-1.5 bg-accent/10 border border-accent/20 rounded-full text-[9px] font-black uppercase tracking-widest text-accent hover:bg-accent/20 transition-all"
@@ -576,10 +652,16 @@ const SkillsBuilderToolkit = () => {
           <button 
             onClick={() => {
               setGuidedMode(!guidedMode);
-              if (!guidedMode) setUnlockedTabs(['frontend']);
-              else setUnlockedTabs(['frontend', 'backend', 'infrastructure', 'ai']);
+              if (!guidedMode) {
+                setUnlockedTabs(['frontend', 'backend', 'infrastructure', 'ai']);
+                setConnections([]);
+                setTerminalMode('none');
+              } else {
+                setUnlockedTabs(['frontend']);
+                setConnections([]);
+                setTerminalMode('none');
+              }
               setSelectedModule(null);
-              setDockOpen(false);
             }}
             className={`w-7 h-3.5 rounded-full relative transition-all ${guidedMode ? 'bg-accent' : 'bg-white/10'}`}
           >
@@ -685,15 +767,19 @@ const SkillsBuilderToolkit = () => {
 
             <div ref={dockContainerRef} className="relative z-20 shrink-0">
               <AnimatePresence>
-                {dockOpen && (
+                {terminalMode !== 'none' && (
                   <ProofDock 
-                    mode={dockMode}
+                    mode={terminalMode}
                     skill={selectedModule} 
                     scenario={activeScenario}
                     githubRepo={githubRepo}
-                    onClose={() => { setDockOpen(false); setSelectedModule(null); }}
+                    onClose={() => {
+                      setTerminalMode('none');
+                      setSelectedModule(null);
+                    }}
                     connections={connections}
                     toolkitData={toolkitData}
+                    guidedPayload={guidedCompletePayload}
                   />
                 )}
               </AnimatePresence>
@@ -754,6 +840,8 @@ const SkillsBuilderToolkit = () => {
                           next.some(c => toolkitData[cat].modules.some(m => m.id === c.moduleId))
                         );
                         setUnlockedTabs(['frontend', ...connectedCats.map((_, i) => cats[i + 1]).filter(Boolean)]);
+                        // Re-check completion after disconnect
+                        setTimeout(() => checkGuidedCompletion(next), 0);
                       }
                       return next;
                     });
