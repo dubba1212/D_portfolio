@@ -1,0 +1,132 @@
+Prompt 1 — Guided Mode: add “What you can build” examples (1–2 per scenario)
+
+PROMPT (paste into Replit AI):
+
+Enhance Guided Mode completion terminal in components/SkillsBuilderToolkit.js.
+
+Current
+
+When Guided Mode is completed (all stages connected), the dock terminal shows:
+
+Frontend: …
+
+Backend: …
+
+Infra: …
+
+AI/LLM: …
+
+Output: …
+
+Required change
+
+Add a new section inside the same completion terminal:
+
+“WITH THIS STACK YOU CAN BUILD:”
+Show 1–2 app examples that match the scenario or the connected outputs.
+
+Rules
+
+If a Scenario is active (e.g., Build AI Chatbot / Build SaaS Dashboard / Build Microservices / Build CI/CD Pipeline / Build Data Pipeline / Build AI Search (RAG)):
+
+Use that scenarioId to render examples from a scenario map.
+
+If no scenario is active (pure Guided Mode connections):
+
+Infer from output stream IDs connected (e.g., ChatGPT Tools, Bedrock Apps, RAG Pipelines, etc.) and pick best-fit examples.
+
+Examples must be short, concrete, and impressive (no generic “web app”):
+
+Example format: • AI Support Chatbot with auth + conversation memory
+
+Keep to 1–2 bullets only.
+
+Do NOT change UI layout drastically. Just insert this section under the stack list in the terminal.
+
+Provide examples for each scenario (1–2 each)
+
+AI Chatbot:
+
+AI customer support bot with tool calling + conversation memory
+
+Internal assistant that queries docs + generates summaries
+
+SaaS Dashboard:
+
+Multi-tenant analytics dashboard with role-based access + performance UI
+
+Admin dashboard with billing/user management + audit logs
+
+Microservices:
+
+Service-based order/payment system with API gateway + auth
+
+Event-driven services with Redis caching + containerized deploys
+
+CI/CD Pipeline:
+
+Git-based CI/CD with automated tests + Docker builds + K8s deploy
+
+IaC provisioning + pipeline for multi-env deployments
+
+Data Pipeline:
+
+Batch + streaming pipeline into a warehouse with quality checks
+
+ETL ingestion to cloud storage with transformations + monitoring
+
+AI Search (RAG):
+
+Document search assistant with embeddings + citations
+
+Enterprise knowledge base chatbot with retrieval + re-ranking
+
+Implement this as a simple mapping object in the component (or in data/scenarios.js if it exists), and render it only when Guided Mode reaches completion state.
+
+Prompt 2 — Fix System Nodes: show Module terminal on skill click (restore MODULE_DATA_STREAM)
+
+PROMPT (paste into Replit AI):
+
+Fix regression: when user clicks a skill module under System Nodes (Frontend/Backend/Infrastructure/AI), the module terminal panel must open again (MODULE_DATA_STREAM).
+
+Current broken behavior
+
+Clicking a skill highlights it, but no terminal appears.
+
+Previously, selecting a skill opened a terminal showing bullet proof points and description.
+
+Required behavior
+
+When user clicks a module card (React/TS, Terraform, Node/Express, OpenAI API, etc.):
+
+Set selectedModule (or equivalent state) correctly
+
+Open/show the terminal dock panel
+
+Populate terminal with that module’s data stream content (title + bullets + description)
+
+When user switches categories (Frontend -> Backend etc.):
+
+Auto-close the module terminal unless a module is clicked again
+
+Clear selectedModule to prevent stale terminal
+
+Terminal should coexist with scenarios:
+
+If a Scenario terminal is currently open, module click should switch terminal to module mode OR keep scenario terminal until user exits scenario (use whatever pattern already exists, but avoid “no terminal” state).
+
+Don’t change styling. Only restore the interaction/state wiring.
+
+Implementation hint
+
+Ensure module card onClick calls something like handleModuleSelect(module)
+
+Ensure terminal render condition checks selectedModule and shows the dock
+
+If you recently added scenario state, do not let scenario state block module terminal rendering when scenario is not active.
+
+After fix:
+
+Clicking Terraform under Infrastructure shows terminal with Terraform proof bullets.
+
+Switching to Backend hides the terminal until another module is clicked.
