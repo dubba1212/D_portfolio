@@ -1,0 +1,75 @@
+Fix ONLY the Guided Mode in my Skills Playground (do not redesign the UI, do not change scenario selector behavior). Right now Guided Mode crashes / breaks sometimes and I can’t reliably connect modules to outputs. I need a stable Guided Mode with: (1) no runtime errors, (2) drag-to-connect works in every step, (3) I can deselect a connection by clicking the connected output again, (4) when the final step is completed it must show a “Simulation Complete” terminal summary + 1–2 example apps I can build with the connected stack.
+
+CRITICAL: Do not introduce new undefined variables (ex: composingStep / prev / event issues). Avoid SSR/Next runtime issues. Add guards everywhere needed.
+
+TASKS (Guided Mode only):
+
+A) Fix drag-to-connect runtime errors
+
+* Error seen: “Cannot read properties of undefined (reading 'getBoundingClientRect')” at onDragStart / getBoundingClientRect.
+* Make drag start safe:
+
+  * Never call e.currentTarget.getBoundingClientRect() unless e.currentTarget exists.
+  * Handle pointer/mouse/touch safely.
+  * Use refs to the dragged element if needed.
+  * If event target is missing, abort drag gracefully without crashing.
+
+B) Fix state bugs causing “prev is not defined” and similar
+
+* Ensure all setState functional updates use (prev) => … inside the setter callback and never reference prev outside.
+* Example: setConnections(prev => { ...prev.map(...) ... }) only inside callback.
+* Make sure guided mode completion logic doesn’t reference prev in outer scope.
+
+C) Add deselect/unconnect behavior
+
+* When an Output Stream item is already connected in Guided Mode:
+
+  * Single click on that connected output should remove the connection (toggle off).
+  * Remove the stored connection line and mark output as unconnected.
+  * If removing a connection should relock future steps, do it cleanly (optional: keep steps unlocked once reached, but must not crash).
+* Also allow module card double-click to clear its active drag selection.
+
+D) Guided Mode completion terminal summary
+
+* When the user successfully connects at least one module from each category step and reaches the final step:
+
+  * Auto-open the bottom dock terminal (same style as scenario terminal).
+  * Show:
+
+    * “SIMULATION COMPLETE: SYSTEM ASSEMBLED”
+    * List the final chosen stack like:
+      FRONTEND: React/TS (or selected)
+      BACKEND: Node/Express or Spring Boot (selected)
+      INFRA: Docker/K8s/Terraform (selected)
+      AI/LLM: OpenAI API / Bedrock (selected)
+      OUTPUT: the final output stream(s) connected
+  * Add 1–2 example apps that this stack can build, based on the output stream selected.
+    Example format:
+    “You can build: (1) AI Chatbot Dashboard, (2) RAG Search Assistant”
+* Ensure the terminal never overlaps skills (use the existing layout spacing that worked previously).
+
+E) Clear/reset guided mode
+
+* When Guided Mode is toggled OFF:
+
+  * Clear guided connections, active drag state, composing highlights.
+  * Restore normal free browsing.
+
+IMPLEMENTATION NOTES:
+
+* Identify the guided mode code in components/SkillsBuilderToolkit.js (or the relevant component).
+* Keep existing styles + layout.
+* Add small helper functions:
+  safeGetRect(el) => returns null if missing
+  removeConnection(outputId)
+  isOutputConnected(outputId)
+* Use a single “connections” array/object for guided mode with stable IDs.
+* Make sure refs exist before reading bounding rects.
+* No new global variables.
+* No breaking scenario selector.
+
+DELIVERABLE:
+
+* Update the code so Guided Mode works end-to-end without crashing.
+* Add the deselect behavior and the final simulation terminal summary with example apps.
+* Verify by running locally: connect modules across steps, disconnect, reconnect, finish, see terminal summary.
